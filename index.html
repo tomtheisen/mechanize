@@ -7,71 +7,21 @@
 	<body>
 		<h1>mechanize</h1>
 
-		<div id="playerData" data-bind="with: playerData">
+		<div id="wastes-container" data-bind="with: wastes">
+			<h2>Wastes</h2>
+			<div id="wastes" data-bind="foreach: $data">
+				<div class="resource" data-bind="css: type, title: (type != 'none' ? type : ''), click: $root.collect">
+				</div>
+			</div>
+		</div>
+
+		<div id="playerData" data-bind="with: player">
 			<h2>Inventory</h2>
 			<ol data-bind="foreach: inventory">
-				<li data-bind="text: $data"></li>
+				<li data-bind="text: type"></li>
 			</ol>
 		</div>
 
-		<div id="wastes" data-bind="with: wastes">
-			<h2>Wastes</h2>
-			<table data-bind="foreach: $data">
-				<tr data-bind="foreach: $data">
-					<td>
-						<button data-bind="visible: isPresent,
-										   text: type,
-										   click: $root.collect" />
-					</td>
-				</tr>
-			</table>
-		</div>
-
-		<script>
-			(function() {
-				var SpaceJunkViewModel = function() {
-					var self = this;
-
-					self.type = ko.observable(Math.random() < 0.1 ? "rock" : "space");
-
-					self.clear = function() {
-						self.type("space");
-					};
-
-					self.isPresent = ko.computed(function() {
-						return self.type() != "space";
-					});
-				};
-
-				var MechanizeViewModel = function() {
-					var self = this;
-
-					self.playerData = {
-						inventory: ko.observableArray(["rock", "metal"])
-					};
-					self.wastes = [];
-					for (var i = 0; i < 10; i++) {
-						var row = [];
-						for (var j = 0; j < 10; j++) {
-							row.push(new SpaceJunkViewModel);
-						}
-						self.wastes.push(row);
-					};
-
-					self.collect = function(junk) {
-						self.playerData.inventory.push(junk.type());
-						junk.clear();
-					};
-				};
-
-				function setup() {
-					console.log("loaded");
-
-					ko.applyBindings(new MechanizeViewModel);
-				};
-
-				window.addEventListener("load", setup);
-			})();
-		</script>
+		<script src="mechanize.js"></script>
 	</body>	
 </html>
