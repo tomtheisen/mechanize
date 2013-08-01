@@ -2,11 +2,7 @@
 	font-family: sans-serif;
 }
 
-#wastes-container {
-	float: right;
-}
-
-#wastes {
+.flexbox {
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
@@ -19,9 +15,9 @@
     -ms-flex-wrap: wrap;
     flex-wrap: wrap;
 
-    -webkit-justify-content: space-around;
-    -ms-flex-pack: distribute;
-    justify-content: space-around;
+    -webkit-justify-content: flex-start;
+    -ms-flex-pack: start;
+    justify-content: flex-start;
 
     -webkit-align-content: stretch;
     -ms-flex-line-pack: stretch;
@@ -30,24 +26,93 @@
     -webkit-align-content: center;
     -ms-flex-line-pack: center;
     align-content: center;
+}
 
+#wastes-container {
+	float: right;
+}
+
+#wastes {
 	width: 400px;
 	padding: 5px;
 	background-color: #ccc;
 }
 
-#wastes .resource {
+.resource {
 	width: 40px;
 	height: 40px;
 	margin: 3px;
 	border: solid black 1px;
 	background-color: white;
+	box-sizing: border-box;
+	position: relative;
 }
 
-#wastes .resource.none {
+.resource.none {
 	background-color: black;
 }
 
-#wastes .resource.rock {
+.resource.rock {
 	background-color: #666;
 }
+
+.resource.metal {
+	background-color: #33a;
+}
+
+.resource > .progress {
+	width:0%;
+	height: 10%;
+	position: absolute;
+	background-color: green;
+	overflow: hidden;
+}
+
+.resource.none:hover > .progress {
+	display: none;
+}
+
+.resource:hover > .progress {
+	transition-timing-function: linear;
+	width: 100%;
+}
+
+.resource > .collector {
+	width:100%;
+	height: 100%;
+	position: absolute;
+	visibility: hidden;
+
+	background-color: white;
+	opacity: 0.2;
+
+	color:black;
+	text-shadow: white 0px 0px 4px;
+}
+
+.resource.none:hover > .collector {
+	display: none;
+}
+
+
+.resource:hover > .collector {
+	visibility: visible;
+	cursor: pointer;
+}
+
+.resource.rock:hover > .progress {
+	transition-duration: 2s;
+}
+
+.resource.rock:hover > .collector {
+	transition-delay: 2s;
+}
+
+.resource.metal:hover > .progress {
+	transition-duration: 5s;
+}
+
+.resource.metal:hover > .collector {
+	transition-delay: 5s;
+}
+

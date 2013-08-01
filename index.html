@@ -9,14 +9,20 @@
 
 		<div id="wastes-container" data-bind="with: wastes">
 			<h2>Wastes</h2>
-			<div id="wastes" data-bind="foreach: $data">
-				<div class="resource" data-bind="css: type, title: (type != 'none' ? type : ''), click: $root.collect">
+			<div id="wastes" class="flexbox" data-bind="foreach: $data">
+				<div class="resource" data-bind="css: type, title: (type != 'none' ? type : '')">
+					<div class="progress"></div>
+					<div class="collector" data-bind="click: $root.collect"></div>
 				</div>
 			</div>
 		</div>
 
 		<div id="playerData" data-bind="with: player">
 			<h2>Inventory</h2>
+			<div class="flexbox" data-bind="foreach: inventory">
+				<div class="resource" data-bind="css: type, title: (type != 'none' ? type : '')">
+				</div>
+			</div>
 			<ol data-bind="foreach: inventory">
 				<li data-bind="text: type"></li>
 			</ol>

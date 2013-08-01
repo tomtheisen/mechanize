@@ -2,7 +2,13 @@
 	var SpaceJunkViewModel = function(type) {
 		var self = this;
 
-		self.type = type || (Math.random() < 0.1 ? "rock" : "none");
+		if (!type) {
+			var rnd = Math.random();
+			if (rnd < 0.1) type = "rock";
+			else if (rnd < 0.2) type = "metal";
+			else type = "none";
+		}
+		self.type = type;
 
 		self.isPresent = ko.computed(function() {
 			return self.type != "none";
