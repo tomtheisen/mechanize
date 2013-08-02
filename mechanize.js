@@ -28,10 +28,19 @@
 				return resource.type != "none";
 			}
 		};
-		self.wastes = ko.observableArray();
-		for (var i = 0; i < 100; i++) {
-			self.wastes.push(new SpaceJunkViewModel);
+		
+		var junk = ko.observableArray();
+
+		self.wastes = {
+			junk: junk, 
+			regenerateJunk: function() {
+				junk.removeAll();
+				for (var i = 0; i < 80; i++) {
+					junk.push(new SpaceJunkViewModel);
+				};
+			}
 		};
+		self.wastes.regenerateJunk();
 
 		self.collect = function(resource) {
 			if (!self.player.canCollect(resource)) return;
@@ -40,8 +49,8 @@
 			if (inventoryIndex >= 0) {
 				self.player.inventory.splice(inventoryIndex, 1, resource);
 
-				var wastesIndex = self.wastes.indexOf(resource);
-				self.wastes.splice(wastesIndex, 1, noneResource);
+				var wastesIndex = self.wastes.junk.indexOf(resource);
+				self.wastes.junk.splice(wastesIndex, 1, noneResource);
 			}
 		};
 	};

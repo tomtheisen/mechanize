@@ -8,7 +8,8 @@
 	<body>
 		<div id="wastes-container" data-bind="with: wastes">
 			<h2>Wastes</h2>
-			<div id="wastes" class="resource-container" data-bind="foreach: $data">
+			<button data-bind="click: regenerateJunk">regen</button>
+			<div id="wastes" class="resource-container" data-bind="foreach: junk">
 				<div class="resource" data-bind="css: type, title: (type != 'none' ? type : '')">
 					<div class="progress"></div>
 					<div class="collector" data-bind="click: $root.collect"></div>
