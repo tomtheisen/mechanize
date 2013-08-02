@@ -1,63 +1,59 @@
-* {
-	font-family: sans-serif;
-}
+@import url(http://fonts.googleapis.com/css?family=Aldrich);
 
-.flexbox {
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-
-    -webkit-flex-direction: row;
-    -ms-flex-direction: row;
-    flex-direction: row;
-
-    -webkit-flex-wrap: wrap;
-    -ms-flex-wrap: wrap;
-    flex-wrap: wrap;
-
-    -webkit-justify-content: flex-start;
-    -ms-flex-pack: start;
-    justify-content: flex-start;
-
-    -webkit-align-content: stretch;
-    -ms-flex-line-pack: stretch;
-    align-content: stretch;
-
-    -webkit-align-content: center;
-    -ms-flex-line-pack: center;
-    align-content: center;
+body {
+	font-family: 'Aldrich', sans-serif;
+	font-weight: lighter;
+	background-color: #272D40;
+	color: #D0D3B8;
+	/* 9DBF8E */
+	/* https://kuler.adobe.com/Stories-color-theme-2678373/edit/?copy=true&base=2&rule=Custom&selected=3&name=Copy%20of%20Stories&mode=rgb&rgbvalues=0.15294117647058825,0.17647058823529413,0.25098039215686274,0.21176470588235294,0.27450980392156865,0.34901960784313724,0.3333333333333333,0.45098039215686275,0.42745098039215684,0.615686274509804,0.7490196078431373,0.5568627450980392,0.8156862745098039,0.8509803921568627,0.5686274509803921 */
 }
 
 #wastes-container {
 	float: right;
+	border-radius: 8px;
+	background-color: #364659;
+	padding: 8px;
+}
+
+.resource-container {
+	overflow: auto;
 }
 
 #wastes {
-	width: 400px;
+	width: 340px;
 	padding: 5px;
-	background-color: #ccc;
+	background-color: #222;
+	border-radius: 8px;
+	border: solid #55736D 8px;
 }
 
 .resource {
-	width: 40px;
-	height: 40px;
-	margin: 3px;
-	border: solid black 1px;
-	background-color: white;
+	zdisplay: inline-block;
+	float: left;
+	width: 32px;
+	height: 32px;
+	margin: 1px;
 	box-sizing: border-box;
 	position: relative;
+
+	background-image: url(img/resource-tiles.png);
+	background-size: cover;
 }
 
 .resource.none {
 	background-color: black;
+	background-image: none;
 }
 
 .resource.rock {
 	background-color: #666;
+	background-position-x: 0px;
 }
 
-.resource.metal {
+.resource.iron {
 	background-color: #33a;
+	background-position-x: -32px;
 }
 
 .resource > .progress {
@@ -94,7 +90,6 @@
 	display: none;
 }
 
-
 .resource:hover > .collector {
 	visibility: visible;
 	cursor: pointer;
@@ -108,11 +103,11 @@
 	transition-delay: 2s;
 }
 
-.resource.metal:hover > .progress {
+.resource.iron:hover > .progress {
 	transition-duration: 5s;
 }
 
-.resource.metal:hover > .collector {
+.resource.iron:hover > .collector {
 	transition-delay: 5s;
 }
 

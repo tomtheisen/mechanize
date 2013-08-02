@@ -3,13 +3,12 @@
 	<head>
 		<link rel="stylesheet" href="style.css" />
 		<script src="knockout-2.3.0.js"></script>
+		<title>mechanize</title>
 	</head>
 	<body>
-		<h1>mechanize</h1>
-
 		<div id="wastes-container" data-bind="with: wastes">
 			<h2>Wastes</h2>
-			<div id="wastes" class="flexbox" data-bind="foreach: $data">
+			<div id="wastes" class="resource-container" data-bind="foreach: $data">
 				<div class="resource" data-bind="css: type, title: (type != 'none' ? type : '')">
 					<div class="progress"></div>
 					<div class="collector" data-bind="click: $root.collect"></div>
@@ -19,7 +18,7 @@
 
 		<div id="playerData" data-bind="with: player">
 			<h2>Inventory</h2>
-			<div class="flexbox" data-bind="foreach: inventory">
+			<div class="resource-container" data-bind="foreach: inventory">
 				<div class="resource" data-bind="css: type, title: (type != 'none' ? type : '')">
 				</div>
 			</div>

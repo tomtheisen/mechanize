@@ -4,8 +4,8 @@
 
 		if (!type) {
 			var rnd = Math.random();
-			if (rnd < 0.1) type = "rock";
-			else if (rnd < 0.2) type = "metal";
+			if (rnd < 0.01) type = "iron";
+			else if (rnd < 0.05) type = "rock";
 			else type = "none";
 		}
 		self.type = type;
@@ -15,14 +15,15 @@
 		});
 	};
 
+	var noneResource = new SpaceJunkViewModel("none");
+
 	var MechanizeViewModel = function() {
 		var self = this;
 
 		self.player = {
-			inventory: ko.observableArray([
-				new SpaceJunkViewModel("rock"), 
-				new SpaceJunkViewModel("metal")
-			]),
+			inventory: ko.observableArray(
+				Array.apply(null, new Array(16)).map(function() {return noneResource;})
+			),
 			canCollect: function(resource) {
 				return resource.type != "none";
 			}
@@ -35,9 +36,13 @@
 		self.collect = function(resource) {
 			if (!self.player.canCollect(resource)) return;
 
-			self.player.inventory.push(resource);
-			var index = self.wastes.indexOf(resource);
-			self.wastes.splice(index, 1, new SpaceJunkViewModel("none"));
+			var inventoryIndex = self.player.inventory.indexOf(noneResource);
+			if (inventoryIndex >= 0) {
+				self.player.inventory.splice(inventoryIndex, 1, resource);
+
+				var wastesIndex = self.wastes.indexOf(resource);
+				self.wastes.splice(wastesIndex, 1, noneResource);
+			}
 		};
 	};
 
