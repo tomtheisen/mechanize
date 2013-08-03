@@ -9,22 +9,61 @@ body {
 	/* https://kuler.adobe.com/Stories-color-theme-2678373/edit/?copy=true&base=2&rule=Custom&selected=3&name=Copy%20of%20Stories&mode=rgb&rgbvalues=0.15294117647058825,0.17647058823529413,0.25098039215686274,0.21176470588235294,0.27450980392156865,0.34901960784313724,0.3333333333333333,0.45098039215686275,0.42745098039215684,0.615686274509804,0.7490196078431373,0.5568627450980392,0.8156862745098039,0.8509803921568627,0.5686274509803921 */
 }
 
-#wastes-container {
-	float: right;
-	border-radius: 8px;
+h1, h2, h3, h4, h5, h6 {
+	margin: 1rem 0;
+}
+
+.progress {
+	border-radius: 0 16px 16px 0;
+	padding: 8px 8px 8px 0;
+	background-color: #55736D;
+	box-sizing: border-box;
+	height: 32px;
+	overflow: hidden;
+	margin: 1rem 0;
+}
+
+.progress > .value {
+	border-radius: 0 8px 8px 0;
+	height:16px;
+	text-indent: 1em;
+	background-color: #D0D3B8;
+	color: #364659;
+	font-size: 0.8rem;
+	overflow: hidden;
+	margin-right: 10%;
+	position: relative;
+	white-space: nowrap;
+}
+
+.progress .go {
 	background-color: #364659;
-	padding: 8px;
+	color: #D0D3B8;
+	height: 16px;
+	border-radius: 8px;
+	padding: 0 4px;
+	font-size: 0.6rem;
+	position: absolute;
+	right: 0;
+	top: 0;
+	display: none;
+}
+
+.panel {
+	border-radius: 16px;
+	background-color: #364659;
+	padding: 16px;
+	margin: 16px;
+	display: inline-block;
+	vertical-align: top;
 }
 
 .resource-container {
 	overflow: auto;
-}
-
-#wastes {
-	padding: 5px;
-	background-color: #12181E;
-	border-radius: 8px;
+	padding: 8px;
+	background-color: #0D1216;
 	border: solid #55736D 8px;
+	border-radius: 8px;
 }
 
 .resource {
@@ -36,8 +75,18 @@ body {
 	position: relative;
 
 	background-image: url(img/resource-tiles.png);
-	background-size: cover;
+	/*background-size: cover;*/
 }
+
+.resource.active {
+	border: solid #ccc 1px;
+	-webkit-animation-name: active-pulse;
+	-webkit-animation-duration: 0.5s;
+	-webkit-animation-iteration-count: infinite;
+	-webkit-animation-direction: alternate;
+}
+
+@-webkit-keyframes active-pulse { from {border-color: #333;} to {border-color: #ddd;}}
 
 .resource:nth-child(8n+1) {
 	clear: left;
@@ -58,7 +107,7 @@ body {
 	background-position-x: -32px;
 }
 
-.resource > .progress {
+.resource > .collect-progress {
 	width:0%;
 	height: 10%;
 	position: absolute;
@@ -66,11 +115,11 @@ body {
 	overflow: hidden;
 }
 
-.resource.none:hover > .progress {
+.resource.none:hover > .collect-progress {
 	display: none;
 }
 
-.resource:hover > .progress {
+.resource:hover > .collect-progress {
 	transition-timing-function: linear;
 	width: 100%;
 }
@@ -97,7 +146,7 @@ body {
 	cursor: pointer;
 }
 
-.resource.rock:hover > .progress {
+.resource.rock:hover > .collect-progress {
 	transition-duration: 2s;
 }
 
@@ -105,7 +154,7 @@ body {
 	transition-delay: 2s;
 }
 
-.resource.iron:hover > .progress {
+.resource.iron:hover > .collect-progress {
 	transition-duration: 5s;
 }
 
