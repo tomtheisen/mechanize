@@ -59,14 +59,15 @@
 
 	var noneResource = new SpaceJunkViewModel("none");
 
-	var InventoryItemViewModel = function(resource) {
+	var InventoryItemViewModel = function(resource, inventory) {
 		var self = this;
 		self.resource = resource;
 		self.active = ko.observable(false);
 
 		self.activate = function() {
-			if(self.resource.type == "none") return;
-			self.active(!self.active());
+			if (self.resource.type == "none") return;
+			inventory.deactivateAll();
+			self.active(true);
 		}
 	};
 
@@ -74,21 +75,28 @@
 		var self = this;
 
 		self.player = {
-			inventory: ko.observableArray(makeArray(16, function() {
-				return new InventoryItemViewModel(noneResource);
-			})),
+			inventory: Object.merge(
+				ko.observableArray(makeArray(16, function() {
+					return new InventoryItemViewModel(noneResource);
+				})),
+				{
+					deactivateAll: function() {
+						self.player.inventory().forEach(function(item) { item.active(false); });
+					},
+					collect: function(resource) {
+						var index = self.player.inventory().findIndex(function(item) { return item.resource.type == "none" });
+						self.player.inventory.splice(index, 1, new InventoryItemViewModel(resource, self.player.inventory));
+						self.player.inventory.deactivateAll();
+					}
+				}
+			),
 			canCollect: function(resource) {
 				return resource.type != "none" 
 					&& self.player.inventory().any(function(item) { return item.resource.type == "none" });
 			},
 			collect: function(resource) {
-				var index = self.player.inventory().findIndex(function(item) { return item.resource.type == "none" });
-				self.player.inventory.splice(index, 1, new InventoryItemViewModel(resource));
-				self.player.inventory.deactivateAll();
-			}			
-		};
-		self.player.inventory.deactivateAll = function() {
-			self.player.inventory().forEach(function(item) { item.active(false); });
+				var index = self.player.inventory.collect(resource);
+			}
 		};
 		
 		var junk = ko.observableArray();

@@ -26,7 +26,7 @@
 
 		<div id="playerData" class="panel" data-bind="with: player">
 			<h2>Inventory</h2>
-			<div class="resource-container" data-bind="foreach: inventory">
+			<div id="inventory" class="resource-container" data-bind="foreach: inventory">
 				<div class="resource" data-bind="
 					css: resource.type + (active() ? ' active' : ''), 
 					title: (resource.type != 'none' ? resource.type : ''),
