@@ -122,10 +122,6 @@ h1, h2, h3, h4, h5, h6 {
 	overflow: hidden;
 }
 
-.resource.none:hover > .collect-progress {
-	display: none;
-}
-
 .resource:hover > .collect-progress {
 	transition-timing-function: linear;
 	width: 100%;
@@ -142,10 +138,6 @@ h1, h2, h3, h4, h5, h6 {
 
 	color:black;
 	text-shadow: white 0px 0px 4px;
-}
-
-.resource.none:hover > .collector {
-	display: none;
 }
 
 .resource:hover > .collector {

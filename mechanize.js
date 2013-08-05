@@ -1,13 +1,29 @@
+ko.bindingHandlers.title = {
+	init: function(element, valueAccessor) {
+		element.title = valueAccessor();
+	},
+	update: function(element, valueAccessor) {
+		element.title = valueAccessor();
+	}
+};
+
+
 (function() {
 	var TimeTracker = function(totalms, updatems, complete, repeat) {
 		var self = this;
 
 		updatems = updatems || 1000;
-		var elapsedms = 0;
+		var elapsedms = ko.observable(0);
 		var intervalId = null;
 
-		self.progress = ko.observable(0);
-		self.isComplete = ko.observable(false);
+		self.progress = ko.computed(function() {
+			return elapsedms() / totalms;
+		});
+
+		var completed = ko.observable(false);
+		self.isComplete = ko.computed(function() {
+			return completed();
+		});
 
 		self.stop = function() {
 			if (intervalId) clearInterval(intervalId);
@@ -16,15 +32,15 @@
 
 		self.start = function() {
 			self.stop();
-			elapsedms = 0;
+			elapsedms(0);
 
 			intervalId = setInterval(function() {
-				elapsedms += updatems;
-				self.progress(elapsedms / totalms);
-				if(elapsedms >= totalms) {
+				elapsedms(elapsedms() + updatems);
+
+				if(elapsedms() >= totalms) {
 					self.stop();
-					self.progress(1);
-					self.isComplete(true);
+					elapsedms(totalms);
+					completed(true);
 
 					if(complete) complete();
 					if(repeat) self.start();
@@ -43,91 +59,82 @@
 
 	var SpaceJunkViewModel = function(type) {
 		var self = this;
-
-		if (!type) {
-			var rnd = Math.random();
-			if (rnd < 0.01) type = "iron";
-			else if (rnd < 0.05) type = "rock";
-			else type = "none";
-		}
 		self.type = type;
-
-		self.isPresent = ko.computed(function() {
-			return self.type != "none";
-		});
 	};
 
-	var noneResource = new SpaceJunkViewModel("none");
-
-	var InventoryItemViewModel = function(resource, inventory) {
+	var InventoryItemViewModel = function(resource) {
 		var self = this;
-		self.resource = resource;
+		self.resource = ko.observable(resource);
 		self.active = ko.observable(false);
+	};
 
-		self.activate = function() {
-			if (self.resource.type == "none") return;
-			inventory.deactivateAll();
-			self.active(true);
-		}
+	var InventoryViewModel = function(size) {
+		var self = this;
+
+		self.activeItem = ko.observable();
+		self.items = ko.observableArray(makeArray(size, function() {
+			return new InventoryItemViewModel(null);
+		}));
+
+		self.deactivate = function() {
+			if (!self.activeItem()) return;
+			self.activeItem().active(false);
+			self.activeItem(null);
+		};
+
+		self.collect = function(resource) {
+			var emptySlot = self.items().find(function(item) { return !item.resource() });
+			if (!emptySlot) return false;
+			emptySlot.resource(resource);
+			return true;
+		};
+
+		self.select = function(item) {
+			if (!item.resource()) return;
+			self.deactivate();
+			self.activeItem(item);
+			item.active(true);
+		};
+	};
+
+	var WastesModel = function(inventory) {
+		var self = this;
+
+		self.junk = ko.observableArray(makeArray(80, function() { return { resource: ko.observable() }; }));
+		self.regenerateJunk = function() {
+			self.junk().forEach(function(j) {
+				var rnd = Math.random(), type = null;
+				if (rnd < 0.01) type = "iron";
+				else if (rnd < 0.05) type = "rock";
+
+				j.resource(type && new SpaceJunkViewModel(type));
+			});
+		};
+		self.regenerateJunk();
+
+		self.regenerator = new TimeTracker(30000, 200, self.regenerateJunk, true);
+			
+		self.collect = function(wasteCell) {
+			if (!wasteCell.resource()) return;
+			var success = inventory.collect(wasteCell.resource());
+			if (success) wasteCell.resource(null);
+			return success;
+		};
+	};
+
+	var PlayerModel = function() {
+		var self = this;
+		self.inventory = new InventoryViewModel(16);
 	};
 
 	var MechanizeViewModel = function() {
 		var self = this;
 
-		self.player = {
-			inventory: Object.merge(
-				ko.observableArray(makeArray(16, function() {
-					return new InventoryItemViewModel(noneResource);
-				})),
-				{
-					deactivateAll: function() {
-						self.player.inventory().forEach(function(item) { item.active(false); });
-					},
-					collect: function(resource) {
-						var index = self.player.inventory().findIndex(function(item) { return item.resource.type == "none" });
-						self.player.inventory.splice(index, 1, new InventoryItemViewModel(resource, self.player.inventory));
-						self.player.inventory.deactivateAll();
-					}
-				}
-			),
-			canCollect: function(resource) {
-				return resource.type != "none" 
-					&& self.player.inventory().any(function(item) { return item.resource.type == "none" });
-			},
-			collect: function(resource) {
-				var index = self.player.inventory.collect(resource);
-			}
-		};
-		
-		var junk = ko.observableArray();
-		var regenerateJunk = function() {
-			junk.splice.apply(junk, [0, 80].concat(makeArray(80, function() { return new SpaceJunkViewModel; })));
-		};
-		regenerateJunk();
-		self.wastes = {
-			junk: junk, 
-			regenerator:  new TimeTracker(30000, 200, regenerateJunk, true),
-			regenerateJunk: regenerateJunk
-		};
-
-		self.collect = function(resource) {
-			if (!self.player.canCollect(resource)) return;
-
-			self.player.collect(resource);
-			self.wastes.junk.replace(resource, noneResource);
-		};
+		self.player = new PlayerModel;
+		self.wastes = new WastesModel(self.player.inventory);
 	};
 
 	function setup() {
-		ko.bindingHandlers.title = {
-			init: function(element, valueAccessor) {
-				element.title = valueAccessor();
-			},
-			update: function(element, valueAccessor) {
-				element.title = valueAccessor();
-			}
-		};
-
 		mechanize = new MechanizeViewModel;
 		ko.applyBindings(mechanize);
 	};

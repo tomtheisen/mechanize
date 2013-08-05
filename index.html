@@ -17,24 +17,36 @@
 			</div>
 
 			<div id="wastes" class="resource-container" data-bind="foreach: junk">
-				<div class="resource" data-bind="css: type, title: (type != 'none' ? type : '')">
-					<div class="collect-progress"></div>
-					<div class="collector" data-bind="click: $root.collect"></div>
-				</div>
+				<!-- ko if: resource -->
+					<div class="resource" data-bind="css: resource().type, title: resource().type">
+						<div class="collect-progress"></div>
+						<div class="collector" data-bind="click: $parent.collect"></div>
+					</div>
+				<!-- /ko -->
+				<!-- ko ifnot: resource -->
+					<div class="resource none"></div>
+				<!-- /ko -->
 			</div>
 		</div>
 
 		<div id="playerData" class="panel" data-bind="with: player">
 			<h2>Inventory</h2>
-			<div id="inventory" class="resource-container" data-bind="foreach: inventory">
-				<div class="resource" data-bind="
-					css: resource.type + (active() ? ' active' : ''), 
-					title: (resource.type != 'none' ? resource.type : ''),
-					click: activate">
-				</div>
+			<div id="inventory" class="resource-container" data-bind="foreach: inventory.items">
+				<!-- ko if: resource -->
+					<div class="resource" data-bind="
+						css: resource().type + (active() ? ' active' : ''), 
+						title: resource().type,
+						click: $parent.inventory.select">
+					</div>
+				<!-- /ko -->
+				<!-- ko ifnot: resource -->
+					<div class="resource none"></div>
+				<!-- /ko -->
 			</div>
 			<ol data-bind="foreach: inventory">
-				<li data-bind="text: resource.type"></li>
+				<!-- ko if: resource -->
+					<li data-bind="text: resource().type"></li>
+				<!-- /ko -->
 			</ol>
 		</div>
 
