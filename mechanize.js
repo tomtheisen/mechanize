@@ -46,8 +46,9 @@ ko.bindingHandlers.title = {
 					elapsedms(totalms);
 					completed(true);
 
-					if(complete) complete();
-					if(repeat) self.start();
+					var cancelToken = {cancel: false};
+					if(complete) complete(cancelToken);
+					if(repeat && !cancelToken.cancel) self.start();
 				}
 			}, updatems);
 		};
@@ -61,7 +62,7 @@ ko.bindingHandlers.title = {
 		return Array.apply(null, Array(length)).map(elementfn);
 	}
 
-	var SpaceJunkViewModel = function(type) {
+	var ResourceModel = function(type) {
 		var self = this;
 		self.type = type;
 	};
@@ -95,9 +96,15 @@ ko.bindingHandlers.title = {
 
 		self.select = function(item) {
 			if (!item.resource()) return;
+			var alreadyActive = item.active();
 			self.deactivate();
-			self.activeItem(item);
-			item.active(true);
+
+			if (!alreadyActive) {
+				self.activeItem(item);
+				item.active(true);
+			} else {
+				item.active(false);
+			}
 		};
 
 		self.popActive = function() {
@@ -121,7 +128,7 @@ ko.bindingHandlers.title = {
 				if (rnd < 0.01) type = "iron";
 				else if (rnd < 0.05) type = "rock";
 
-				j.resource(type && new SpaceJunkViewModel(type));
+				j.resource(type && new ResourceModel(type));
 			});
 		};
 		self.regenerateJunk();
@@ -146,24 +153,33 @@ ko.bindingHandlers.title = {
 
 	var TrashEjectorModel = function(name, inventory) {
 		var self = this;
-		var tracker = ko.observable();
+		self.tracker = ko.observable();
 
 		self.name = name;
 		self.contents = ko.observable();
-		self.tracker = ko.computed(function() {
-			return tracker();
-		});
 
 		self.accept = function(inventoryItem) {
 			var resource = inventory.popActive();
 			self.contents(resource);
 
-			tracker(new TimeTracker(20000, 200, function() {
+			self.tracker(new TimeTracker(20000, 200, function() {
 				self.contents(null);
-				tracker(null);
+				self.tracker(null);
 			}));
 		};
-	}
+	};
+
+	var RockCollectorModel = function(inventory) {
+		var self = this;
+		
+		self.tracker = new TimeTracker(10000, 200, function(cancelToken) {
+			var success = inventory.collect(new ResourceModel("rock"));
+			if (!success) cancelToken.cancel = true;
+		}, true);
+
+		self.start = self.tracker.start;
+		self.stop = self.tracker.stop;
+	};
 
 	var MechanizeViewModel = function() {
 		var self = this;
@@ -172,15 +188,24 @@ ko.bindingHandlers.title = {
 		self.wastes = new WastesModel(self.player.inventory);
 
 		self.consumers = ko.observableArray([
-			new TrashEjectorModel("Trash Ejector", self.player.inventory),
-			new TrashEjectorModel("Trash Ejector2", self.player.inventory)
+			new TrashEjectorModel("Trash Ejector", self.player.inventory)
+		]);
+
+		self.producers = ko.observableArray([
+			new RockCollectorModel(self.player.inventory)
 		]);
 	};
 
-	function setup() {
+	window.addEventListener("load", function() {
 		mechanize = new MechanizeViewModel;
 		ko.applyBindings(mechanize);
-	};
-
-	window.addEventListener("load", setup);
+	});
 })();
+
+function dbg() {
+	function stripNulls(key, val) {
+		return val === null ? undefined : val;
+	}
+
+	console.log(ko.toJSON(mechanize, stripNulls, 2));
+}

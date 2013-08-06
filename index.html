@@ -43,6 +43,10 @@
 					<div class="resource none"></div>
 				<!-- /ko -->
 			</div>
+			<div data-bind="if: inventory.activeItem">
+				<strong>Selected:</strong> 
+				<span data-bind="text: inventory.activeItem().resource().type"></span>
+			</div>
 			<ol data-bind="foreach: inventory.items">
 				<!-- ko if: resource -->
 					<li data-bind="text: resource().type"></li>
@@ -71,6 +75,20 @@
 				<!-- ko ifnot: contents -->
 				<div class="resource none" data-bind="click: accept"></div>
 				<!-- /ko -->
+			</div>
+			<!-- /ko -->
+		</div>
+
+		<div class="panel">
+			<h2>Producers</h2>
+
+			<!-- ko foreach: producers -->
+			<button data-bind="click: start">start</button>
+			<button data-bind="click: stop">stop</button>
+			<div class="progress" data-bind="if: tracker">
+				<div class="value" data-bind="style: { marginRight: tracker.progressMarginRight }">
+					Collecting ...
+				</div>
 			</div>
 			<!-- /ko -->
 		</div>
