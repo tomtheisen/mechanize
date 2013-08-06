@@ -20,6 +20,10 @@ ko.bindingHandlers.title = {
 			return elapsedms() / totalms;
 		});
 
+		self.progressMarginRight = ko.computed(function() {
+			return (100 - 100 * self.progress()) + '%';
+		});
+
 		var completed = ko.observable(false);
 		self.isComplete = ko.computed(function() {
 			return completed();
@@ -95,6 +99,16 @@ ko.bindingHandlers.title = {
 			self.activeItem(item);
 			item.active(true);
 		};
+
+		self.popActive = function() {
+			var active = self.activeItem();
+			if (!active) return null;
+			self.activeItem(null);
+			active.active(false);
+			var resource = active.resource();
+			active.resource(null);
+			return resource;
+		}
 	};
 
 	var WastesModel = function(inventory) {
@@ -112,7 +126,10 @@ ko.bindingHandlers.title = {
 		};
 		self.regenerateJunk();
 
-		self.regenerator = new TimeTracker(30000, 200, self.regenerateJunk, true);
+		var regenerator = new TimeTracker(30000, 200, self.regenerateJunk, true);
+		self.regenerator = function() { 
+			return regenerator; 
+		};
 			
 		self.collect = function(wasteCell) {
 			if (!wasteCell.resource()) return;
@@ -127,11 +144,37 @@ ko.bindingHandlers.title = {
 		self.inventory = new InventoryViewModel(16);
 	};
 
+	var TrashEjectorModel = function(name, inventory) {
+		var self = this;
+		var tracker = ko.observable();
+
+		self.name = name;
+		self.contents = ko.observable();
+		self.tracker = ko.computed(function() {
+			return tracker();
+		});
+
+		self.accept = function(inventoryItem) {
+			var resource = inventory.popActive();
+			self.contents(resource);
+
+			tracker(new TimeTracker(20000, 200, function() {
+				self.contents(null);
+				tracker(null);
+			}));
+		};
+	}
+
 	var MechanizeViewModel = function() {
 		var self = this;
 
 		self.player = new PlayerModel;
 		self.wastes = new WastesModel(self.player.inventory);
+
+		self.consumers = ko.observableArray([
+			new TrashEjectorModel("Trash Ejector", self.player.inventory),
+			new TrashEjectorModel("Trash Ejector2", self.player.inventory)
+		]);
 	};
 
 	function setup() {

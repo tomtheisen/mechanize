@@ -60,6 +60,7 @@ h1, h2, h3, h4, h5, h6 {
 
 .resource-container {
 	overflow: auto;
+	margin-top: 16px;
 	padding: 8px;
 	background-color: #0D1216;
 	border: solid #55736D 8px;
