@@ -20,7 +20,7 @@ ko.bindingHandlers.title = {
 			return elapsedms() / totalms;
 		});
 
-		self.progressMarginRight = ko.computed(function() {
+		self.progress.marginRight = ko.computed(function() {
 			return (100 - 100 * self.progress()) + '%';
 		});
 
@@ -197,8 +197,30 @@ ko.bindingHandlers.title = {
 	};
 
 	window.addEventListener("load", function() {
-		mechanize = new MechanizeViewModel;
+		mechanize = ko.observable(new MechanizeViewModel);
 		ko.applyBindings(mechanize);
+
+		var saveFilter = function(key, value) {
+			if (["wastes", "active"].find(key)) return undefined;
+			if (value === null) return undefined;
+			return value;
+		};
+
+		var saveModel = function() {
+			var serialized = ko.toJSON(mechanize, saveFilter);
+			window.localStorage.setItem("mechanize", serialized);
+		};
+
+		var loadModel = function() {
+			var serialized = window.localStorage.getItem("mechanize");
+			if (!serialized) return;
+
+			mechanize(new MechanizeViewModel);
+			alert("not actually loaded");
+		};
+
+		$("body").on("click", "#saveButton", saveModel);
+		$("body").on("click", "#loadButton", loadModel);
 	});
 })();
 

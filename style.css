@@ -25,6 +25,11 @@ button {
 	font-size: 1rem;
 }
 
+#game-controls {
+	position: absolute;
+	right: 0;
+}
+
 .progress {
 	border-radius: 0 16px 16px 0;
 	padding: 8px 8px 8px 0;

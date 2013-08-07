@@ -4,13 +4,19 @@
 		<link rel="stylesheet" href="style.css" />
 		<script src="knockout-2.3.0.js"></script>
 		<script src="sugar-1.3.9.min.js"></script>
+		<script src="zepto.min.js"></script>
 		<title>mechanize</title>
 	</head>
 	<body>
+		<div id="game-controls">
+			<button id="saveButton">save</button>
+			<button id="loadButton">load</button>
+		</div>
+
 		<div id="wastes-panel" class="panel" data-bind="with: wastes">
 			<h2>Resource Mining</h2>
 			<div class="progress">
-				<div class="value" data-bind="style: { marginRight: regenerator().progressMarginRight }">
+				<div class="value" data-bind="style: { marginRight: regenerator().progress.marginRight }">
 					Sector Warp ...
 					<div class="go">go</div>
 				</div>
@@ -59,7 +65,7 @@
 
 			<!-- ko foreach: consumers -->
 			<div class="progress" data-bind="if: tracker">
-				<div class="value" data-bind="style: { marginRight: tracker().progressMarginRight }">
+				<div class="value" data-bind="style: { marginRight: tracker().progress.marginRight }">
 					Airlock cycling ...
 				</div>
 			</div>
@@ -86,7 +92,7 @@
 			<button data-bind="click: start">start</button>
 			<button data-bind="click: stop">stop</button>
 			<div class="progress" data-bind="if: tracker">
-				<div class="value" data-bind="style: { marginRight: tracker.progressMarginRight }">
+				<div class="value" data-bind="style: { marginRight: tracker.progress.marginRight }">
 					Collecting ...
 				</div>
 			</div>
