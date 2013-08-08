@@ -68,18 +68,18 @@ ko.bindingHandlers.title = {
 		self.type = type;
 	};
 
-	var InventoryItemViewModel = function(resource) {
+	var InventoryItemModel = function(resource) {
 		var self = this;
 		self.resource = ko.observable(resource);
 		self.active = ko.observable(false);
 	};
 
-	var InventoryViewModel = function(size) {
+	var InventoryModel = function(size) {
 		var self = this;
 
 		self.activeItem = ko.observable();
 		self.items = ko.observableArray(makeArray(size, function() {
-			return new InventoryItemViewModel(null);
+			return new InventoryItemModel(null);
 		}));
 
 		self.deactivate = function() {
@@ -149,7 +149,7 @@ ko.bindingHandlers.title = {
 
 	var PlayerModel = function() {
 		var self = this;
-		self.inventory = new InventoryViewModel(16);
+		self.inventory = new InventoryModel(16);
 	};
 
 	var TrashEjectorModel = function(name, inventory) {
@@ -216,9 +216,10 @@ ko.bindingHandlers.title = {
 			var serialized = window.localStorage.getItem("mechanize");
 			if (!serialized) return;
 
-			var load = function(model, saved) {
+			var load = function(model, saved, path) {
 				for (key in saved) {
 					if (!saved.hasOwnProperty(key)) continue;
+					var newPath = (path || "$") + "." + key;
 					var val = saved[key];
 					
 					if (typeof(val) == "number" || typeof(val) == "string") {
@@ -227,25 +228,32 @@ ko.bindingHandlers.title = {
 						}
 					} else if (val instanceof Array) {
 						if (ko.isObservable(model[key]) && (model[key]() instanceof Array)) {
+							if (newPath == "$.player.inventory.items") {
+								model[key].removeAll();
 
+								val.forEach(function(item) {
+									var resource = item.resource && new ResourceModel(item.resource.type);
+									var newItem = new InventoryItemModel(resource);
+									newItem.active(item.active);
+									model[key].push(newItem);
+								});
+							}
 						}
 					} else {
 						if (ko.isObservable(model[key])) {
-							load(model[key](), val);
+							load(model[key](), val, newPath);
 						} else {
-							load(model[key], val);
+							load(model[key], val, newPath);
 						}
 					}
 				}
 			}
 
 			var model = new MechanizeViewModel;
-			//var saved = JSON.parse(serialized);
-			//load(model, saved);
-			ko.mapping.fromJSON(serialized, model);
+			var saved = JSON.parse(serialized);
+			load(model, saved);
 
 			mechanize(model);
-			//alert("not actually loaded");
 		};
 
 		$("body").on("click", "#saveButton", saveModel);
