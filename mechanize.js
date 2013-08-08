@@ -37,6 +37,7 @@ ko.bindingHandlers.title = {
 		self.start = function() {
 			self.stop();
 			elapsedms(0);
+			completed(false);
 
 			intervalId = setInterval(function() {
 				elapsedms(elapsedms() + updatems);
@@ -201,7 +202,7 @@ ko.bindingHandlers.title = {
 		ko.applyBindings(mechanize);
 
 		var saveFilter = function(key, value) {
-			if (["wastes", "active"].find(key)) return undefined;
+			//if (["wastes", "active"].find(key)) return undefined;
 			if (value === null) return undefined;
 			return value;
 		};
@@ -215,12 +216,43 @@ ko.bindingHandlers.title = {
 			var serialized = window.localStorage.getItem("mechanize");
 			if (!serialized) return;
 
-			mechanize(new MechanizeViewModel);
-			alert("not actually loaded");
+			var load = function(model, saved) {
+				for (key in saved) {
+					if (!saved.hasOwnProperty(key)) continue;
+					var val = saved[key];
+					
+					if (typeof(val) == "number" || typeof(val) == "string") {
+						if (ko.isObservable(model[key])) {
+							model[key](val);
+						}
+					} else if (val instanceof Array) {
+						if (ko.isObservable(model[key]) && (model[key]() instanceof Array)) {
+
+						}
+					} else {
+						if (ko.isObservable(model[key])) {
+							load(model[key](), val);
+						} else {
+							load(model[key], val);
+						}
+					}
+				}
+			}
+
+			var model = new MechanizeViewModel;
+			//var saved = JSON.parse(serialized);
+			//load(model, saved);
+			ko.mapping.fromJSON(serialized, model);
+
+			mechanize(model);
+			//alert("not actually loaded");
 		};
 
 		$("body").on("click", "#saveButton", saveModel);
 		$("body").on("click", "#loadButton", loadModel);
+
+		$("#loadingMessage").hide();
+		$("#gameSurface").css("visibility", "");
 	});
 })();
 

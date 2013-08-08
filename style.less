@@ -1,74 +1,87 @@
-@import url(http://fonts.googleapis.com/css?family=Aldrich);
+@import "prefixer.less";
+
+@font-face {
+  font-family: 'Aldrich';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Aldrich'), url(aldrich.woff) format('woff');
+}
+
+@background: #272D40;
+@panel: #364659;
+@accent: #55736D;
+@highlight: #D0D3B8;
+@green: #9DBF8E;  // ?
+
+html {
+	height: 100%;
+	margin: 0;
+}
 
 body {
 	font-family: 'Aldrich', sans-serif;
-	font-weight: lighter;
-	background-color: #272D40;
-	color: #D0D3B8;
-	/* 9DBF8E */
-	/* https://kuler.adobe.com/Stories-color-theme-2678373/edit/?copy=true&base=2&rule=Custom&selected=3&name=Copy%20of%20Stories&mode=rgb&rgbvalues=0.15294117647058825,0.17647058823529413,0.25098039215686274,0.21176470588235294,0.27450980392156865,0.34901960784313724,0.3333333333333333,0.45098039215686275,0.42745098039215684,0.615686274509804,0.7490196078431373,0.5568627450980392,0.8156862745098039,0.8509803921568627,0.5686274509803921 */
+	background-color: @background;
+	color: @highlight;
+	height: 100%;
+	margin: 0;
 }
 
 h1, h2, h3, h4, h5, h6 {
 	margin: 1rem 0;
 }
 
+#loadingMessage {
+	padding: 3rem;
+}
+
 button {
-	background-color: #55736D;
+	background-color: @accent;
+	color: @highlight;
 	border-width: 0px;
-	border-radius: 16px;
+	.border-radius(16px);
 	height: 32px;
 	padding: 0 32px;
 	line-height: 32px;
 	font-family: 'Aldrich', sans-serif;
-	color: #D0D3B8;
 	font-size: 1rem;
+}
+
+#gameSurface {
+	width: 100%;
+	height: 100%;
 }
 
 #game-controls {
 	position: absolute;
 	right: 0;
+	margin: 16px;
 }
 
 .progress {
-	border-radius: 0 16px 16px 0;
-	padding: 8px 8px 8px 0;
-	background-color: #55736D;
 	box-sizing: border-box;
 	height: 32px;
+	.border-radius(0 16px 16px 0);
+	padding: 8px 8px 8px 0;
 	overflow: hidden;
 	margin: 1rem 0;
-}
+	background-color: @accent;
 
-.progress > .value {
-	border-radius: 0 8px 8px 0;
-	height:16px;
-	text-indent: 1em;
-	background-color: #D0D3B8;
-	color: #364659;
-	font-size: 0.8rem;
-	overflow: hidden;
-	margin-right: 10%;
-	position: relative;
-	white-space: nowrap;
-}
-
-.progress .go {
-	background-color: #364659;
-	color: #D0D3B8;
-	height: 16px;
-	border-radius: 8px;
-	padding: 0 4px;
-	font-size: 0.6rem;
-	position: absolute;
-	right: 0;
-	top: 0;
-	display: none;
+	.value {
+		.border-radius(0 8px 8px 0);
+		height: 16px;
+		text-indent: 1em;
+		font-size: 0.8rem;
+		background-color: @highlight;
+		color: @panel;
+		overflow: hidden;
+		position: relative;
+		white-space: nowrap;
+	}
 }
 
 .panel {
-	border-radius: 16px;
-	background-color: #364659;
+	.border-radius(16px);
+	background-color: @panel;
 	padding: 16px;
 	margin: 16px;
 	display: inline-block;
@@ -80,8 +93,18 @@ button {
 	margin-top: 16px;
 	padding: 8px;
 	background-color: #0D1216;
-	border: solid #55736D 8px;
-	border-radius: 8px;
+	border: solid @accent 8px;
+	.border-radius(8px);
+}
+
+.wrap-every(@n) {
+	@nexp: e("@{n}n+1");
+/*	&:nth-child(@nexp) {
+		clear: left;
+	}*/
+	&:nth-child(8n+1) {
+		color: @nexp;
+	}
 }
 
 .resource {
@@ -89,93 +112,87 @@ button {
 	width: 32px;
 	height: 32px;
 	margin: 1px;
-	box-sizing: border-box;
+	.box-sizing(border-box);
 	position: relative;
 
 	background-image: url(img/resource-tiles.png);
+	
+	&:nth-child(8n+1) {
+		clear: left;
+	}
+
+	.wrap-every(8);
+	
+	&.none {
+		background-color: black;
+		background-image: none;
+	}
+
+	.collect-delay(@delay) {
+		&:hover {
+			.collect-progress 	{ .transition-duration(@delay); }
+			.collector 			{ .transition-delay(@delay); }
+		}
+	}
+
+	&.rock {
+		background-position-x: 0px;
+		.collect-delay(2s);
+	}
+
+	&.iron {
+		background-position-x: -32px;
+		.collect-delay(5s);
+	}
+
+	.collect-progress {
+		width: 0%;
+		height: 10%;
+		position: absolute;
+		background-color: @green;
+	}
+
+	.collector {
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		visibility: hidden;
+
+		background-color: white;
+		.opacity(0.2);
+	}
+
+	&:hover {
+		.collect-progress {
+			.transition-timing-function(linear);
+			width: 100%;
+		}
+
+		.collector {
+			visibility: visible;
+			cursor: pointer;
+		}
+	}
 }
 
 .active {
 	border: solid #ccc 1px;
-	-webkit-animation-name: active-pulse;
-	-webkit-animation-duration: 0.5s;
-	-webkit-animation-iteration-count: infinite;
-	-webkit-animation-direction: alternate;
+	.animation-name(active-pulse);
+	.animation-duration(0.5s);
+	.animation-iteration-count(infinite);
+	.animation-direction(alternate);
 }
 
+// come on LESS, get your shit together
+@-o-keyframes active-pulse { from {border-color: #333;} to {border-color: #ddd;}}
+@-moz-keyframes active-pulse { from {border-color: #333;} to {border-color: #ddd;}}
 @-webkit-keyframes active-pulse { from {border-color: #333;} to {border-color: #ddd;}}
+@keyframes active-pulse { from {border-color: #333;} to {border-color: #ddd;}}
 
-.resource:nth-child(8n+1) {
-	clear: left;
+#inventory {
+	.resource { cursor: pointer; }
+	.resource.none { cursor: default; }
 }
 
-#inventory .resource {
-	cursor: pointer;
-}
 
-#inventory .resource.none {
-	cursor: default;
-}
-
-.resource.none {
-	background-color: black;
-	background-image: none;
-}
-
-.resource.rock {
-	background-color: #666;
-	background-position-x: 0px;
-}
-
-.resource.iron {
-	background-color: #33a;
-	background-position-x: -32px;
-}
-
-.resource > .collect-progress {
-	width:0%;
-	height: 10%;
-	position: absolute;
-	background-color: #9DBF8E;
-	overflow: hidden;
-}
-
-.resource:hover > .collect-progress {
-	transition-timing-function: linear;
-	width: 100%;
-}
-
-.resource > .collector {
-	width:100%;
-	height: 100%;
-	position: absolute;
-	visibility: hidden;
-
-	background-color: white;
-	opacity: 0.2;
-
-	color:black;
-	text-shadow: white 0px 0px 4px;
-}
-
-.resource:hover > .collector {
-	visibility: visible;
-	cursor: pointer;
-}
-
-.resource.rock:hover > .collect-progress {
-	transition-duration: 2s;
-}
-
-.resource.rock:hover > .collector {
-	transition-delay: 2s;
-}
-
-.resource.iron:hover > .collect-progress {
-	transition-duration: 5s;
-}
-
-.resource.iron:hover > .collector {
-	transition-delay: 5s;
-}
 
