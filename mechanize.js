@@ -217,7 +217,7 @@ ko.bindingHandlers.title = {
 			if (!serialized) return;
 
 			var load = function(model, saved, path) {
-				for (key in saved) {
+				for (var key in saved) {
 					if (!saved.hasOwnProperty(key)) continue;
 					var newPath = (path || "$") + "." + key;
 					var val = saved[key];
@@ -238,6 +238,8 @@ ko.bindingHandlers.title = {
 									model[key].push(newItem);
 								});
 							}
+
+							// todo deal with consumers, producers
 						}
 					} else {
 						if (ko.isObservable(model[key])) {
