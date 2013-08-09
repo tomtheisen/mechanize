@@ -53,8 +53,16 @@ button {
 
 #game-controls {
 	position: absolute;
-	right: 0;
 	margin: 16px;
+	right: 0;
+}
+
+#notifications {
+	position: absolute;
+	margin: 16px;
+	right: 0;
+	bottom: 0;
+	
 }
 
 .progress {
@@ -98,13 +106,9 @@ button {
 }
 
 .wrap-every(@n) {
-	@nexp: e("@{n}n+1");
-/*	&:nth-child(@nexp) {
-		clear: left;
-	}*/
-	&:nth-child(8n+1) {
-		color: @nexp;
-	}
+  	&:nth-child(@{n}n+1) {
+        clear: left;
+    }
 }
 
 .resource {
@@ -117,10 +121,6 @@ button {
 
 	background-image: url(img/resource-tiles.png);
 	
-	&:nth-child(8n+1) {
-		clear: left;
-	}
-
 	.wrap-every(8);
 	
 	&.none {
@@ -193,6 +193,3 @@ button {
 	.resource { cursor: pointer; }
 	.resource.none { cursor: default; }
 }
-
-
-
