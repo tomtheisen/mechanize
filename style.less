@@ -12,6 +12,7 @@
 @accent: #55736D;
 @highlight: #D0D3B8;
 @green: #9DBF8E;  // ?
+@space: #0D1216;
 
 html {
 	height: 100%;
@@ -105,7 +106,7 @@ button {
 	overflow: auto;
 	margin-top: 16px;
 	padding: 8px;
-	background-color: #0D1216;
+	background-color: @space;
 	border: solid @accent 8px;
 	.border-radius(8px);
 	margin: 8px 0;
@@ -205,18 +206,25 @@ button {
 		& > li {
 			margin-bottom: 1rem;
 			.border-radius(8px);
-			background: @background;
-			padding: 8px;
+			/*background: @space;*/
+			margin: 8px 0;
 
 			& > h3 {
 				cursor: pointer;
 				margin: 0;
 				font-size: 1rem;
 				font-weight: normal;
+
+				&.hidden::before {content: "\25bc"; }
+				&.shown::before {content: "\25b6"; } 
 			}
 
-			& > .controls > :first-child {
-				margin-top: 8px;
+			& > .controls {
+				margin-left: 18px;
+
+				& > :first-child {
+					margin-top: 8px;
+				}
 			}
 		}
 	}

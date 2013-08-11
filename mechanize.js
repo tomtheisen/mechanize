@@ -117,6 +117,8 @@ var dbg;
 			return true;
 		};
 
+		self.accept = self.collect; // todo deprecate one
+
 		self.select = function(item) {
 			if (!item.resource()) return;
 			var alreadyActive = item.active();
@@ -176,11 +178,9 @@ var dbg;
 		self.name = name;
 	};
 
-	var TrashEjectorModel = function(name, inventory) {
+	var TrashEjectorModel = function(inventory) {
 		var self = this;
 		self.tracker = ko.observable();
-
-		self.name = name;
 		self.contents = ko.observable();
 
 		self.accept = function(inventoryItem) {
@@ -233,7 +233,7 @@ var dbg;
 		self.createDevice = function(name, type, args) {
 			var constructDevice = function(name, type, args) {
 				switch (type) {
-					case "TrashEjector": 	return new TrashEjectorModel(name, self.getDevice(args.inventory));
+					case "TrashEjector": 	return new TrashEjectorModel(self.getDevice(args.inventory));
 					case "RockCollector":	return new RockCollectorModel(self.getDevice(args.inventory));
 					case "Inventory":		return new InventoryModel(args.size);
 				}
