@@ -22,15 +22,15 @@
 					<div class="resource none"></div>
 				<!-- /ko -->
 			</div>
-			<div data-bind="if: activeItem">
+			<div>
 				<strong>Selected:</strong> 
-				<span data-bind="text: activeItem().resource().type"></span>
-			</div>
-			<ol data-bind="foreach: items">
-				<!-- ko if: resource -->
-					<li data-bind="text: resource().type"></li>
+				<!-- ko if: activeItem -->
+					<span data-bind="text: activeItem().resource().type"></span>
 				<!-- /ko -->
-			</ol>
+				<!-- ko ifnot: activeItem -->
+					None
+				<!-- /ko -->
+			</div>
 		</script>
 
 		<script type="text/html" id="DeviceTemplateRockCollector">
@@ -109,9 +109,16 @@
 				<h2>Devices</h2>
 				<ul data-bind="foreach: all">
 					<li>
-						<strong data-bind="text: name"></strong> 
-						<span data-bind="text: type"></span>
-						<div data-bind="template: {name: 'DeviceTemplate' + type, data: $data}"></div>
+						<h3 data-bind="click: toggleVisibility">
+							<strong data-bind="text: name"></strong> 
+							<span data-bind="text: type"></span>
+						</h3>
+						<div class="controls" data-bind="
+							template: {
+								if: visible, 
+								name: 'DeviceTemplate' + type, 
+								data: $data}">
+						</div>
 					</li>
 				</ul>
 			</div>

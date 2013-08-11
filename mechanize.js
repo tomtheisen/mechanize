@@ -241,6 +241,10 @@ var dbg;
 			var device = constructDevice(name, type, args);
 			device.name = name;
 			device.type = type;
+
+			device.visible = ko.observable(false);
+			device.toggleVisibility = function() { device.visible(!device.visible()); };
+
 			devices[prefix + name] = device;
 			self.invalidateObservable();
 			return device;

@@ -26,12 +26,13 @@ body {
 	margin: 0;
 }
 
-h1, h2, h3, h4, h5, h6 {
-	margin: 1rem 0;
+h1, h2, h3, h4 {
+	margin: 0 0 1rem 0;
 }
 
-#loadingMessage {
-	padding: 3rem;
+ul {
+	padding: 0;
+	list-style-type: none;
 }
 
 button {
@@ -44,6 +45,10 @@ button {
 	line-height: 32px;
 	font-family: 'Aldrich', sans-serif;
 	font-size: 1rem;
+}
+
+#loadingMessage {
+	padding: 3rem;
 }
 
 #gameSurface {
@@ -103,6 +108,7 @@ button {
 	background-color: #0D1216;
 	border: solid @accent 8px;
 	.border-radius(8px);
+	margin: 8px 0;
 }
 
 .wrap-every(@n) {
@@ -192,4 +198,26 @@ button {
 .inventory {
 	.resource { cursor: pointer; }
 	.resource.none { cursor: default; }
+}
+
+#devices {
+	& > ul {
+		& > li {
+			margin-bottom: 1rem;
+			.border-radius(8px);
+			background: @background;
+			padding: 8px;
+
+			& > h3 {
+				cursor: pointer;
+				margin: 0;
+				font-size: 1rem;
+				font-weight: normal;
+			}
+
+			& > .controls > :first-child {
+				margin-top: 8px;
+			}
+		}
+	}
 }
