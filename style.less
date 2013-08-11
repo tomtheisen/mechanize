@@ -46,6 +46,7 @@ button {
 	line-height: 32px;
 	font-family: 'Aldrich', sans-serif;
 	font-size: 1rem;
+	cursor: pointer;
 }
 
 #loadingMessage {
@@ -69,6 +70,18 @@ button {
 	right: 0;
 	bottom: 0;
 	
+	.notification {
+		margin: 16px;
+		.border-radius(16px);
+		.box-sizing(border-box);
+		padding: 8px;
+		background-color: @panel;
+		max-width: 30rem;
+		max-height: 30rem;
+		white-space: nowrap;
+		overflow: hidden;
+		cursor: pointer;
+	}
 }
 
 .progress {
@@ -126,14 +139,10 @@ button {
 	.box-sizing(border-box);
 	position: relative;
 
-	background-image: url(img/resource-tiles.png);
-	
 	.wrap-every(8);
 	
-	&.none {
-		background-color: black;
-		background-image: none;
-	}
+	background-color: red;  /* for debugging, should never see */
+	&.none { background-color: black; }
 
 	.collect-delay(@delay) {
 		&:hover {
@@ -142,15 +151,14 @@ button {
 		}
 	}
 
-	&.rock {
-		background-position-x: 0px;
-		.collect-delay(2s);
+	.resource(@tile-index; @collection-delay) {
+		background-image: url(img/resource-tiles.png);
+		background-position-x: (-32px * @tile-index);
+		.collect-delay(@collection-delay);
 	}
 
-	&.iron {
-		background-position-x: -32px;
-		.collect-delay(5s);
-	}
+	&.rock { .resource(0; 2s); }
+	&.iron { .resource(1; 5s); }
 
 	.collect-progress {
 		width: 0%;
@@ -214,9 +222,15 @@ button {
 				margin: 0;
 				font-size: 1rem;
 				font-weight: normal;
+				.border-radius(8px);
+
+				.transition(background-color 500ms ease-out);
 
 				&.hidden::before {content: "\25bc"; }
 				&.shown::before {content: "\25b6"; } 
+			}
+			&.error > h3 {
+				background-color: (@panel + #400);
 			}
 
 			& > .controls {

@@ -18,6 +18,18 @@ var mechanize; // global
 var dbg;
 
 (function() {
+	var ShowNotification = function(message) {
+		var $notification = $("<div />").addClass("notification").text(message)
+			.appendTo("#notifications");
+
+		var args = {"max-height": "0px", "max-width": "0px", opacity: 0};
+		window.setTimeout(function() {
+			$notification.animate(args, 4000, "ease", function() {
+				$notification.remove();
+			});
+		}, 10000);
+	};
+
 	var TimeTracker = function(totalms, updatems, complete, repeat) {
 		var self = this;
 
@@ -96,8 +108,9 @@ var dbg;
 		};
 	};
 
-	var InventoryModel = function(size) {
+	var InventoryModel = function(size, outputs) {
 		var self = this;
+		self.outputs = ko.observableArray(outputs || []);
 
 		self.activeItem = ko.observable();
 		self.items = ko.observableArray(makeArray(size, function() {
@@ -140,7 +153,12 @@ var dbg;
 			var resource = active.resource();
 			active.resource(null);
 			return resource;
-		}
+		};
+
+		self.sendActiveTo = function(receiverName) {
+			var success = self.send(receiverName, self.activeItem().resource());
+			if (success) self.popActive();
+		};
 	};
 
 	var WastesModel = function(inventory) {
@@ -184,21 +202,24 @@ var dbg;
 		self.contents = ko.observable();
 
 		self.accept = function(inventoryItem) {
-			var resource = inventory.popActive();
-			self.contents(resource);
+			if (self.tracker()) return false;
+			
+			self.contents(inventoryItem);
 
 			self.tracker(new TimeTracker(20000, 200, function() {
 				self.contents(null);
 				self.tracker(null);
 			}));
+
+			return true;
 		};
 	};
 
-	var RockCollectorModel = function(inventory) {
+	var RockCollectorModel = function(receiverName) {
 		var self = this;
 		
 		self.tracker = new TimeTracker(10000, 200, function(cancelToken) {
-			var success = inventory.collect(new ResourceModel("rock"));
+			var success = self.send(receiverName, new ResourceModel("rock"));
 			if (!success) cancelToken.cancel = true;
 		}, true);
 
@@ -234,8 +255,8 @@ var dbg;
 			var constructDevice = function(name, type, args) {
 				switch (type) {
 					case "TrashEjector": 	return new TrashEjectorModel(self.getDevice(args.inventory));
-					case "RockCollector":	return new RockCollectorModel(self.getDevice(args.inventory));
-					case "Inventory":		return new InventoryModel(args.size);
+					case "RockCollector":	return new RockCollectorModel(args.inventory);
+					case "Inventory":		return new InventoryModel(args.size, args.outputs);
 				}
 			};
 			var device = constructDevice(name, type, args);
@@ -244,6 +265,22 @@ var dbg;
 
 			device.visible = ko.observable(false);
 			device.toggleVisibility = function() { device.visible(!device.visible()); };
+
+			device.send = function(receiverName, item) {
+				var receiver = self.getDevice(receiverName);
+				if (!receiver) return false;
+				
+				var success = receiver.accept && receiver.accept(item);
+				if (!success) {
+					var $receiver = $("[data-device='" + receiverName +"']");
+					$receiver.addClass("error");
+					ShowNotification("Failed to send item to " + receiverName);
+
+					window.setTimeout(function() {$receiver.removeClass("error")}, 2000);
+				}
+
+				return success;
+			};
 
 			devices[prefix + name] = device;
 			self.invalidateObservable();
@@ -262,8 +299,8 @@ var dbg;
 		self.player = new PlayerModel("Bob");
 		self.devices = new DeviceCollectionModel;
 
-		var inventory = self.devices.createDevice("inventory", "Inventory", {size: 16});
-		self.devices.createDevice("Trash Ejector", "TrashEjector", {inventory: "inventory"});
+		var inventory = self.devices.createDevice("inventory", "Inventory", {size: 16, outputs: ["ejector"]});
+		self.devices.createDevice("ejector", "TrashEjector", {inventory: "inventory"});
 		self.devices.createDevice("collector", "RockCollector", {inventory: "inventory"});
 
 		self.wastes = new WastesModel(inventory);
@@ -333,6 +370,14 @@ var dbg;
 
 		$("body").on("click", "#saveButton", saveModel);
 		$("body").on("click", "#loadButton", loadModel);
+		$("#notifications").on("click", ".notification", function() {
+			$(this).remove();
+		});
+
+		var i = 1;
+		$("#AddNotificationButton").click(function() {
+			ShowNotification("Something happened " + ++i);
+		});
 
 		$("#loadingMessage").hide();
 		$("#gameSurface").css("visibility", "");

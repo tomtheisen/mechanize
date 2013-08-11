@@ -25,7 +25,14 @@
 			<div>
 				<strong>Selected:</strong> 
 				<!-- ko if: activeItem -->
-					<span data-bind="text: activeItem().resource().type"></span>
+					<div>
+						Send <span data-bind="text: activeItem().resource().type"></span> to:
+					</div>
+					<div data-bind="foreach: outputs">
+						<button data-bind="
+							text: $data, 
+							click: $parent.sendActiveTo"></li>
+					</div>					
 				<!-- /ko -->
 				<!-- ko ifnot: activeItem -->
 					None
@@ -34,13 +41,13 @@
 		</script>
 
 		<script type="text/html" id="DeviceTemplateRockCollector">
-			<button data-bind="click: start">start</button>
-			<button data-bind="click: stop">stop</button>
 			<div class="progress" data-bind="if: tracker">
 				<div class="value" data-bind="style: { marginRight: tracker.progress.marginRight }">
 					Collecting ...
 				</div>
 			</div>
+			<button data-bind="click: start">start</button>
+			<button data-bind="click: stop">stop</button>
 		</script>
 
 		<script type="text/html" id="DeviceTemplateTrashEjector">
@@ -50,8 +57,6 @@
 				</div>
 			</div>
 			<div class="resource-container">
-				<h3 data-bind="text: name">Trash Ejector</h3>
-				
 				<!-- ko if: contents -->
 				<div class="resource" data-bind="
 					css: contents().type,
@@ -59,7 +64,7 @@
 				</div>
 				<!-- /ko -->
 				<!-- ko ifnot: contents -->
-				<div class="resource none" data-bind="click: accept"></div>
+				<div class="resource none"></div>
 				<!-- /ko -->
 			</div>
 		</script>
@@ -75,7 +80,9 @@
 			</div>
 
 			<div id="notifications">
-				<div class="notification"></div>
+				<button id="AddNotificationButton">add message</button>
+				<div class="notification">ya dun goofed</div>
+				<div class="notification">you won't like me whan im ungry</div>
 			</div>
 
 			<div id="playerData" class="panel" data-bind="with: player">
@@ -108,7 +115,7 @@
 			<div id="devices" class="panel" data-bind="with: devices">
 				<h2>Devices</h2>
 				<ul data-bind="foreach: all">
-					<li data-bind="attr: {'data-device': name}">
+					<li data-bind="attr: {'data-device': name}, css: type">
 						<h3 data-bind="
 							click: toggleVisibility, 
 							css: (visible() ? 'hidden' : 'shown') ">
@@ -124,7 +131,6 @@
 					</li>
 				</ul>
 			</div>
-
 		</div>
 
 		<script src="mechanize.js"></script>
