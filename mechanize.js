@@ -1,3 +1,10 @@
+// dependencies
+//	knockout
+//	sugarjs
+//	zepto
+
+"use strict";
+
 ko.bindingHandlers.title = {
 	init: function(element, valueAccessor) {
 		element.title = valueAccessor();
@@ -7,6 +14,8 @@ ko.bindingHandlers.title = {
 	}
 };
 
+var mechanize; // global
+var dbg;
 
 (function() {
 	var TimeTracker = function(totalms, updatems, complete, repeat) {
@@ -15,6 +24,11 @@ ko.bindingHandlers.title = {
 		updatems = updatems || 1000;
 		var elapsedms = ko.observable(0);
 		var intervalId = null;
+
+		self.elapsedms = ko.computed(function(){
+			return elapsedms();
+		});
+		self.totalms = totalms;
 
 		self.progress = ko.computed(function() {
 			return elapsedms() / totalms;
@@ -54,6 +68,10 @@ ko.bindingHandlers.title = {
 			}, updatems);
 		};
 
+		self.toJSON = function() {
+			return Object.reject(ko.toJS(self), 'progress');
+		};
+
 		self.start();
 	};
 
@@ -72,6 +90,10 @@ ko.bindingHandlers.title = {
 		var self = this;
 		self.resource = ko.observable(resource);
 		self.active = ko.observable(false);
+
+		self.toJSON = function() {
+			return Object.reject(ko.toJS(self), 'active');
+		};
 	};
 
 	var InventoryModel = function(size) {
@@ -147,9 +169,11 @@ ko.bindingHandlers.title = {
 		};
 	};
 
-	var PlayerModel = function() {
+	// todo scrap?
+	var PlayerModel = function(name) {
 		var self = this;
-		self.inventory = new InventoryModel(16);
+
+		self.name = name;
 	};
 
 	var TrashEjectorModel = function(name, inventory) {
@@ -182,19 +206,63 @@ ko.bindingHandlers.title = {
 		self.stop = self.tracker.stop;
 	};
 
+	var DeviceCollectionModel = function() {
+		var self = this;
+		var prefix = "mechanize_";
+		var devices = [];
+
+		self.getDevices = function() {
+			return Object.keys(devices).map(function (key) {
+				return devices[key];
+			});
+		};
+
+		var invalidationToken = ko.observable(0);
+		self.all = ko.computed(function() {
+			invalidationToken();
+			return self.getDevices();
+		});
+		self.invalidateObservable = function() {
+			invalidationToken.notifySubscribers(null);
+		};
+
+		self.getDevice = function(name) {
+			return devices[prefix + name];
+		};
+
+		self.createDevice = function(name, type, args) {
+			var constructDevice = function(name, type, args) {
+				switch (type) {
+					case "TrashEjector": 	return new TrashEjectorModel(name, self.getDevice(args.inventory));
+					case "RockCollector":	return new RockCollectorModel(self.getDevice(args.inventory));
+					case "Inventory":		return new InventoryModel(args.size);
+				}
+			};
+			var device = constructDevice(name, type, args);
+			device.name = name;
+			device.type = type;
+			devices[prefix + name] = device;
+			self.invalidateObservable();
+			return device;
+		};
+
+		self.removeDevice = function(name) {
+			delete devices[prefix + name];
+			self.invalidateObservable();
+		};
+	}
+
 	var MechanizeViewModel = function() {
 		var self = this;
 
-		self.player = new PlayerModel;
-		self.wastes = new WastesModel(self.player.inventory);
+		self.player = new PlayerModel("Bob");
+		self.devices = new DeviceCollectionModel;
 
-		self.consumers = ko.observableArray([
-			new TrashEjectorModel("Trash Ejector", self.player.inventory)
-		]);
+		var inventory = self.devices.createDevice("inventory", "Inventory", {size: 16});
+		self.devices.createDevice("Trash Ejector", "TrashEjector", {inventory: "inventory"});
+		self.devices.createDevice("collector", "RockCollector", {inventory: "inventory"});
 
-		self.producers = ko.observableArray([
-			new RockCollectorModel(self.player.inventory)
-		]);
+		self.wastes = new WastesModel(inventory);
 	};
 
 	window.addEventListener("load", function() {
@@ -202,14 +270,17 @@ ko.bindingHandlers.title = {
 		ko.applyBindings(mechanize);
 
 		var saveFilter = function(key, value) {
-			//if (["wastes", "active"].find(key)) return undefined;
-			if (value === null) return undefined;
+			if (value == null) return undefined;
 			return value;
 		};
 
 		var saveModel = function() {
 			var serialized = ko.toJSON(mechanize, saveFilter);
 			window.localStorage.setItem("mechanize", serialized);
+		};
+
+		dbg = function() {
+			console.log(ko.toJSON(mechanize, saveFilter, 2));
 		};
 
 		var loadModel = function() {
@@ -220,33 +291,31 @@ ko.bindingHandlers.title = {
 				for (var key in saved) {
 					if (!saved.hasOwnProperty(key)) continue;
 					var newPath = (path || "$") + "." + key;
-					var val = saved[key];
+					var savedVal = saved[key];
 					
-					if (typeof(val) == "number" || typeof(val) == "string") {
+					if (["number", "string"].find(typeof(savedVal))) {
 						if (ko.isObservable(model[key])) {
-							model[key](val);
+							model[key](savedVal);
 						}
-					} else if (val instanceof Array) {
-						if (ko.isObservable(model[key]) && (model[key]() instanceof Array)) {
-							if (newPath == "$.player.inventory.items") {
-								model[key].removeAll();
+					} else if (newPath == "$.player.inventory.items") {
+						model[key].removeAll();
 
-								val.forEach(function(item) {
-									var resource = item.resource && new ResourceModel(item.resource.type);
-									var newItem = new InventoryItemModel(resource);
-									newItem.active(item.active);
-									model[key].push(newItem);
-								});
-							}
+						savedVal.forEach(function(item) {
+							var resource = item.resource && new ResourceModel(item.resource.type);
+							var newItem = new InventoryItemModel(resource);
+							newItem.active(item.active);
+							model[key].push(newItem);
+						});
+					} else if (newPath == "$.devices") {
+						model[key].removeAll();
 
-							// todo deal with consumers, producers
-						}
+						// todo get args from ?? somewhere
+						//var args
+						//savedVal
+						
+
 					} else {
-						if (ko.isObservable(model[key])) {
-							load(model[key](), val, newPath);
-						} else {
-							load(model[key], val, newPath);
-						}
+						load(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
 					}
 				}
 			}
@@ -265,11 +334,3 @@ ko.bindingHandlers.title = {
 		$("#gameSurface").css("visibility", "");
 	});
 })();
-
-function dbg() {
-	function stripNulls(key, val) {
-		return val === null ? undefined : val;
-	}
-
-	console.log(ko.toJSON(mechanize, stripNulls, 2));
-}

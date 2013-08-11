@@ -8,6 +8,61 @@
 		<script src="zepto.min.js"></script>
 		<script	src="less-1.4.1.min.js"></script>
 		<title>mechanize</title>
+
+		<script type="text/html" id="DeviceTemplateInventory">
+			<div class="inventory resource-container" data-bind="foreach: items">
+				<!-- ko if: resource -->
+					<div class="resource" data-bind="
+						css: resource().type + (active() ? ' active' : ''), 
+						title: resource().type,
+						click: $parent.select ">
+					</div>
+				<!-- /ko -->
+				<!-- ko ifnot: resource -->
+					<div class="resource none"></div>
+				<!-- /ko -->
+			</div>
+			<div data-bind="if: activeItem">
+				<strong>Selected:</strong> 
+				<span data-bind="text: activeItem().resource().type"></span>
+			</div>
+			<ol data-bind="foreach: items">
+				<!-- ko if: resource -->
+					<li data-bind="text: resource().type"></li>
+				<!-- /ko -->
+			</ol>
+		</script>
+
+		<script type="text/html" id="DeviceTemplateRockCollector">
+			<button data-bind="click: start">start</button>
+			<button data-bind="click: stop">stop</button>
+			<div class="progress" data-bind="if: tracker">
+				<div class="value" data-bind="style: { marginRight: tracker.progress.marginRight }">
+					Collecting ...
+				</div>
+			</div>
+		</script>
+
+		<script type="text/html" id="DeviceTemplateTrashEjector">
+			<div class="progress" data-bind="if: tracker">
+				<div class="value" data-bind="style: { marginRight: tracker().progress.marginRight }">
+					Airlock cycling ...
+				</div>
+			</div>
+			<div class="resource-container">
+				<h3 data-bind="text: name">Trash Ejector</h3>
+				
+				<!-- ko if: contents -->
+				<div class="resource" data-bind="
+					css: contents().type,
+					title: contents().type">
+				</div>
+				<!-- /ko -->
+				<!-- ko ifnot: contents -->
+				<div class="resource none" data-bind="click: accept"></div>
+				<!-- /ko -->
+			</div>
+		</script>
 	</head>
 	<body>
 		<div id="loadingMessage">
@@ -17,6 +72,15 @@
 			<div id="game-controls">
 				<button id="saveButton">save</button>
 				<button id="loadButton">load</button>
+			</div>
+
+			<div id="notifications">
+				<div class="notification"></div>
+			</div>
+
+			<div id="playerData" class="panel" data-bind="with: player">
+				<h2>Player</h2>
+				<strong>Name:</strong> <span data-bind="text: name"></span>
 			</div>
 
 			<div id="wastes-panel" class="panel" data-bind="with: wastes">
@@ -41,69 +105,17 @@
 				</div>
 			</div>
 
-			<div id="playerData" class="panel" data-bind="with: player">
-				<h2>Inventory</h2>
-				<div id="inventory" class="resource-container" data-bind="foreach: inventory.items">
-					<!-- ko if: resource -->
-						<div class="resource" data-bind="
-							css: resource().type + (active() ? ' active' : ''), 
-							title: resource().type,
-							click: $parent.inventory.select">
-						</div>
-					<!-- /ko -->
-					<!-- ko ifnot: resource -->
-						<div class="resource none"></div>
-					<!-- /ko -->
-				</div>
-				<div data-bind="if: inventory.activeItem">
-					<strong>Selected:</strong> 
-					<span data-bind="text: inventory.activeItem().resource().type"></span>
-				</div>
-				<ol data-bind="foreach: inventory.items">
-					<!-- ko if: resource -->
-						<li data-bind="text: resource().type"></li>
-					<!-- /ko -->
-				</ol>
+			<div id="devices" class="panel" data-bind="with: devices">
+				<h2>Devices</h2>
+				<ul data-bind="foreach: all">
+					<li>
+						<strong data-bind="text: name"></strong> 
+						<span data-bind="text: type"></span>
+						<div data-bind="template: {name: 'DeviceTemplate' + type, data: $data}"></div>
+					</li>
+				</ul>
 			</div>
 
-			<div class="panel">
-				<h2>Consumers</h2>
-
-				<!-- ko foreach: consumers -->
-				<div class="progress" data-bind="if: tracker">
-					<div class="value" data-bind="style: { marginRight: tracker().progress.marginRight }">
-						Airlock cycling ...
-					</div>
-				</div>
-				<div class="resource-container">
-					<h3 data-bind="text: name">Trash Ejector</h3>
-					
-					<!-- ko if: contents -->
-					<div class="resource" data-bind="
-						css: contents().type,
-						title: contents().type">
-					</div>
-					<!-- /ko -->
-					<!-- ko ifnot: contents -->
-					<div class="resource none" data-bind="click: accept"></div>
-					<!-- /ko -->
-				</div>
-				<!-- /ko -->
-			</div>
-
-			<div class="panel">
-				<h2>Producers</h2>
-
-				<!-- ko foreach: producers -->
-				<button data-bind="click: start">start</button>
-				<button data-bind="click: stop">stop</button>
-				<div class="progress" data-bind="if: tracker">
-					<div class="value" data-bind="style: { marginRight: tracker.progress.marginRight }">
-						Collecting ...
-					</div>
-				</div>
-				<!-- /ko -->
-			</div>
 		</div>
 
 		<script src="mechanize.js"></script>
