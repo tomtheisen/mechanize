@@ -17,6 +17,7 @@
 html {
 	height: 100%;
 	margin: 0;
+	font-size: 10pt;
 }
 
 body {
@@ -39,14 +40,15 @@ ul {
 button {
 	background-color: @accent;
 	color: @highlight;
-	border-width: 0px;
-	.border-radius(16px);
-	height: 32px;
-	padding: 0 32px;
-	line-height: 32px;
+	border-width: 0; 
+	.border-radius(1rem);
+	height: 1.6rem;
+	padding: 0 1.2rem;
+	line-height: 1.6rem;
 	font-family: 'Aldrich', sans-serif;
 	font-size: 1rem;
 	cursor: pointer;
+	margin: 0.3rem;
 }
 
 #loadingMessage {
@@ -59,43 +61,47 @@ button {
 }
 
 #game-controls {
-	position: absolute;
-	margin: 16px;
-	right: 0;
+	float: right;
+	padding: 1.2rem;
+
+	#notificationsLog {
+		display: none;
+	}
 }
 
 #notifications {
 	position: absolute;
-	margin: 16px;
+	margin: 1.2rem;
 	right: 0;
 	bottom: 0;
 	
 	.notification {
-		margin: 16px;
-		.border-radius(16px);
+		margin: 1.2rem;
+		.border-radius(1.2rem);
 		.box-sizing(border-box);
-		padding: 8px;
+		padding: 0.6rem;
 		background-color: @panel;
 		max-width: 30rem;
 		max-height: 30rem;
 		white-space: nowrap;
 		overflow: hidden;
 		cursor: pointer;
+		text-align: right;
 	}
 }
 
 .progress {
 	box-sizing: border-box;
-	height: 32px;
-	.border-radius(0 16px 16px 0);
-	padding: 8px 8px 8px 0;
+	height: 2.4rem;
+	.border-radius(0 1.2rem 1.2rem 0);
+	padding: 0.6rem 0.6rem 0.6rem 0;
 	overflow: hidden;
 	margin: 1rem 0;
 	background-color: @accent;
 
 	.value {
-		.border-radius(0 8px 8px 0);
-		height: 16px;
+		.border-radius(0 0.6rem 0.6rem 0);
+		height: 1.2rem;
 		text-indent: 1em;
 		font-size: 0.8rem;
 		background-color: @highlight;
@@ -107,22 +113,22 @@ button {
 }
 
 .panel {
-	.border-radius(16px);
+	.border-radius(1.2rem);
 	background-color: @panel;
-	padding: 16px;
-	margin: 16px;
+	padding: 1.2rem;
+	margin: 1.2rem;
 	display: inline-block;
 	vertical-align: top;
 }
 
 .resource-container {
 	overflow: auto;
-	margin-top: 16px;
-	padding: 8px;
+	margin-top: 1.2rem;
+	padding: 0.6rem;
 	background-color: @space;
-	border: solid @accent 8px;
-	.border-radius(8px);
-	margin: 8px 0;
+	border: solid @accent 0.6rem;
+	.border-radius(0.6rem);
+	margin: 0.6rem 0;
 }
 
 .wrap-every(@n) {
@@ -213,31 +219,38 @@ button {
 	& > ul {
 		& > li {
 			margin-bottom: 1rem;
-			.border-radius(8px);
+			.border-radius(0.6rem);
 			/*background: @space;*/
-			margin: 8px 0;
+			margin: 0.6rem 0;
 
 			& > h3 {
 				cursor: pointer;
 				margin: 0;
 				font-size: 1rem;
+				padding: 0.3rem;
 				font-weight: normal;
-				.border-radius(8px);
-
+				.border-radius(0.6rem);
 				.transition(background-color 500ms ease-out);
 
 				&.hidden::before {content: "\25bc"; }
 				&.shown::before {content: "\25b6"; } 
 			}
+			
+			&.bumped > h3 {
+				background-color: (@panel + #222);
+				.transition-duration(0s);
+			}
+			
 			&.error > h3 {
 				background-color: (@panel + #400);
+				.transition-duration(0s);
 			}
 
 			& > .controls {
-				margin-left: 18px;
+				margin-left: 1.2rem;
 
 				& > :first-child {
-					margin-top: 8px;
+					margin-top: 0.6rem;
 				}
 			}
 		}

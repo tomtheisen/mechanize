@@ -18,17 +18,32 @@ var mechanize; // global
 var dbg;
 
 (function() {
-	var ShowNotification = function(message) {
-		var $notification = $("<div />").addClass("notification").text(message)
-			.appendTo("#notifications");
+	var Notifications = (function() {
+		var notifications = ko.observableArray([]);
 
-		var args = {"max-height": "0px", "max-width": "0px", opacity: 0};
-		window.setTimeout(function() {
-			$notification.animate(args, 4000, "ease", function() {
-				$notification.remove();
-			});
-		}, 10000);
-	};
+		var show = function(message) {
+			notifications.push(message);
+			if(ko.utils.unwrapObservable(notifications).length > 20) notifications.shift();
+
+			var $notification = $("<div />").addClass("notification").text(message)
+				.appendTo("#notifications");
+
+			var args = {"max-height": "0px", "max-width": "0px", opacity: 0};
+			window.setTimeout(function() {
+				$notification.animate(args, 4000, "ease", function() {
+					$notification.remove();
+				});
+			}, 10000);
+		};
+
+		return {show: show, log: notifications};
+	})();
+
+	function makeArray(length, element) {
+		var elementfn = element;
+		if (typeof(element) != "function") elementfn = function() {return element;};
+		return Array.apply(null, Array(length)).map(elementfn);
+	}
 
 	var TimeTracker = function(totalms, updatems, complete, repeat) {
 		var self = this;
@@ -75,6 +90,7 @@ var dbg;
 
 					var cancelToken = {cancel: false};
 					if(complete) complete(cancelToken);
+
 					if(repeat && !cancelToken.cancel) self.start();
 				}
 			}, updatems);
@@ -86,12 +102,6 @@ var dbg;
 
 		self.start();
 	};
-
-	function makeArray(length, element) {
-		var elementfn = element;
-		if (typeof(element) != "function") elementfn = function() {return element;};
-		return Array.apply(null, Array(length)).map(elementfn);
-	}
 
 	var ResourceModel = function(type) {
 		var self = this;
@@ -183,7 +193,7 @@ var dbg;
 			
 		self.collect = function(wasteCell) {
 			if (!wasteCell.resource()) return;
-			var success = inventory.collect(wasteCell.resource());
+			var success = inventory.accept(wasteCell.resource());
 			if (success) wasteCell.resource(null);
 			return success;
 		};
@@ -196,7 +206,7 @@ var dbg;
 		self.name = name;
 	};
 
-	var TrashEjectorModel = function(inventory) {
+	var TrashEjectorModel = function() {
 		var self = this;
 		self.tracker = ko.observable();
 		self.contents = ko.observable();
@@ -254,8 +264,8 @@ var dbg;
 		self.createDevice = function(name, type, args) {
 			var constructDevice = function(name, type, args) {
 				switch (type) {
-					case "TrashEjector": 	return new TrashEjectorModel(self.getDevice(args.inventory));
-					case "RockCollector":	return new RockCollectorModel(args.inventory);
+					case "TrashEjector": 	return new TrashEjectorModel;
+					case "RockCollector":	return new RockCollectorModel(args.output);
 					case "Inventory":		return new InventoryModel(args.size, args.outputs);
 				}
 			};
@@ -271,10 +281,14 @@ var dbg;
 				if (!receiver) return false;
 				
 				var success = receiver.accept && receiver.accept(item);
-				if (!success) {
-					var $receiver = $("[data-device='" + receiverName +"']");
+				var $receiver = $("[data-device='" + receiverName +"']");
+				if (success) {
+					$receiver.addClass("bumped");
+
+					window.setTimeout(function() {$receiver.removeClass("bumped")}, 1000);
+				} else {
 					$receiver.addClass("error");
-					ShowNotification("Failed to send item to " + receiverName);
+					Notifications.show("Failed to send item to " + receiverName);
 
 					window.setTimeout(function() {$receiver.removeClass("error")}, 2000);
 				}
@@ -300,10 +314,12 @@ var dbg;
 		self.devices = new DeviceCollectionModel;
 
 		var inventory = self.devices.createDevice("inventory", "Inventory", {size: 16, outputs: ["ejector"]});
-		self.devices.createDevice("ejector", "TrashEjector", {inventory: "inventory"});
-		self.devices.createDevice("collector", "RockCollector", {inventory: "inventory"});
+		self.devices.createDevice("ejector", "TrashEjector");
+		self.devices.createDevice("collector", "RockCollector", {output: "inventory"});
 
 		self.wastes = new WastesModel(inventory);
+
+		self.notifications = Notifications;
 	};
 
 	window.addEventListener("load", function() {
@@ -316,8 +332,13 @@ var dbg;
 		};
 
 		var saveModel = function() {
-			var serialized = ko.toJSON(mechanize, saveFilter);
-			window.localStorage.setItem("mechanize", serialized);
+			try {
+				var serialized = ko.toJSON(mechanize, saveFilter);
+				window.localStorage.setItem("mechanize", serialized);
+				Notifications.show("Saved successfully");
+			} catch (e) {
+				Notifications.show("Error occurred during save");
+			}
 		};
 
 		dbg = function() {
@@ -326,7 +347,10 @@ var dbg;
 
 		var loadModel = function() {
 			var serialized = window.localStorage.getItem("mechanize");
-			if (!serialized) return;
+			if (!serialized) {
+				Notifications.show("No save found");
+				return;
+			}
 
 			var load = function(model, saved, path) {
 				for (var key in saved) {
@@ -361,22 +385,23 @@ var dbg;
 				}
 			}
 
-			var model = new MechanizeViewModel;
-			var saved = JSON.parse(serialized);
-			load(model, saved);
+			try {
+				var model = new MechanizeViewModel;
+				var saved = JSON.parse(serialized);
+				load(model, saved);
 
-			mechanize(model);
+				mechanize(model);
+
+				Notifications.show("Loaded successfully");
+			} catch (e) {
+				Notifications.show("Error occurred during load");
+			}
 		};
 
 		$("body").on("click", "#saveButton", saveModel);
 		$("body").on("click", "#loadButton", loadModel);
-		$("#notifications").on("click", ".notification", function() {
-			$(this).remove();
-		});
-
-		var i = 1;
-		$("#AddNotificationButton").click(function() {
-			ShowNotification("Something happened " + ++i);
+		$("#notificationsButton").click(function() {
+			$("#notificationsLog").toggle();
 		});
 
 		$("#loadingMessage").hide();

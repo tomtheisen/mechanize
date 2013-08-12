@@ -75,14 +75,14 @@
 		</div>
 		<div id="gameSurface" style="visibility: hidden;">
 			<div id="game-controls">
-				<button id="saveButton">save</button>
-				<button id="loadButton">load</button>
+				<div><button id="saveButton">save</button><button id="loadButton">load</button></div>
+				<div><button id="notificationsButton">notifications</button></div>
+				<ul id="notificationsLog" data-bind="foreach: notifications.log">
+					<li data-bind="text: $data"></li>
+				</ul>
 			</div>
 
 			<div id="notifications">
-				<button id="AddNotificationButton">add message</button>
-				<div class="notification">ya dun goofed</div>
-				<div class="notification">you won't like me whan im ungry</div>
 			</div>
 
 			<div id="playerData" class="panel" data-bind="with: player">
