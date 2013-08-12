@@ -14,10 +14,23 @@ ko.bindingHandlers.title = {
 	}
 };
 
-var mechanize; // global
+var mechanize; // globals
 var dbg;
 
 (function() {
+	var killed = false;		// set when fatal error occurs and all execution should stop
+	var kill = function(message) {
+		message = message || "Something bad happened. :(";
+		
+		//Notifications.show(message ); // not going to see it anyway
+
+		$("#gameSurface").hide();
+		$("#systemError > .message").text(message);
+		$("#systemError").show();
+
+		killed = true;
+	}
+
 	var Notifications = (function() {
 		var notifications = ko.observableArray([]);
 
@@ -36,7 +49,7 @@ var dbg;
 			}, 10000);
 		};
 
-		return {show: show, log: notifications};
+		return {show: show, log: notifications, toJSON: function() {}};
 	})();
 
 	function makeArray(length, element) {
@@ -81,6 +94,7 @@ var dbg;
 			completed(false);
 
 			intervalId = setInterval(function() {
+				if (killed) return;
 				elapsedms(elapsedms() + updatems);
 
 				if(elapsedms() >= totalms) {
@@ -305,6 +319,11 @@ var dbg;
 			delete devices[prefix + name];
 			self.invalidateObservable();
 		};
+
+		self.removeAll = function() {
+			devices.length = 0;
+			self.invalidateObservable();
+		};
 	}
 
 	var MechanizeViewModel = function() {
@@ -323,9 +342,6 @@ var dbg;
 	};
 
 	window.addEventListener("load", function() {
-		mechanize = ko.observable(new MechanizeViewModel);
-		ko.applyBindings(mechanize);
-
 		var saveFilter = function(key, value) {
 			if (value == null) return undefined;
 			return value;
@@ -371,6 +387,9 @@ var dbg;
 							newItem.active(item.active);
 							model[key].push(newItem);
 						});
+					} else if (newPath == "$.wastes.junk") {
+						// todo
+						
 					} else if (newPath == "$.devices") {
 						model[key].removeAll();
 
@@ -385,7 +404,8 @@ var dbg;
 				}
 			}
 
-			try {
+			// try 
+			{
 				var model = new MechanizeViewModel;
 				var saved = JSON.parse(serialized);
 				load(model, saved);
@@ -393,15 +413,22 @@ var dbg;
 				mechanize(model);
 
 				Notifications.show("Loaded successfully");
-			} catch (e) {
-				Notifications.show("Error occurred during load");
+			// } catch (e) {
+			// 	kill("Error occurred during load");
 			}
 		};
+
+		mechanize = ko.observable(new MechanizeViewModel);
+		if(window.localStorage.getItem('mechanize')) loadModel();
+		ko.applyBindings(mechanize);
 
 		$("body").on("click", "#saveButton", saveModel);
 		$("body").on("click", "#loadButton", loadModel);
 		$("#notificationsButton").click(function() {
 			$("#notificationsLog").toggle();
+		});
+		$("#notifications").on("click", ".notification", function() {
+			$(this).remove();
 		});
 
 		$("#loadingMessage").hide();

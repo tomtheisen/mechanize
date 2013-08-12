@@ -51,32 +51,34 @@
 		</script>
 
 		<script type="text/html" id="DeviceTemplateTrashEjector">
-			<div class="progress" data-bind="if: tracker">
-				<div class="value" data-bind="style: { marginRight: tracker().progress.marginRight }">
-					Airlock cycling ...
+			<strong>Contents:</strong>
+			<!-- ko if: contents -->
+				<span data-bind="text: contents().type"></span>
+				<div class="progress" data-bind="if: tracker">
+					<div class="value" data-bind="style: { marginRight: tracker().progress.marginRight }">
+						Airlock cycling ...
+					</div>
 				</div>
-			</div>
-			<div class="resource-container">
-				<!-- ko if: contents -->
-				<div class="resource" data-bind="
-					css: contents().type,
-					title: contents().type">
-				</div>
-				<!-- /ko -->
-				<!-- ko ifnot: contents -->
-				<div class="resource none"></div>
-				<!-- /ko -->
-			</div>
+			<!-- /ko -->
+			<!-- ko ifnot: contents -->
+				<span>Empty</span>
+			<!-- /ko -->
 		</script>
 	</head>
 	<body>
 		<div id="loadingMessage">
 			loading ...
 		</div>
+		<div id="systemError">
+			<span class="message">Error during load.</span>
+			<br><a href="javascript:location.reload();">Reload</a>
+			<br><a href="javascript:window.localStorage.removeItem('mechanize');location.reload();">Reset data</a>
+		</div>
 		<div id="gameSurface" style="visibility: hidden;">
 			<div id="game-controls">
-				<div><button id="saveButton">save</button><button id="loadButton">load</button></div>
-				<div><button id="notificationsButton">notifications</button></div>
+				<button id="saveButton">save</button>
+				<button id="loadButton">load</button>
+				<button id="notificationsButton">notifications</button>
 				<ul id="notificationsLog" data-bind="foreach: notifications.log">
 					<li data-bind="text: $data"></li>
 				</ul>
