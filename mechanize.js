@@ -389,7 +389,7 @@ var dbg;
 						});
 					} else if (newPath == "$.wastes.junk") {
 						// todo
-						
+
 					} else if (newPath == "$.devices") {
 						model[key].removeAll();
 
@@ -410,6 +410,8 @@ var dbg;
 				var saved = JSON.parse(serialized);
 				load(model, saved);
 
+				// todo: mechanize() still has ties to dom through TimeTrackers.
+				// sever them
 				mechanize(model);
 
 				Notifications.show("Loaded successfully");
