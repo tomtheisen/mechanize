@@ -64,6 +64,27 @@
 				<span>Empty</span>
 			<!-- /ko -->
 		</script>
+
+		<script type="text/html" id="DeviceTemplateWastes">
+			<div class="progress">
+				<div class="value" data-bind="style: { marginRight: regenerator().progress.marginRight }">
+					Sector Warp ...
+					<div class="go">go</div>
+				</div>
+			</div>
+
+			<div id="wastes" class="resource-container" data-bind="foreach: junk">
+				<!-- ko if: resource -->
+					<div class="resource" data-bind="css: resource().type, title: resource().type">
+						<div class="collect-progress"></div>
+						<div class="collector" data-bind="click: $parent.collect"></div>
+					</div>
+				<!-- /ko -->
+				<!-- ko ifnot: resource -->
+					<div class="resource none"></div>
+				<!-- /ko -->
+			</div>
+		</script>
 	</head>
 	<body>
 		<div id="loadingMessage">
@@ -77,7 +98,7 @@
 		<div id="gameSurface" style="visibility: hidden;">
 			<div id="game-controls">
 				<button id="saveButton">save</button>
-				<button id="loadButton">load</button>
+				<button id="resetButton">reset</button>
 				<button id="notificationsButton">notifications</button>
 				<ul id="notificationsLog" data-bind="foreach: notifications.log">
 					<li data-bind="text: $data"></li>
@@ -90,28 +111,6 @@
 			<div id="playerData" class="panel" data-bind="with: player">
 				<h2>Player</h2>
 				<strong>Name:</strong> <span data-bind="text: name"></span>
-			</div>
-
-			<div id="wastes-panel" class="panel" data-bind="with: wastes">
-				<h2>Resource Mining</h2>
-				<div class="progress">
-					<div class="value" data-bind="style: { marginRight: regenerator().progress.marginRight }">
-						Sector Warp ...
-						<div class="go">go</div>
-					</div>
-				</div>
-
-				<div id="wastes" class="resource-container" data-bind="foreach: junk">
-					<!-- ko if: resource -->
-						<div class="resource" data-bind="css: resource().type, title: resource().type">
-							<div class="collect-progress"></div>
-							<div class="collector" data-bind="click: $parent.collect"></div>
-						</div>
-					<!-- /ko -->
-					<!-- ko ifnot: resource -->
-						<div class="resource none"></div>
-					<!-- /ko -->
-				</div>
 			</div>
 
 			<div id="devices" class="panel" data-bind="with: devices">

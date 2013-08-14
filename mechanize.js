@@ -185,7 +185,7 @@ var dbg;
 		};
 	};
 
-	var WastesModel = function(inventory) {
+	var WastesModel = function(inventoryName) {
 		var self = this;
 
 		self.junk = ko.observableArray(makeArray(80, function() { return { resource: ko.observable() }; }));
@@ -207,7 +207,8 @@ var dbg;
 			
 		self.collect = function(wasteCell) {
 			if (!wasteCell.resource()) return;
-			var success = inventory.accept(wasteCell.resource());
+			//var success = inventory.accept(wasteCell.resource());
+			var success = self.send(inventoryName, wasteCell.resource());
 			if (success) wasteCell.resource(null);
 			return success;
 		};
@@ -281,6 +282,7 @@ var dbg;
 					case "TrashEjector": 	return new TrashEjectorModel;
 					case "RockCollector":	return new RockCollectorModel(args.output);
 					case "Inventory":		return new InventoryModel(args.size, args.outputs);
+					case "Wastes":			return new WastesModel(args.output);
 				}
 			};
 			var device = constructDevice(name, type, args);
@@ -332,13 +334,14 @@ var dbg;
 		self.player = new PlayerModel("Bob");
 		self.devices = new DeviceCollectionModel;
 
-		var inventory = self.devices.createDevice("inventory", "Inventory", {size: 16, outputs: ["ejector"]});
-		self.devices.createDevice("ejector", "TrashEjector");
-		self.devices.createDevice("collector", "RockCollector", {output: "inventory"});
+		self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 
-		self.wastes = new WastesModel(inventory);
-
-		self.notifications = Notifications;
+		self.initializeGame = function() {
+			self.devices.createDevice("inventory", "Inventory", {size: 16, outputs: ["ejector"]});
+			self.devices.createDevice("ejector", "TrashEjector");
+			self.devices.createDevice("collector", "RockCollector", {output: "inventory"});
+			self.devices.createDevice("wastes", "Wastes", {output: "inventory"});
+		};
 	};
 
 	window.addEventListener("load", function() {
@@ -357,75 +360,96 @@ var dbg;
 			}
 		};
 
+		var confirmReset = function() {
+			var $controlsContents = $("#game-controls > *").remove();
+
+			var $yes = $("<button />").text("yes");
+			var $no = $("<button />").text("no");
+
+			$("#game-controls").text("Reset?").append($yes).append($no);
+			
+			$no.click(function() {
+				$("#game-controls").empty().append($controlsContents);
+			});
+
+			$yes.click(function() {
+				window.localStorage.removeItem('mechanize');
+				window.location.reload();
+			});
+		}
+
 		dbg = function() {
 			console.log(ko.toJSON(mechanize, saveFilter, 2));
 		};
 
-		var loadModel = function() {
-			var serialized = window.localStorage.getItem("mechanize");
-			if (!serialized) {
-				Notifications.show("No save found");
-				return;
-			}
-
-			var load = function(model, saved, path) {
-				for (var key in saved) {
-					if (!saved.hasOwnProperty(key)) continue;
-					var newPath = (path || "$") + "." + key;
-					var savedVal = saved[key];
-					
-					if (["number", "string"].find(typeof(savedVal))) {
-						if (ko.isObservable(model[key])) {
-							model[key](savedVal);
-						}
-					} else if (newPath == "$.player.inventory.items") {
-						model[key].removeAll();
-
-						savedVal.forEach(function(item) {
-							var resource = item.resource && new ResourceModel(item.resource.type);
-							var newItem = new InventoryItemModel(resource);
-							newItem.active(item.active);
-							model[key].push(newItem);
-						});
-					} else if (newPath == "$.wastes.junk") {
-						// todo
-
-					} else if (newPath == "$.devices") {
-						model[key].removeAll();
-
-						// todo get args from ?? somewhere
-						//var args
-						//savedVal
-						
-
-					} else {
-						load(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
+		var load = function(model, saved, path) {
+			for (var key in saved) {
+				if (!saved.hasOwnProperty(key)) continue;
+				var newPath = (path || "$") + "." + key;
+				var savedVal = saved[key];
+				
+				if (["number", "string"].find(typeof(savedVal))) {
+					if (ko.isObservable(model[key])) {
+						model[key](savedVal);
 					}
+				} else if (newPath == "$.player.inventory.items") {
+					model[key].removeAll();
+
+					savedVal.forEach(function(item) {
+						var resource = item.resource && new ResourceModel(item.resource.type);
+						var newItem = new InventoryItemModel(resource);
+						newItem.active(item.active);
+						model[key].push(newItem);
+					});
+				} else if (newPath == "$.wastes.junk") {
+					// todo
+
+				} else if (newPath == "$.devices") {
+					model[key].removeAll();
+
+					// todo get args from ?? somewhere
+					//var args
+					//savedVal
+					
+
+				} else {
+					load(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
 				}
-			}
-
-			// try 
-			{
-				var model = new MechanizeViewModel;
-				var saved = JSON.parse(serialized);
-				load(model, saved);
-
-				// todo: mechanize() still has ties to dom through TimeTrackers.
-				// sever them
-				mechanize(model);
-
-				Notifications.show("Loaded successfully");
-			// } catch (e) {
-			// 	kill("Error occurred during load");
 			}
 		};
 
 		mechanize = ko.observable(new MechanizeViewModel);
-		if(window.localStorage.getItem('mechanize')) loadModel();
-		ko.applyBindings(mechanize);
+		var serialized = window.localStorage.getItem('mechanize');
+		if(serialized) {
+			try {
+				var model = new MechanizeViewModel;
+				var saved = JSON.parse(serialized);
+				load(model, saved);
+
+				mechanize(model);
+				ko.applyBindings(mechanize);
+
+				Notifications.show("Loaded successfully");
+			} catch (e) {
+				throw e;
+				debugger;
+			 	kill("Error occurred during load");
+			}
+		} else {
+			try {
+				mechanize().initializeGame();
+				ko.applyBindings(mechanize);
+
+				Notifications.show("Initialized mechanize.  Welcome.")
+			} catch (e) {
+				throw e;
+				debugger;
+				kill("Failed to set up game");
+			}
+		}
 
 		$("body").on("click", "#saveButton", saveModel);
-		$("body").on("click", "#loadButton", loadModel);
+		$("body").on("click", "#resetButton", confirmReset);
 		$("#notificationsButton").click(function() {
 			$("#notificationsLog").toggle();
 		});
