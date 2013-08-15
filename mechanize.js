@@ -189,6 +189,7 @@ var dbg;
 		var self = this;
 
 		self.junk = ko.observableArray(makeArray(80, function() { return { resource: ko.observable() }; }));
+		self.junk().toJSON = function() { };
 		self.regenerateJunk = function() {
 			self.junk().forEach(function(j) {
 				var rnd = Math.random(), type = null;
@@ -255,7 +256,7 @@ var dbg;
 	var DeviceCollectionModel = function() {
 		var self = this;
 		var prefix = "mechanize_";
-		var devices = [];
+		var devices = {};
 
 		self.getDevices = function() {
 			return Object.keys(devices).map(function (key) {
@@ -289,8 +290,8 @@ var dbg;
 			device.name = name;
 			device.type = type;
 
-			device.visible = ko.observable(false);
-			device.toggleVisibility = function() { device.visible(!device.visible()); };
+			device.collapsed = ko.observable(true);
+			device.toggleVisibility = function() { device.collapsed(!device.collapsed()); };
 
 			device.send = function(receiverName, item) {
 				var receiver = self.getDevice(receiverName);
@@ -431,8 +432,8 @@ var dbg;
 
 				Notifications.show("Loaded successfully");
 			} catch (e) {
-				throw e;
-				debugger;
+				console.log(e.message);
+				// debugger;
 			 	kill("Error occurred during load");
 			}
 		} else {
@@ -442,8 +443,8 @@ var dbg;
 
 				Notifications.show("Initialized mechanize.  Welcome.")
 			} catch (e) {
-				throw e;
-				debugger;
+				console.log(e.message);
+				// debugger;
 				kill("Failed to set up game");
 			}
 		}

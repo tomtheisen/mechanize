@@ -119,13 +119,13 @@
 					<li data-bind="attr: {'data-device': name}, css: type">
 						<h3 data-bind="
 							click: toggleVisibility, 
-							css: (visible() ? 'hidden' : 'shown') ">
+							css: (collapsed() ? 'shown' : 'hidden') ">
 							<strong data-bind="text: name"></strong> 
 							<span data-bind="text: type"></span>
 						</h3>
 						<div class="controls" data-bind="
 							template: {
-								if: visible, 
+								if: !collapsed(), 
 								name: 'DeviceTemplate' + type, 
 								data: $data}">
 						</div>
