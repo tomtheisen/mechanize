@@ -116,13 +116,14 @@
 			<div id="devices" class="panel" data-bind="with: devices">
 				<h2>Devices</h2>
 				<ul data-bind="foreach: all">
-					<li data-bind="attr: {'data-device': name}, css: type">
+					<li data-bind="attr: {'data-device': name}, css: type + ' ' + (detached() ? 'detached' : '')">
 						<h3 data-bind="
 							click: toggleVisibility, 
 							css: (collapsed() ? 'shown' : 'hidden') ">
 							<strong data-bind="text: name"></strong> 
 							<span data-bind="text: type"></span>
 						</h3>
+						<div data-bind="click: toggleDetachment">detach</div>
 						<div class="controls" data-bind="
 							template: {
 								if: !collapsed(), 

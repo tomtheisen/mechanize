@@ -293,6 +293,9 @@ var dbg;
 			device.collapsed = ko.observable(true);
 			device.toggleVisibility = function() { device.collapsed(!device.collapsed()); };
 
+			device.detached = ko.observable(false);
+			device.toggleDetachment = function() { device.detached(!device.detached()); };
+
 			device.send = function(receiverName, item) {
 				var receiver = self.getDevice(receiverName);
 				if (!receiver) return false;
