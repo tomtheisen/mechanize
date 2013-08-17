@@ -45,7 +45,6 @@ button {
 	.border-radius(1rem);
 	height: 1.6rem;
 	padding: 0 1.2rem;
-	line-height: 1.6rem;
 	font-family: 'Aldrich', sans-serif;
 	font-size: 1rem;
 	cursor: pointer;
@@ -226,51 +225,42 @@ a {
 	.resource.none { cursor: default; }
 }
 
-#devices {
-	& > ul {
-		& > li {
-			margin-bottom: 1rem;
-			.border-radius(0.6rem);
-			/*background: @space;*/
-			margin: 0.6rem 0;
+.device {
+	.detacher {
+		padding: 0.2rem;
+		display: block;
+		float: right;
+		cursor: pointer;
+	}
 
-			&.detached {
-				.panel;
-				position: absolute;
-				top: 20px;
-				left: 20px;
-			}
+	h3 {
+		cursor: pointer;
+		margin: 0;
+		font-size: 1rem;
+		padding: 0.3rem;
+		font-weight: normal;
+		.border-radius(0.6rem);
+		.transition(background-color 500ms ease-out);
 
-			& > h3 {
-				cursor: pointer;
-				margin: 0;
-				font-size: 1rem;
-				padding: 0.3rem;
-				font-weight: normal;
-				.border-radius(0.6rem);
-				.transition(background-color 500ms ease-out);
+		&.collapsed::before {content: "\25bc"; }
+		&.expanded::before {content: "\25b6"; } 
+	}
+	
+	&.bumped h3 {
+		background-color: (@panel + #222);
+		.transition-duration(0s);
+	}
+	
+	&.error h3 {
+		background-color: (@panel + #400);
+		.transition-duration(0s);
+	}
 
-				&.hidden::before {content: "\25bc"; }
-				&.shown::before {content: "\25b6"; } 
-			}
-			
-			&.bumped > h3 {
-				background-color: (@panel + #222);
-				.transition-duration(0s);
-			}
-			
-			&.error > h3 {
-				background-color: (@panel + #400);
-				.transition-duration(0s);
-			}
+	.controls {
+		margin-left: 1.2rem;
 
-			& > .controls {
-				margin-left: 1.2rem;
-
-				& > :first-child {
-					margin-top: 0.6rem;
-				}
-			}
+		& > :first-child {
+			margin-top: 0.6rem;
 		}
 	}
 }

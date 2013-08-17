@@ -115,24 +115,40 @@
 
 			<div id="devices" class="panel" data-bind="with: devices">
 				<h2>Devices</h2>
-				<ul data-bind="foreach: all">
-					<li data-bind="attr: {'data-device': name}, css: type + ' ' + (detached() ? 'detached' : '')">
-						<h3 data-bind="
-							click: toggleVisibility, 
-							css: (collapsed() ? 'shown' : 'hidden') ">
+				<ul data-bind="foreach: attached">
+					<li class="device" data-bind="attr: {'data-device': name}, css: type">
+						<button class="detacher" data-bind="click: detach">
+							&hArr;
+						</button>
+						<h3 data-bind="click: toggleCollapse, css: uistate ">
 							<strong data-bind="text: name"></strong> 
 							<span data-bind="text: type"></span>
 						</h3>
-						<div data-bind="click: toggleDetachment">detach</div>
 						<div class="controls" data-bind="
 							template: {
-								if: !collapsed(), 
+								if: uistate() != 'collapsed', 
 								name: 'DeviceTemplate' + type, 
 								data: $data}">
 						</div>
 					</li>
 				</ul>
 			</div>
+
+			<!-- ko foreach: devices.detached -->
+			<div class="panel device" data-bind="attr: {'data-device': name}, css: type">
+				<button class="detacher" data-bind="click: expand">
+					&hArr;
+				</button>
+				<h2 data-bind="text: name"></h2>
+				<h3 data-bind="text: type"></h3>
+				<div class="controls" data-bind="
+					template: {
+						name: 'DeviceTemplate' + type, 
+						data: $data}">
+				</div>
+			</div>
+			<!-- /ko -->
+			<div 
 		</div>
 
 		<script src="mechanize.js"></script>

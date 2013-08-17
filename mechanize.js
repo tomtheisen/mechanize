@@ -269,6 +269,19 @@ var dbg;
 			invalidationToken();
 			return self.getDevices();
 		});
+
+		self.attached = ko.computed(function() {
+			return self.all().filter(function(d) {
+				return !!["expanded", "collapsed"].find(d.uistate());
+			})
+		});
+
+		self.detached = ko.computed(function() {
+			return self.all().filter(function(d) {
+				return d.uistate() == "detached"
+			})
+		});
+
 		self.invalidateObservable = function() {
 			invalidationToken.notifySubscribers(null);
 		};
@@ -290,11 +303,13 @@ var dbg;
 			device.name = name;
 			device.type = type;
 
-			device.collapsed = ko.observable(true);
-			device.toggleVisibility = function() { device.collapsed(!device.collapsed()); };
-
-			device.detached = ko.observable(false);
-			device.toggleDetachment = function() { device.detached(!device.detached()); };
+			device.uistate = ko.observable("expanded");
+			device.collapse = function() { device.uistate("collapsed"); };
+			device.expand = function() { device.uistate("expanded"); };
+			device.detach = function() { device.uistate("detached"); };
+			device.toggleCollapse = function() {
+				device.uistate(device.uistate() == "collapsed" ? "expanded" : "collapsed");
+			}
 
 			device.send = function(receiverName, item) {
 				var receiver = self.getDevice(receiverName);
@@ -308,7 +323,7 @@ var dbg;
 					window.setTimeout(function() {$receiver.removeClass("bumped")}, 1000);
 				} else {
 					$receiver.addClass("error");
-					Notifications.show("Failed to send item to " + receiverName);
+					Notifications.show("Failed to send item to " + receiverName + ".");
 
 					window.setTimeout(function() {$receiver.removeClass("error")}, 2000);
 				}
