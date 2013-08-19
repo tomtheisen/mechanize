@@ -2,6 +2,7 @@
 //	knockout
 //	sugarjs
 //	zepto
+//	seedrandom
 
 "use strict";
 
@@ -190,7 +191,12 @@ var dbg;
 
 		self.junk = ko.observableArray(makeArray(80, function() { return { resource: ko.observable() }; }));
 		self.junk().toJSON = function() { };
+		
+		self.lastSeed = null;
 		self.regenerateJunk = function() {
+			self.lastSeed = Math.random();
+			Math.seedrandom(self.lastSeed);
+
 			self.junk().forEach(function(j) {
 				var rnd = Math.random(), type = null;
 				if (rnd < 0.01) type = "iron";
@@ -215,7 +221,6 @@ var dbg;
 		};
 	};
 
-	// todo scrap?
 	var PlayerModel = function(name) {
 		var self = this;
 
@@ -327,7 +332,7 @@ var dbg;
 					$sender.addClass("error");
 					Notifications.show("Failed to send item from " + name + " to " + receiverName + ".");
 
-					window.setTimeout(function() {$receiver.removeClass("error")}, 2000);
+					// window.setTimeout(function() {$sender.removeClass("error")}, 2000);
 				}
 
 				return success;
@@ -344,7 +349,7 @@ var dbg;
 		};
 
 		self.removeAll = function() {
-			devices.length = 0;
+			devices = {};
 			self.invalidateObservable();
 		};
 	}
