@@ -117,13 +117,13 @@
 				<h2>Devices</h2>
 				<ul data-bind="foreach: attached">
 					<li class="device" data-bind="attr: {'data-device': name}, css: type">
-						<button class="detacher" data-bind="click: detach">
-							&hArr;
-						</button>
-						<h3 data-bind="click: toggleCollapse, css: uistate ">
-							<strong data-bind="text: name"></strong> 
-							<span data-bind="text: type"></span>
-						</h3>
+						<div class="title" data-bind="css: uistate">
+							<button class="detacher" data-bind="click: detach">
+								&hArr;
+							</button>
+							<h3 data-bind="text: name, click: toggleCollapse"></h3>
+						</div>
+						<!-- <span data-bind="text: type"></span> -->
 						<div class="controls" data-bind="
 							template: {
 								if: uistate() != 'collapsed', 

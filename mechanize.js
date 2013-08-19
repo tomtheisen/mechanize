@@ -317,13 +317,14 @@ var dbg;
 				
 				var success = receiver.accept && receiver.accept(item);
 				var $receiver = $("[data-device='" + receiverName +"']");
+				var $sender = $("[data-device='" + name + "']");
 				if (success) {
 					$receiver.addClass("bumped");
 
 					window.setTimeout(function() {$receiver.removeClass("bumped")}, 1000);
 				} else {
-					$receiver.addClass("error");
-					Notifications.show("Failed to send item to " + receiverName + ".");
+					$sender.addClass("error");
+					Notifications.show("Failed to send item from " + name + " to " + receiverName + ".");
 
 					window.setTimeout(function() {$receiver.removeClass("error")}, 2000);
 				}
@@ -356,10 +357,10 @@ var dbg;
 		self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 
 		self.initializeGame = function() {
-			self.devices.createDevice("inventory", "Inventory", {size: 16, outputs: ["ejector"]});
-			self.devices.createDevice("ejector", "TrashEjector");
-			self.devices.createDevice("collector", "RockCollector", {output: "inventory"});
-			self.devices.createDevice("wastes", "Wastes", {output: "inventory"});
+			self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock"]});
+			self.devices.createDevice("Airlock", "TrashEjector");
+			self.devices.createDevice("Rock Collector Bot", "RockCollector", {output: "Cargo Hold"});
+			self.devices.createDevice("Resource Mining", "Wastes", {output: "Cargo Hold"}).detach();
 		};
 	};
 

@@ -30,6 +30,10 @@ body {
 
 h1, h2, h3, h4 {
 	margin: 0 0 1rem 0;
+
+	&:last-child {
+		margin-bottom: 0;
+	}
 }
 
 ul {
@@ -129,6 +133,11 @@ a {
 	margin: 1.2rem;
 	display: inline-block;
 	vertical-align: top;
+
+	/* make last thing in panel not have bottom margin to keep padding tight */
+	&>:last-child {
+		margin-bottom: 0;
+	}
 }
 
 .resource-container {
@@ -225,36 +234,44 @@ a {
 	.resource.none { cursor: default; }
 }
 
-.device {
-	.detacher {
-		padding: 0.2rem;
-		display: block;
-		float: right;
-		cursor: pointer;
-	}
-
-	h3 {
-		cursor: pointer;
-		margin: 0;
-		font-size: 1rem;
-		padding: 0.3rem;
-		font-weight: normal;
+#devices.panel .device {
+	.title {
 		.border-radius(0.6rem);
-		.transition(background-color 500ms ease-out);
+		overflow: hidden;
+		margin-top: 1.2rem;
 
-		&.collapsed::before {content: "\25bc"; }
-		&.expanded::before {content: "\25b6"; } 
+		.detacher {
+			padding: 0.3rem;
+			display: block;
+			float: right;
+			cursor: pointer;
+			margin: 0;
+			.border-radius(0px);
+			height: 2rem;	/*hack*/
+		}
+
+		h3 {
+			position: relative;
+			cursor: pointer;
+			font-size: 1rem;
+			padding: 0.3rem;
+			margin-right: 2.4rem;
+			white-space: nowrap;
+	
+		}
+		&.collapsed h3::before {content: "\25b6"; }
+		&.expanded h3::before {content: "\25bc"; } 
+	
+		.transition(background-color 500ms ease-out);
 	}
 	
-	&.bumped h3 {
-		background-color: (@panel + #222);
+	.animate-color (@color)  {
+		background-color: (@color);
 		.transition-duration(0s);
 	}
-	
-	&.error h3 {
-		background-color: (@panel + #400);
-		.transition-duration(0s);
-	}
+
+	&.bumped .title { .animate-color(@panel + #222); }
+	&.error  .title { .animate-color(@panel + #400); }
 
 	.controls {
 		margin-left: 1.2rem;
@@ -263,4 +280,23 @@ a {
 			margin-top: 0.6rem;
 		}
 	}
+}
+
+.panel.device {
+	.detacher {
+		display: block;
+		float: right;
+	}
+
+	.animate-color (@color)  {
+		background-color: (@color);
+		.transition-duration(0s);
+	}
+		
+
+	h2 { 
+		.transition(background-color 500ms ease-out);
+	}
+	&.bumped h2 { .animate-color(@panel + #222); }
+	&.error  h2 { .animate-color(@panel + #400); }
 }
