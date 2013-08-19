@@ -96,14 +96,6 @@
 			<br><a href="javascript:window.localStorage.removeItem('mechanize');location.reload();">Reset data</a>
 		</div>
 		<div id="gameSurface" style="visibility: hidden;">
-			<div id="game-controls">
-				<button id="saveButton">save</button>
-				<button id="resetButton">reset</button>
-				<button id="notificationsButton">notifications</button>
-				<ul id="notificationsLog" data-bind="foreach: notifications.log">
-					<li data-bind="text: $data"></li>
-				</ul>
-			</div>
 
 			<div id="notifications">
 			</div>
@@ -111,6 +103,15 @@
 			<div id="playerData" class="panel" data-bind="with: player">
 				<h2>Player</h2>
 				<strong>Name:</strong> <span data-bind="text: name"></span>
+
+				<div id="gameControls">
+					<button id="saveButton">save</button>
+					<br><button id="resetButton">reset</button>
+					<br><button id="notificationsButton">notifications</button>
+					<ul id="notificationsLog" data-bind="foreach: notifications.log">
+						<li data-bind="text: $data"></li>
+					</ul>
+				</div>
 			</div>
 
 			<div id="devices" class="panel" data-bind="with: devices">

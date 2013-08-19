@@ -220,6 +220,7 @@ var dbg;
 		var self = this;
 
 		self.name = name;
+		self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 	};
 
 	var TrashEjectorModel = function() {
@@ -354,8 +355,6 @@ var dbg;
 		self.player = new PlayerModel("Bob");
 		self.devices = new DeviceCollectionModel;
 
-		self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
-
 		self.initializeGame = function() {
 			self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock"]});
 			self.devices.createDevice("Airlock", "TrashEjector");
@@ -374,22 +373,22 @@ var dbg;
 			try {
 				var serialized = ko.toJSON(mechanize, saveFilter);
 				window.localStorage.setItem("mechanize", serialized);
-				Notifications.show("Saved successfully");
+				Notifications.show("Saved successfully.");
 			} catch (e) {
-				Notifications.show("Error occurred during save");
+				Notifications.show("Error occurred during save.");
 			}
 		};
 
 		var confirmReset = function() {
-			var $controlsContents = $("#game-controls > *").remove();
+			var $controlsContents = $("#gameControls > *").remove();
 
 			var $yes = $("<button />").text("yes");
 			var $no = $("<button />").text("no");
 
-			$("#game-controls").text("Reset?").append($yes).append($no);
+			$("#gameControls").text("Reset?").append($yes).append($no);
 			
 			$no.click(function() {
-				$("#game-controls").empty().append($controlsContents);
+				$("#gameControls").empty().append($controlsContents);
 			});
 
 			$yes.click(function() {

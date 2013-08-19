@@ -73,11 +73,7 @@ a {
 	height: 100%;
 }
 
-#game-controls {
-	float: right;
-	text-align: right;
-	padding: 1.2rem;
-
+#playerData #gameControls {
 	#notificationsLog {
 		display: none;
 	}
@@ -292,10 +288,10 @@ a {
 		background-color: (@color);
 		.transition-duration(0s);
 	}
-		
 
 	h2 { 
 		.transition(background-color 500ms ease-out);
+		.border-radius(0.6rem);
 	}
 	&.bumped h2 { .animate-color(@panel + #222); }
 	&.error  h2 { .animate-color(@panel + #400); }
