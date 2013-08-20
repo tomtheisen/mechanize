@@ -88,30 +88,26 @@
 		</script>
 	</head>
 	<body>
-		<div id="loadingMessage">
-			loading ...
-		</div>
-		<div id="systemError">
-			<span class="message">Error during load.</span>
-			<br><a href="javascript:location.reload();">Reload</a>
-			<br><a href="javascript:window.localStorage.removeItem('mechanize');location.reload();">Reset data</a>
-		</div>
+		<div id="systemMessage">loading ...</div>
 		<div id="gameSurface" style="visibility: hidden;">
-
-			<div id="notifications">
-			</div>
+			<div id="notifications"></div>
 
 			<div id="playerData" class="panel" data-bind="with: player">
 				<h2>Player</h2>
-				<strong>Name:</strong> <span data-bind="text: name"></span>
+				<p>
+					<strong>Name:</strong> 
+					<span data-bind="text: name"></span>
+				</p>
 
 				<div id="gameControls">
 					<button id="saveButton">save</button>
 					<br><button id="resetButton">reset</button>
-					<br><button id="notificationsButton">notifications</button>
+					<br><button data-bind="click: notifications.toggle">notifications</button>
+					<!-- ko if: notifications.shown -->
 					<ul id="notificationsLog" data-bind="foreach: notifications.log">
 						<li data-bind="text: $data"></li>
 					</ul>
+					<!-- /ko -->
 				</div>
 			</div>
 
@@ -119,16 +115,14 @@
 				<h2>Devices</h2>
 				<ul data-bind="foreach: attached">
 					<li class="device" data-bind="attr: {'data-device': name}, css: type">
-						<div class="title" data-bind="css: uistate">
+						<h3 class="deviceHeader collapser" data-bind="click: toggleCollapse, css: uistate">
 							<button class="detacher" data-bind="click: detach">
 								&hArr;
 							</button>
-							<h3 data-bind="text: name, click: toggleCollapse"></h3>
-						</div>
-						<!-- <span data-bind="text: type"></span> -->
+							<!-- ko text: name --><!-- /ko -->
+						</h3>
 						<div class="controls" data-bind="
 							template: {
-								if: uistate() != 'collapsed', 
 								name: 'DeviceTemplate' + type, 
 								data: $data}">
 						</div>
@@ -137,11 +131,13 @@
 			</div>
 
 			<!-- ko foreach: devices.detached -->
-			<div class="panel device" data-bind="attr: {'data-device': name}, css: type">
+			<div class="panel device" data-bind="
+				attr: {'data-device': name}, 
+				css: type">
 				<button class="detacher" data-bind="click: expand">
 					&hArr;
 				</button>
-				<h2 data-bind="text: name"></h2>
+				<h2 class="deviceHeader" data-bind="text: name"></h2>
 				<h3 data-bind="text: type"></h3>
 				<div class="controls" data-bind="
 					template: {

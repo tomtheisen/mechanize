@@ -23,11 +23,11 @@ var dbg;
 	var kill = function(message) {
 		message = message || "Something bad happened. :(";
 		
-		//Notifications.show(message ); // not going to see it anyway
-
 		$("#gameSurface").hide();
-		$("#systemError > .message").text(message);
-		$("#systemError").show();
+		$("#systemMessage").text(message)
+		.append('<br><a href="javascript:location.reload();">Reload</a>')
+		.append('<br><a href="javascript:window.localStorage.removeItem(\'mechanize\');location.reload();">Reset data</a>')
+		.show();
 
 		killed = true;
 	}
@@ -50,7 +50,15 @@ var dbg;
 			}, 10000);
 		};
 
-		return {show: show, log: notifications, toJSON: function() {}};
+		var shown = ko.observable(false);
+
+		return {
+			show: show, 
+			log: notifications, 
+			shown: shown,
+			toggle: function() {shown(!shown());},
+			toJSON: function() {}
+		};
 	})();
 
 	function makeArray(length, element) {
@@ -314,7 +322,9 @@ var dbg;
 			device.expand = function() { device.uistate("expanded"); };
 			device.detach = function() { device.uistate("detached"); };
 			device.toggleCollapse = function() {
-				device.uistate(device.uistate() == "collapsed" ? "expanded" : "collapsed");
+				var uistate = device.uistate();
+				if(uistate == "collapsed") device.uistate("expanded");
+				else if(uistate == "expanded") device.uistate("collapsed");
 			}
 
 			device.send = function(receiverName, item) {
@@ -453,11 +463,11 @@ var dbg;
 				mechanize(model);
 				ko.applyBindings(mechanize);
 
-				Notifications.show("Loaded successfully");
+				Notifications.show("Loaded successfully.");
 			} catch (e) {
 				console.log(e.message);
 				// debugger;
-			 	kill("Error occurred during load");
+			 	kill("Error occurred during load.");
 			}
 		} else {
 			try {
@@ -468,7 +478,7 @@ var dbg;
 			} catch (e) {
 				console.log(e.message);
 				// debugger;
-				kill("Failed to set up game");
+				kill("Failed to set up game.");
 			}
 		}
 
@@ -481,7 +491,7 @@ var dbg;
 			$(this).remove();
 		});
 
-		$("#loadingMessage").hide();
+		$("#systemMessage").hide();
 		$("#gameSurface").css("visibility", "");
 	});
 })();
