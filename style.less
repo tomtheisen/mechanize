@@ -52,7 +52,7 @@ ul {
 
 button {
 	background-color: @accent;
-	&:hover { background-color: (@accent + #222); };
+	&:hover { background-color: (@accent + #222); }
 	color: @highlight;
 	border-width: 0; 
 	.border-radius(1rem);
@@ -141,7 +141,9 @@ a {
 }
 
 .wrap-every(@n) {
-  	&:nth-child(@{n}n+1) {
+	/* http://stackoverflow.com/a/18122516/44743 */
+	@t: ~":nth-child(@{n}n+1)";
+  	&@{t} {
         clear: left;
     }
 }
@@ -169,14 +171,14 @@ a {
 		}
 	}
 
-	.resource(@tile-index; @collection-delay) {
+	.resource(@tile-index, @collection-delay) {
 		background-image: url(img/resource-tiles.png);
 		background-position-x: (-@resource-size * @tile-index);
 		.collect-delay(@collection-delay);
 	}
 
-	&.rock { .resource(0; 2s); }
-	&.iron { .resource(1; 5s); }
+	&.rock { .resource(0, 2s); }
+	&.iron { .resource(1, 5s); }
 
 	.collect-progress {
 		width: 0%;

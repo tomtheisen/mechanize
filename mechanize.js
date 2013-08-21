@@ -468,6 +468,7 @@ var dbg;
 				console.log(e.message);
 				// debugger;
 			 	kill("Error occurred during load.");
+			 	return;
 			}
 		} else {
 			try {
@@ -479,6 +480,7 @@ var dbg;
 				console.log(e.message);
 				// debugger;
 				kill("Failed to set up game.");
+			 	return;
 			}
 		}
 
