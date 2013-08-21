@@ -1,19 +1,27 @@
 mkdir output\img
 del /s /q output\*.*
 
+REM ***********  html  **************
+	copy index.html output\
 
-copy knockout-2.3.0.js output\
-copy knockout.mapping-latest.js output\
-copy seedrandom.js output\
-copy sugar-1.3.9.min.js output\
-copy zepto.min.js output\
+REM ***********  javascript  **************
+	type knockout-2.3.0.js >> output\libs.js
+	echo. >> output\libs.js
 
-copy aldrich.woff output\
+	jsmin\jsmin < seedrandom.js >> output\libs.js
+	echo. >> output\libs.js
 
-copy mechanize.js output\
+	type sugar-1.3.9.min.js >> output\libs.js
+	echo. >> output\libs.js
 
-copy img\*.* output\img\
+	type zepto.min.js >> output\libs.js
+	echo. >> output\libs.js
 
-copy index.html output\
+	copy mechanize.js output\
 
-dotless\dotless.compiler.exe style.less output\style.css
+REM ***********  assets  **************
+	copy aldrich.woff output\
+	copy img\*.* output\img\
+
+REM ***********  less  **************
+	dotless\dotless.compiler.exe -m style.less output\style.css
