@@ -18,6 +18,7 @@ REM ***********  javascript  **************
 	echo ; >> output\libs.js
 
 	copy mechanize.js output\
+	rem build\jsmin < mechanize.js > output\mechanize.js
 
 REM ***********  less  **************
 	build\dotless\dotless.compiler.exe -m style.less style.css
