@@ -20,6 +20,9 @@ REM ***********  javascript  **************
 	copy mechanize.js output\
 	rem build\jsmin < mechanize.js > output\mechanize.js
 
+REM ***********  assets  **************
+	copy aldrich.woff output\
+
 REM ***********  less  **************
 	build\dotless\dotless.compiler.exe -m style.less style.css
 	c:\python27\python.exe build\assetinjector.py < style.css > output\style.css

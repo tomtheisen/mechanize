@@ -7,12 +7,14 @@ def datalize(filename):
 		"jpeg": "image/jpeg",
 		"gif": "image/gif",
 		"png": "image/jpeg",
-		"woff": "application/font-woff",
+		# "woff": "application/font-woff",
 	}
+
+	if ext not in mimes: return filename
 
 	with open(filename, "rb") as f:
 		encoded = base64.standard_b64encode(f.read())
-		return "url(data:%s;base64,%s)" % (mimes.get(ext, "text/plain"), encoded)
+		return "url(data:%s;base64,%s)" % (mimes[ext], encoded)
 	
 pattern = r"""url\(([^)]+|'[^']+'|"[^"]+")\)"""
 for line in sys.stdin:
