@@ -1,4 +1,4 @@
-mkdir output\img
+mkdir output
 del /s /q output\*.*
 
 REM ***********  html  **************
@@ -21,7 +21,7 @@ REM ***********  javascript  **************
 
 REM ***********  assets  **************
 	copy aldrich.woff output\
-	copy img\*.* output\img\
+	copy resource-tiles.png output\
 
 REM ***********  less  **************
 	dotless\dotless.compiler.exe -m style.less output\style.css
