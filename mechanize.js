@@ -1,5 +1,4 @@
 /* jshint curly: false, eqnull: true, indent: 4, devel: true, noempty: false */
-/* global $: false, ko: false */
 
 // dependencies
 //  knockout
@@ -7,7 +6,7 @@
 //  zepto
 //  seedrandom
 
-(function () {
+(function (ko, $) {
     "use strict";
 
     var mechanize = ko.observable();
@@ -524,4 +523,4 @@
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");
     });
-})();
+})(window.ko, window.$);
