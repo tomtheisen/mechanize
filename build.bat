@@ -8,7 +8,7 @@ REM ***********  javascript  **************
 	type knockout-2.3.0.js >> output\libs.js
 	echo ; >> output\libs.js
 
-	jsmin\jsmin < seedrandom.js >> output\libs.js
+	build\jsmin < seedrandom.js >> output\libs.js
 	echo ; >> output\libs.js
 
 	type sugar-1.3.9.min.js >> output\libs.js
@@ -20,6 +20,6 @@ REM ***********  javascript  **************
 	copy mechanize.js output\
 
 REM ***********  less  **************
-	dotless\dotless.compiler.exe -m style.less style.css
-	c:\python27\python.exe "asset injector\assetinjector.py" < style.css > output\style.css
+	build\dotless\dotless.compiler.exe -m style.less style.css
+	c:\python27\python.exe build\assetinjector.py < style.css > output\style.css
 	del style.css
