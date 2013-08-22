@@ -1,7 +1,6 @@
-/*jslint browser: true */
-/*jslint vars: true */
-/*jslint todo: true */
-/*jslint devel: true */
+/* jshint curly: false, eqnull: true, indent: 4, devel: true, noempty: false */
+/* global $: false, ko: false */
+
 // dependencies
 //  knockout
 //  sugarjs
@@ -11,8 +10,6 @@
 (function () {
     "use strict";
 
-    var ko = window.ko;
-    var $ = window.$;
     var mechanize = ko.observable();
     window.mechanize = mechanize;
 
@@ -65,15 +62,16 @@
             log: notifications,
             shown: shown,
             toggle: function () {shown(!shown()); },
-            toJSON: function () {return undefined; }
+            toJSON: function () { }
         };
-    }());
+    })();
 
     function makeArray(length, element) {
         var elementfn = element;
         if (typeof element !== "function") {
             elementfn = function () {return element; };
         }
+
         return Array.apply(null, new Array(length)).map(elementfn);
     }
 
@@ -103,9 +101,7 @@
         });
 
         self.stop = function () {
-            if (intervalId) {
-                clearInterval(intervalId);
-            }
+            if (intervalId) clearInterval(intervalId);
             intervalId = null;
         };
 
@@ -115,9 +111,8 @@
             completed(false);
 
             intervalId = setInterval(function () {
-                if (killed) {
-                    return;
-                }
+                if (killed) return;
+
                 elapsedms(elapsedms() + updatems);
 
                 if (elapsedms() >= totalms) {
@@ -126,13 +121,8 @@
                     completed(true);
 
                     var cancelToken = {cancel: false};
-                    if (complete) {
-                        complete(cancelToken);
-                    }
-
-                    if (repeat && !cancelToken.cancel) {
-                        self.start();
-                    }
+                    if (complete) complete(cancelToken);
+                    if (repeat && !cancelToken.cancel) self.start();
                 }
             }, updatems);
         };
@@ -169,18 +159,18 @@
         }));
 
         self.deactivate = function () {
-            if (!self.activeItem()) {
-                return;
-            }
+            if (!self.activeItem()) return;
+
             self.activeItem().active(false);
             self.activeItem(null);
         };
 
         self.collect = function (resource) {
-            var emptySlot = self.items().find(function (item) { return !item.resource(); });
-            if (!emptySlot) {
-                return false;
-            }
+            var emptySlot = self.items().find(function (item) { 
+                return !item.resource(); 
+            });
+            if (!emptySlot) return false;
+
             emptySlot.resource(resource);
             return true;
         };
@@ -188,9 +178,8 @@
         self.accept = self.collect; // todo deprecate one
 
         self.select = function (item) {
-            if (!item.resource()) {
-                return;
-            }
+            if (!item.resource()) return;
+
             var alreadyActive = item.active();
             self.deactivate();
 
@@ -204,9 +193,8 @@
 
         self.popActive = function () {
             var active = self.activeItem();
-            if (!active) {
-                return null;
-            }
+            if (!active) return null;
+
             self.activeItem(null);
             active.active(false);
             var resource = active.resource();
@@ -216,9 +204,7 @@
 
         self.sendActiveTo = function (receiverName) {
             var success = self.send(receiverName, self.activeItem().resource());
-            if (success) {
-                self.popActive();
-            }
+            if (success) self.popActive();
         };
     };
 
@@ -226,7 +212,7 @@
         var self = this;
 
         self.junk = ko.observableArray(makeArray(80, function () { return { resource: ko.observable() }; }));
-        self.junk().toJSON = function () {return undefined; };
+        self.junk().toJSON = function () { };
 
         self.lastSeed = null;
         self.regenerateJunk = function () {
@@ -252,14 +238,11 @@
         };
 
         self.collect = function (wasteCell) {
-            if (!wasteCell.resource()) {
-                return;
-            }
+            if (!wasteCell.resource()) return;
+
             //var success = inventory.accept(wasteCell.resource());
             var success = self.send(inventoryName, wasteCell.resource());
-            if (success) {
-                wasteCell.resource(null);
-            }
+            if (success) wasteCell.resource(null);
             return success;
         };
     };
@@ -277,9 +260,7 @@
         self.contents = ko.observable();
 
         self.accept = function (inventoryItem) {
-            if (self.tracker()) {
-                return false;
-            }
+            if (self.tracker()) return false;
 
             self.contents(inventoryItem);
 
@@ -297,9 +278,7 @@
 
         self.tracker = new TimeTracker(10000, 200, function (cancelToken) {
             var success = self.send(receiverName, new ResourceModel("rock"));
-            if (!success) {
-                cancelToken.cancel = true;
-            }
+            if (!success) cancelToken.cancel = true;
         }, true);
 
         self.start = self.tracker.start;
@@ -375,9 +354,7 @@
 
             device.send = function (receiverName, item) {
                 var receiver = self.getDevice(receiverName);
-                if (!receiver) {
-                    return false;
-                }
+                if (!receiver) return false;
 
                 var success = receiver.accept && receiver.accept(item);
                 var $receiver = $("[data-device='" + receiverName + "']");
@@ -430,9 +407,7 @@
 
     window.addEventListener("load", function () {
         var saveFilter = function (key, value) {
-            if (value === null) {
-                return undefined;
-            }
+            if (value == null) return undefined;
             return value;
         };
 
@@ -469,39 +444,38 @@
         };
 
         var load = function (model, saved, path) {
+            var addIntentoryItem = function (inventoryItems, item) {
+                var resource = item.resource && new ResourceModel(item.resource.type);
+                var newItem = new InventoryItemModel(resource);
+                newItem.active(item.active);
+                inventoryItems.push(newItem);
+            };
+
             for (var key in saved) {
-                if (!saved.hasOwnProperty(key)) {
-                    continue;
-                }
-                var newPath = (path || "$") + "." + key;
-                var savedVal = saved[key];
+                if (saved.hasOwnProperty(key)) {
+                    var newPath = (path || "$") + "." + key;
+                    var savedVal = saved[key];
 
-                if (["number", "string"].find(typeof savedVal)) {
-                    if (ko.isObservable(model[key])) {
-                        model[key](savedVal);
+                    if (["number", "string"].find(typeof savedVal)) {
+                        if (ko.isObservable(model[key])) model[key](savedVal);
+
+                    } else if (newPath === "$.player.inventory.items") {
+                        model[key].removeAll();
+                        savedVal.forEach(addIntentoryItem.bind(null, model[key]));
+                    } else if (newPath === "$.wastes.junk") {
+                        // todo
+
+                    } else if (newPath === "$.devices") {
+                        model[key].removeAll();
+
+                        // todo get args from ?? somewhere
+                        //var args
+                        //savedVal
+
+
+                    } else {
+                        load(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
                     }
-                } else if (newPath === "$.player.inventory.items") {
-                    model[key].removeAll();
-
-                    savedVal.forEach(function (item) {
-                        var resource = item.resource && new ResourceModel(item.resource.type);
-                        var newItem = new InventoryItemModel(resource);
-                        newItem.active(item.active);
-                        model[key].push(newItem);
-                    });
-                } else if (newPath === "$.wastes.junk") {
-                    // todo
-
-                } else if (newPath === "$.devices") {
-                    model[key].removeAll();
-
-                    // todo get args from ?? somewhere
-                    //var args
-                    //savedVal
-
-
-                } else {
-                    load(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
                 }
             }
         };
@@ -550,4 +524,4 @@
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");
     });
-}());
+})();
