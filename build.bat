@@ -19,9 +19,7 @@ REM ***********  javascript  **************
 
 	copy mechanize.js output\
 
-REM ***********  assets  **************
-	copy aldrich.woff output\
-	copy resource-tiles.png output\
-
 REM ***********  less  **************
-	dotless\dotless.compiler.exe -m style.less output\style.css
+	dotless\dotless.compiler.exe -m style.less style.css
+	c:\python27\python.exe "asset injector\assetinjector.py" < style.css > output\style.css
+	del style.css

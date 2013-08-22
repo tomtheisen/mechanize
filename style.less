@@ -167,9 +167,6 @@ a {
 
 	.wrap-every(8);
 	
-	background-color: red;  /* for debugging, should never see */
-	&.none { background-color: black; }
-
 	.collect-delay(@delay) {
 		&:hover {
 			.collect-progress 	{ .transition-duration(@delay); }
@@ -178,13 +175,16 @@ a {
 	}
 
 	.resource(@tile-index, @collection-delay) {
-		background-image: url(resource-tiles.png);
 		background-position-x: (-@resource-size * @tile-index);
 		.collect-delay(@collection-delay);
 	}
 
-	&.rock { .resource(0, 2s); }
-	&.iron { .resource(1, 5s); }
+	background-image: url(resource-tiles.png);
+	background-color: red;  /* for debugging, should never see */
+	&.rock { .resource(1, 2s); }
+	&.iron { .resource(2, 5s); }
+	&.none { background-color: #000; }
+
 
 	.collect-progress {
 		width: 0%;
