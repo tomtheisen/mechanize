@@ -66,12 +66,14 @@
     })();
 
     function makeArray(length, element) {
-        var elementfn = element;
-        if (typeof element !== "function") {
-            elementfn = function () {return element; };
+        var isFunction = Object.isFunction(element); // sugar
+
+        var result = [];
+        for (var i=0; i < length; i++) {
+            result.push(isFunction ? element() : element);
         }
 
-        return Array.apply(null, new Array(length)).map(elementfn);
+        return result;
     }
 
     var TimeTracker = function (totalms, updatems, complete, repeat) {
@@ -246,7 +248,6 @@
         var self = this;
 
         self.name = name;
-        self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
     };
 
     var TrashEjectorModel = function () {
@@ -283,9 +284,9 @@
     var DeviceCollectionModel = function () {
         var self = this;
         var prefix = "mechanize_";
-        var devices = Object.extended({});  // sugar
+        var devices = {};
 
-        self.getDevices = function () {return devices.values(); };  // sugar
+        self.getDevices = function () {return Object.values(devices); };  // sugar
 
         var invalidationToken = ko.observable(0);
         self.all = ko.computed(function () {
@@ -378,6 +379,7 @@
 
         self.player = new PlayerModel("Bob");
         self.devices = new DeviceCollectionModel();
+        self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 
         self.initializeGame = function () {
             self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock"]});
@@ -404,15 +406,17 @@
         };
 
         var confirmReset = function () {
-            var $controlsContents = $("#gameControls > *").remove();
+            var $controls = $("#gameControls > *").hide();
 
-            var $yes = $("<button />").text("yes");
+            var $yes = $("<button />").addClass("warning").text("yes");
             var $no = $("<button />").text("no");
 
-            $("#gameControls").text("Reset?").append($yes).append($no);
+            var $confirmation = $("<div />").text("Reset and lose all data?").append($yes).append($no);
+            $("#gameControls").append($confirmation);
 
             $no.click(function () {
-                $("#gameControls").empty().append($controlsContents);
+                $confirmation.remove();
+                $controls.show();
             });
 
             $yes.click(function () {

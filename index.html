@@ -85,15 +85,8 @@
 	<body>
 		<div id="systemMessage">loading ...</div>
 		<div id="gameSurface" style="visibility: hidden;">
-			<div id="notifications"></div>
-
-			<div id="playerData" class="panel" data-bind="with: player">
-				<h2>Player</h2>
-				<p>
-					<strong>Name:</strong> 
-					<span data-bind="text: name"></span>
-				</p>
-
+			<header>
+				<h1>mechanize</h1>
 				<div id="gameControls">
 					<button id="saveButton">save</button>
 					<button id="resetButton">reset</button>
@@ -104,6 +97,17 @@
 					</ul>
 					<!-- /ko -->
 				</div>
+
+			</header>
+
+			<div id="notifications"></div>
+
+			<div id="playerData" class="panel" data-bind="with: player">
+				<h2>Player</h2>
+				<p>
+					<strong>Name:</strong> 
+					<span data-bind="text: name"></span>
+				</p>
 			</div>
 
 			<div id="devices" class="panel" data-bind="with: devices">

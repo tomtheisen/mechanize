@@ -14,6 +14,13 @@
 @green: #9DBF8E;  // ?
 @space: #0D1216;
 
+.hover-highlight-background(@color) {
+	background-color: @color;
+	&:hover {
+		background-color: lighten(@color, 10%);
+	}
+}
+
 html {
 	height: 100%;
 	margin: 0;
@@ -28,13 +35,48 @@ body {
 	font-family: 'Aldrich', sans-serif;
 	background-color: @background;
 	color: @highlight;
-	height: 100%;
 	margin: 0;
+	padding-top: 2rem;
+}
+
+header {
+	h1 {
+		color: @background;
+	}
+
+	button {
+		.hover-highlight-background(@panel);
+
+		&.warning {
+			.hover-highlight-background(#662937);
+		}
+	}
+
+	background-color: black;
+	color: @highlight;
+	.box-sizing(border-box);
+	height: 1.6rem;
+	margin: 0;
+	padding: 0 2rem;
+	overflow: hidden;
+	position: fixed;
+	z-index: 99;
+	width: 100%;
+	top: 0;
+	left: 0;
+
+	&:hover {
+		height: auto;
+		padding-bottom: 2rem;
+	}
 }
 
 h1, h2, h3, h4 {
 	margin: 0 0 1rem 0;
-	padding: 0.3rem;
+}
+
+h1 {
+	font-size: 2rem;
 }
 
 h3 {
@@ -51,8 +93,7 @@ ul {
 }
 
 button {
-	background-color: @accent;
-	&:hover { background-color: (@accent + #222); }
+	.hover-highlight-background(@accent);
 	color: @highlight;
 	border-width: 0; 
 	.border-radius(1rem);
@@ -74,7 +115,6 @@ a {
 
 #gameSurface {
 	width: 100%;
-	height: 100%;
 	white-space: nowrap;
 
 	&>* {
@@ -104,7 +144,7 @@ a {
 }
 
 .progress {
-	box-sizing: border-box;
+	.box-sizing(border-box);
 	height: 2.4rem;
 	.border-radius(0 1.2rem 1.2rem 0);
 	padding: 0.6rem 0.6rem 0.6rem 0;
@@ -128,6 +168,7 @@ a {
 .panel {
 	.border-radius(1.2rem);
 	background-color: @panel;
+	color: @highlight;
 	padding: 0.9rem;
 	margin: 1.2rem;
 	width: 20rem;
@@ -163,7 +204,6 @@ a {
 	margin: 1px;
 	.box-sizing(border-box);
 	position: relative;
-	background-size: cover;
 
 	.wrap-every(8);
 	
@@ -180,6 +220,7 @@ a {
 	}
 
 	background-image: url(resource-tiles.png);
+	background-size: auto @resource-size;
 	background-color: red;  /* for debugging, should never see */
 	&.rock { .resource(1, 2s); }
 	&.iron { .resource(2, 5s); }

@@ -11,7 +11,7 @@ REM ***********  javascript  **************
 	build\jsmin < seedrandom.js >> output\libs.js
 	echo ; >> output\libs.js
 
-	type sugar-1.3.9.min.js >> output\libs.js
+	type sugar-1.3.9-custom.min.js >> output\libs.js
 	echo ; >> output\libs.js
 
 	type zepto.min.js >> output\libs.js

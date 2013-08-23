@@ -10,12 +10,12 @@ def datalize(filename):
 		# "woff": "application/font-woff",
 	}
 
-	if ext not in mimes: return filename
+	if ext not in mimes: return "url(%s)" % filename
 
 	with open(filename, "rb") as f:
 		encoded = base64.standard_b64encode(f.read())
 		return "url(data:%s;base64,%s)" % (mimes[ext], encoded)
 	
-pattern = r"""url\(([^)]+|'[^']+'|"[^"]+")\)"""
+pattern = r"""url\((?!data:)([^)]+|'[^']+'|"[^"]+")\)"""
 for line in sys.stdin:
 	print re.sub(pattern, lambda m: datalize(m.group(1).strip("'"'"')), line.strip())
