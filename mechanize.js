@@ -54,13 +54,10 @@
             }, 10000);
         };
 
-        var shown = ko.observable(false);
-
         return {
             show: show,
             log: notifications,
-            shown: shown,
-            toggle: function () {shown(!shown()); },
+            shown: ko.observable(false),
             toJSON: function () { }
         };
     })();
@@ -286,7 +283,9 @@
         var prefix = "mechanize_";
         var devices = {};
 
-        self.getDevices = function () {return Object.values(devices); };  // sugar
+        self.getDevices = function () {
+            return Object.values(devices); // sugar
+        };
 
         var invalidationToken = ko.observable(0);
         self.all = ko.computed(function () {
@@ -317,10 +316,14 @@
         self.createDevice = function (name, type, args) {
             var constructDevice = function (type, args) {
                 switch (type) {
-                case "TrashEjector": return new TrashEjectorModel();
-                case "RockCollector": return new RockCollectorModel(args.output);
-                case "Inventory": return new InventoryModel(args.size, args.outputs);
-                case "Wastes": return new WastesModel(args.output);
+                case "TrashEjector": 
+                    return new TrashEjectorModel();
+                case "RockCollector": 
+                    return new RockCollectorModel(args.output);
+                case "Inventory": 
+                    return new InventoryModel(args.size, args.outputs);
+                case "Wastes": 
+                    return new WastesModel(args.output);
                 }
             };
             var device = Object.merge(constructDevice(type, args), { // sugar
@@ -380,6 +383,7 @@
         self.player = new PlayerModel("Bob");
         self.devices = new DeviceCollectionModel();
         self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
+        self.autosave = ko.observable(false);
 
         self.initializeGame = function () {
             self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock"]});
@@ -403,26 +407,6 @@
             } catch (e) {
                 Notifications.show("Error occurred during save.");
             }
-        };
-
-        var confirmReset = function () {
-            var $controls = $("#gameControls > *").hide();
-
-            var $yes = $("<button />").addClass("warning").text("yes");
-            var $no = $("<button />").text("no");
-
-            var $confirmation = $("<div />").text("Reset and lose all data?").append($yes).append($no);
-            $("#gameControls").append($confirmation);
-
-            $no.click(function () {
-                $confirmation.remove();
-                $controls.show();
-            });
-
-            $yes.click(function () {
-                window.localStorage.removeItem('mechanize');
-                window.location.reload();
-            });
         };
 
         window.dbg = function () {
@@ -468,6 +452,15 @@
         };
 
         mechanize(new MechanizeViewModel());
+        
+        var autosaveIntervalId;
+        mechanize().autosave.subscribe(function (autosave) {
+            Notifications.show("Autosave is " + (autosave ? "on" : "off") + ".");
+
+            if (autosaveIntervalId) clearInterval(autosaveIntervalId);
+            if (autosave) autosaveIntervalId = window.setInterval(saveModel, 120000);
+        });
+
         var serialized = window.localStorage.getItem('mechanize');
         if (serialized) {
             try {
@@ -481,7 +474,6 @@
                 Notifications.show("Loaded successfully.");
             } catch (e) {
                 console.log(e.message);
-                // debugger;
                 kill("Error occurred during load.");
                 return;
             }
@@ -493,17 +485,37 @@
                 Notifications.show("Initialized mechanize.  Welcome.");
             } catch (e) {
                 console.log(e.message);
-                // debugger;
                 kill("Failed to set up game.");
                 return;
             }
         }
 
         $("body").on("click", "#saveButton", saveModel);
-        $("body").on("click", "#resetButton", confirmReset);
+
+        $("body").on("click", "#resetButton", function () {
+            var $controls = $("#gameControls > *").hide();
+
+            var $yes = $("<button />").addClass("warning").text("yes");
+            var $no = $("<button />").text("no");
+
+            var $confirmation = $("<div />").text("Reset and lose all data?").append($yes).append($no);
+            $("#gameControls").append($confirmation);
+
+            $no.click(function () {
+                $confirmation.remove();
+                $controls.show();
+            });
+
+            $yes.click(function () {
+                window.localStorage.removeItem('mechanize');
+                window.location.reload();
+            });
+        });
+
         $("#notificationsButton").click(function () {
             $("#notificationsLog").toggle();
         });
+
         $("#notifications").on("click", ".notification", function () {
             $(this).remove();
         });

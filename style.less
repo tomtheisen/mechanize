@@ -44,7 +44,7 @@ header {
 		color: @background;
 	}
 
-	button {
+	button, label {
 		.hover-highlight-background(@panel);
 
 		&.warning {
@@ -92,7 +92,8 @@ ul {
 	list-style-type: none;
 }
 
-button {
+button, label {
+	display: inline-block;
 	.hover-highlight-background(@accent);
 	color: @highlight;
 	border-width: 0; 

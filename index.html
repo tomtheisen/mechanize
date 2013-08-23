@@ -90,7 +90,8 @@
 				<div id="gameControls">
 					<button id="saveButton">save</button>
 					<button id="resetButton">reset</button>
-					<button data-bind="click: notifications.toggle">log</button>
+					<label><input type="checkbox" data-bind="checked: notifications.shown">log</label>
+					<label><input type="checkbox" data-bind="checked: autosave">Autosave</label>
 					<!-- ko if: notifications.shown -->
 					<ul id="notificationsLog" data-bind="foreach: notifications.log">
 						<li data-bind="text: $data"></li>
