@@ -128,7 +128,7 @@
         };
 
         self.toJSON = function () {
-            return Object.reject(ko.toJS(self), 'progress');
+            return Object.reject(ko.toJS(self), 'progress'); // sugar
         };
 
         self.start();
@@ -145,7 +145,7 @@
         self.active = ko.observable(false);
 
         self.toJSON = function () {
-            return Object.reject(ko.toJS(self), 'active');
+            return Object.reject(ko.toJS(self), 'active'); // sugar
         };
     };
 
@@ -165,8 +165,8 @@
             self.activeItem(null);
         };
 
-        self.collect = function (resource) {
-            var emptySlot = self.items().find(function (item) { 
+        self.accept = function (resource) {
+            var emptySlot = self.items().find(function (item) {  // sugar
                 return !item.resource(); 
             });
             if (!emptySlot) return false;
@@ -174,8 +174,6 @@
             emptySlot.resource(resource);
             return true;
         };
-
-        self.accept = self.collect; // todo deprecate one
 
         self.select = function (item) {
             if (!item.resource()) return;
@@ -233,9 +231,7 @@
         self.regenerateJunk();
 
         var regenerator = new TimeTracker(30000, 200, self.regenerateJunk, true);
-        self.regenerator = function () {
-            return regenerator;
-        };
+        self.regenerator = function () {return regenerator; };
 
         self.collect = function (wasteCell) {
             if (!wasteCell.resource()) return;
@@ -288,13 +284,9 @@
     var DeviceCollectionModel = function () {
         var self = this;
         var prefix = "mechanize_";
-        var devices = {};
+        var devices = Object.extended({});  // sugar
 
-        self.getDevices = function () {
-            return Object.keys(devices).map(function (key) {
-                return devices[key];
-            });
-        };
+        self.getDevices = function () {return devices.values(); };  // sugar
 
         var invalidationToken = ko.observable(0);
         self.all = ko.computed(function () {
@@ -304,7 +296,7 @@
 
         self.attached = ko.computed(function () {
             return self.all().filter(function (d) {
-                return !!["expanded", "collapsed"].find(d.uistate());
+                return ["expanded", "collapsed"].any(d.uistate()); // sugar
             });
         });
 
@@ -325,55 +317,46 @@
         self.createDevice = function (name, type, args) {
             var constructDevice = function (type, args) {
                 switch (type) {
-                case "TrashEjector":
-                    return new TrashEjectorModel();
-                case "RockCollector":
-                    return new RockCollectorModel(args.output);
-                case "Inventory":
-                    return new InventoryModel(args.size, args.outputs);
-                case "Wastes":
-                    return new WastesModel(args.output);
+                case "TrashEjector": return new TrashEjectorModel();
+                case "RockCollector": return new RockCollectorModel(args.output);
+                case "Inventory": return new InventoryModel(args.size, args.outputs);
+                case "Wastes": return new WastesModel(args.output);
                 }
             };
-            var device = constructDevice(type, args);
-            device.name = name;
-            device.type = type;
+            var device = Object.merge(constructDevice(type, args), { // sugar
+                name: name,
+                type: type,
+                uistate: ko.observable("expanded"),
+                collapse: function () { device.uistate("collapsed"); },
+                expand: function () { device.uistate("expanded"); },
+                detach: function () { device.uistate("detached"); },
+                toggleCollapse: function () {
+                    var state = {"collapsed": "expanded", "expanded": "collapsed"}[device.uistate()];
+                    if (state) device.uistate(state);
+                },
+                send: function (receiverName, item) {
+                    var receiver = self.getDevice(receiverName);
+                    if (!receiver) return false;
 
-            device.uistate = ko.observable("expanded");
-            device.collapse = function () { device.uistate("collapsed"); };
-            device.expand = function () { device.uistate("expanded"); };
-            device.detach = function () { device.uistate("detached"); };
-            device.toggleCollapse = function () {
-                var uistate = device.uistate();
-                if (uistate === "collapsed") {
-                    device.uistate("expanded");
-                } else if (uistate === "expanded") {
-                    device.uistate("collapsed");
+                    var success = receiver.accept && receiver.accept(item);
+                    var $receiver = $("[data-device='" + receiverName + "']");
+                    var $sender = $("[data-device='" + name + "']");
+                    if (success) {
+                        $receiver.addClass("bumped");
+
+                        window.setTimeout(function () {
+                            $receiver.removeClass("bumped");
+                        }, 1000);
+                    } else {
+                        $sender.addClass("error");
+                        Notifications.show("Failed to send item from " + name + " to " + receiverName + ".");
+
+                        // window.setTimeout(function () {$sender.removeClass("error")}, 2000);
+                    }
+
+                    return success;
                 }
-            };
-
-            device.send = function (receiverName, item) {
-                var receiver = self.getDevice(receiverName);
-                if (!receiver) return false;
-
-                var success = receiver.accept && receiver.accept(item);
-                var $receiver = $("[data-device='" + receiverName + "']");
-                var $sender = $("[data-device='" + name + "']");
-                if (success) {
-                    $receiver.addClass("bumped");
-
-                    window.setTimeout(function () {
-                        $receiver.removeClass("bumped");
-                    }, 1000);
-                } else {
-                    $sender.addClass("error");
-                    Notifications.show("Failed to send item from " + name + " to " + receiverName + ".");
-
-                    // window.setTimeout(function () {$sender.removeClass("error")}, 2000);
-                }
-
-                return success;
-            };
+            });
 
             devices[prefix + name] = device;
             self.invalidateObservable();
@@ -456,12 +439,13 @@
                     var newPath = (path || "$") + "." + key;
                     var savedVal = saved[key];
 
-                    if (["number", "string"].find(typeof savedVal)) {
+                    if (["number", "string"].any(typeof savedVal)) { // sugar
                         if (ko.isObservable(model[key])) model[key](savedVal);
 
                     } else if (newPath === "$.player.inventory.items") {
                         model[key].removeAll();
                         savedVal.forEach(addIntentoryItem.bind(null, model[key]));
+
                     } else if (newPath === "$.wastes.junk") {
                         // todo
 
