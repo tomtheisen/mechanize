@@ -55,7 +55,7 @@ header {
 	background-color: black;
 	color: @highlight;
 	.box-sizing(border-box);
-	height: 1.6rem;
+	max-height: 1.6rem;
 	margin: 0;
 	padding: 0 2rem;
 	overflow: hidden;
@@ -66,9 +66,14 @@ header {
 	left: 0;
 
 	&:hover {
-		height: auto;
+		max-height: 20rem;
 		padding-bottom: 2rem;
 	}
+
+	.transition-property(~"padding-bottom, max-height");
+	.transition-duration(200ms);
+	.transition-timing-function(linear);
+
 }
 
 h1, h2, h3, h4 {
@@ -260,10 +265,7 @@ a {
 
 .active {
 	border: solid #ccc 1px;
-	.animation-name(active-pulse);
-	.animation-duration(0.5s);
-	.animation-iteration-count(infinite);
-	.animation-direction(alternate);
+	.animation(active-pulse 0.5s ease 0s infinite alternate);
 }
 
 // come on LESS, get your shit together
