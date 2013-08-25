@@ -24,6 +24,27 @@ REM ***********  assets  **************
 	copy aldrich.woff output\
 
 REM ***********  less  **************
-	build\dotless\dotless.compiler.exe -m style.less style.css
-	c:\python27\python.exe build\assetinjector.py < style.css > output\style.css
+	build\dotless\dotless.compiler.exe style.less style.css
+	build\cssinjector.py -img < style.css > output\style.css
 	del style.css
+
+REM ***********  mini  **************
+	mkdir outputmin
+	del /s /q outputmin\*.*
+
+	build\dotless\dotless.compiler.exe -m style.less style.css
+	build\cssinjector.py -img -font < style.css > outputmin\style.css
+	del style.css
+
+	copy output\*.js outputmin\
+	copy output\index.html outputmin\
+
+	pushd .
+		cd outputmin
+		..\build\htmlinjector.py -script -css -minify < index.html > mechanize.html
+
+		attrib +R mechanize.html
+		del /q *.*
+		attrib -R mechanize.html
+	popd
+
