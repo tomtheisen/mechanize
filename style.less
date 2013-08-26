@@ -1,4 +1,5 @@
 @import "prefixer.less";
+@import "mixins.less";
 
 @font-face {
   font-family: 'Aldrich';
@@ -11,14 +12,11 @@
 @panel: #364659;
 @accent: #55736D;
 @highlight: #D0D3B8;
-@green: #9DBF8E;  // ?
+@green: #9DBF8E;
 @space: #0D1216;
 
-.hover-highlight-background(@color) {
-	background-color: @color;
-	&:hover {
-		background-color: lighten(@color, 10%);
-	}
+* {
+	.box-sizing(border-box);
 }
 
 html {
@@ -39,6 +37,16 @@ body {
 	padding-top: 2rem;
 }
 
+@-webkit-keyframes rotate { 
+	from { -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+	to { -webkit-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
+}
+
+@-webkit-keyframes rotateb { 
+	from { -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+	to { -webkit-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
+}
+
 header {
 	h1 {
 		color: @background;
@@ -52,9 +60,9 @@ header {
 		}
 	}
 
+	.no-select;
 	background-color: black;
 	color: @highlight;
-	.box-sizing(border-box);
 	max-height: 1.6rem;
 	margin: 0;
 	padding: 0 2rem;
@@ -66,7 +74,7 @@ header {
 	left: 0;
 
 	&:hover {
-		max-height: 20rem;
+		max-height: 40rem;
 		padding-bottom: 2rem;
 	}
 
@@ -74,6 +82,80 @@ header {
 	.transition-duration(200ms);
 	.transition-timing-function(linear);
 
+
+	.rotation-clipper {
+		.fill-parent;
+
+		font-size: 200%;
+		overflow: hidden;
+
+		z-index: -1;
+	}
+
+	.rotation-container {
+		.fill-parent;
+		.preserve-3d;
+		.perspective(24em);
+	}
+
+	.cuboid {
+		@size: 25em;
+		@radius: @size * 0.6;
+		@face-size: @size * 0.4;
+
+		.absolute-center(@size, @size);
+		.preserve-3d;
+		.animation(rotate 200s linear 0s infinite normal);
+
+		.face {
+			.absolute-center(@face-size, @face-size);
+			border: solid #333 (@face-size * 0.05);
+			.opacity(0.5);
+		}
+
+		.face1 { .transform(translateZ(@radius)); }
+		.face2 { .transform(rotateY(45deg) translateZ(@radius)); }
+		.face3 { .transform(rotateY(90deg) translateZ(@radius)); }
+		.face4 { .transform(rotateY(135deg) translateZ(@radius)); }
+		.face5 { .transform(rotateY(180deg) translateZ(@radius)); }
+		.face6 { .transform(rotateY(225deg) translateZ(@radius)); }
+		.face7 { .transform(rotateY(270deg) translateZ(@radius)); }
+		.face8 { .transform(rotateY(315deg) translateZ(@radius)); }
+		.face9 { .transform(rotateX(45deg) translateZ(@radius)); }
+		.face10 { .transform(rotateX(90deg) translateZ(@radius)); }
+		.face11 { .transform(rotateX(135deg) translateZ(@radius)); }
+		.face12 { .transform(rotateX(225deg) translateZ(@radius)); }
+		.face13 { .transform(rotateX(270deg) translateZ(@radius)); }
+		.face14 { .transform(rotateX(315deg) translateZ(@radius)); }
+		.face15 { .transform(rotateY(90deg) rotateX(45deg) translateZ(@radius)); }
+		.face16 { .transform(rotateY(90deg) rotateX(135deg) translateZ(@radius)); }
+		.face17 { .transform(rotateY(90deg) rotateX(225deg) translateZ(@radius)); }
+		.face18 { .transform(rotateY(90deg) rotateX(315deg) translateZ(@radius)); }
+	}
+
+	.cube {
+		@size: 10em;
+		@radius: @size * 0.5;
+
+		.absolute-center(@size, @size);
+		.preserve-3d;
+		.animation(rotateb 90s linear 0s infinite normal);
+
+		.face {
+			.fill-parent();
+			background-color: rgba(64, 64, 64, 0.5);
+			color: black;
+			padding: 1em;
+			border: solid #111 (@size * 0.05);
+		}
+
+		.face1 { .transform(translateZ(@radius)); }
+		.face2 { .transform(rotateY(90deg) translateZ(@radius)); }
+		.face3 { .transform(rotateY(180deg) translateZ(@radius)); }
+		.face4 { .transform(rotateY(270deg) translateZ(@radius)); }
+		.face5 { .transform(rotateX(90deg) translateZ(@radius)); }
+		.face6 { .transform(rotateX(270deg) translateZ(@radius)); }
+	}
 }
 
 h1, h2, h3, h4 {
@@ -137,7 +219,6 @@ a {
 	.notification {
 		margin: 1.2rem;
 		.border-radius(1.2rem);
-		.box-sizing(border-box);
 		padding: 0.6rem 1.2rem;
 		background-color: @panel;
 		max-width: 30rem;
@@ -149,8 +230,11 @@ a {
 	}
 }
 
+#notificationsLog {
+	.allow-select();
+}
+
 .progress {
-	.box-sizing(border-box);
 	height: 2.4rem;
 	.border-radius(0 1.2rem 1.2rem 0);
 	padding: 0.6rem 0.6rem 0.6rem 0;
@@ -177,7 +261,7 @@ a {
 	color: @highlight;
 	padding: 0.9rem;
 	margin: 1.2rem;
-	width: 20rem;
+	width: 22rem;
 	display: inline-block;
 	vertical-align: top;
 }
@@ -208,7 +292,6 @@ a {
 	width: @resource-size;
 	height: @resource-size;
 	margin: 1px;
-	.box-sizing(border-box);
 	position: relative;
 
 	.wrap-every(8);
@@ -221,7 +304,7 @@ a {
 	}
 
 	.resource(@tile-index, @collection-delay) {
-		background-position-x: (-@resource-size * @tile-index);
+		background-position: (-@resource-size * @tile-index) 0;
 		.collect-delay(@collection-delay);
 	}
 
