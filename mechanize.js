@@ -549,13 +549,13 @@
         });
 
         $("header .max-toggle").click(function (e) {
-            //$(this).toggleClass("active").parent().toggleClass("maxed");
-            //e.preventDefault();
+            $(this).toggleClass("active").parent().toggleClass("maxed");
+            e.preventDefault();
         });
 
         $("header").click(function (e) {
-            $(this).toggleClass("maxed");
-            e.preventDefault();
+            // $(this).toggleClass("maxed");
+            // e.preventDefault();
         });
 
         $("#systemMessage").hide();
