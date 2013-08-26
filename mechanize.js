@@ -237,11 +237,7 @@
         self.junk = ko.observableArray(makeArray(80, function () { return { resource: ko.observable() }; }));
         self.junk().toJSON = function () { };
 
-        self.lastSeed = null;
         self.regenerateJunk = function () {
-            self.lastSeed = Math.random();
-            Math.seedrandom(self.lastSeed);
-
             self.junk().forEach(function (j) {
                 var rnd = Math.random(), type = null;
                 if (rnd < 0.01) {
@@ -261,7 +257,6 @@
         self.collect = function (wasteCell) {
             if (!wasteCell.resource()) return;
 
-            //var success = inventory.accept(wasteCell.resource());
             var success = self.send(inventoryName, wasteCell.resource());
             if (success) wasteCell.resource(null);
             return success;
@@ -408,7 +403,7 @@
         };
 
         self.toJSON = function() {
-            return self.all();
+            return ko.toJS(self.all());
         };
     };
 
@@ -426,6 +421,8 @@
 
         self.visualEffects = ko.observable(false);
         self.visualEffects.subscribe(function (vfx) {
+            Notifications.show("Visual effects are " + (vfx ? "on" : "off") + ".");
+
             if (vfx) {
                 $("body").addClass("vfx");
             } else {
@@ -463,8 +460,10 @@
                 inventoryItems.push(newItem);
             };
 
-            var addDevice = function (deviceCollection, device) {
-                deviceCollection.createDevice(device.name, device.type, device.creationParams);
+            var addDevice = function (deviceCollection, deviceInfo) {
+                var device = deviceCollection.createDevice(
+                    deviceInfo.name, deviceInfo.type, deviceInfo.creationParams);
+                if (deviceInfo.uistate) device.uistate(deviceInfo.uistate);
             };
 
             for (var key in saved) {
@@ -472,7 +471,7 @@
                     var newPath = (path || "$") + "." + key;
                     var savedVal = saved[key];
 
-                    if (["number", "string"].any(typeof savedVal)) { // sugar
+                    if (["number", "string", "boolean"].any(typeof savedVal)) { // sugar
                         if (ko.isObservable(model[key])) model[key](savedVal);
 
                     } else if (newPath === "$.player.inventory.items") {
