@@ -34,6 +34,25 @@
         killed = true;
     };
 
+    var saveFilter = function (key, value) {
+        if (value == null) return undefined;
+        return value;
+    };
+
+    var saveModel = function () {
+        try {
+            var serialized = ko.toJSON(mechanize, saveFilter);
+            window.localStorage.setItem("mechanize", serialized);
+            Notifications.show("Saved successfully.");
+        } catch (e) {
+            Notifications.show("Error occurred during save.");
+        }
+    };
+
+    window.dbg = function () {
+        console.log(ko.toJSON(mechanize, saveFilter, 2));
+    };
+
     var Notifications = (function () {
         var notifications = ko.observableArray([]);
 
@@ -377,13 +396,35 @@
         };
     };
 
+    var OptionsModel = function() {
+        var self = this;
+
+        self.autosave = ko.observable(false);
+        var autosaveIntervalId;
+        self.autosave.subscribe(function (autosave) {
+            Notifications.show("Autosave is " + (autosave ? "on" : "off") + ".");
+
+            if (autosaveIntervalId) clearInterval(autosaveIntervalId);
+            if (autosave) autosaveIntervalId = window.setInterval(saveModel, 120000);
+        });
+
+        self.visualEffects = ko.observable(false);
+        self.visualEffects.subscribe(function (vfx) {
+            if (vfx) {
+                $("body").addClass("vfx");
+            } else {
+                $("body").removeClass("vfx");
+            }
+        });
+    };
+
     var MechanizeViewModel = function () {
         var self = this;
 
         self.player = new PlayerModel("Bob");
         self.devices = new DeviceCollectionModel();
+        self.options = new OptionsModel();
         self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
-        self.autosave = ko.observable(false);
 
         self.initializeGame = function () {
             self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock"]});
@@ -394,25 +435,6 @@
     };
 
     window.addEventListener("load", function () {
-        var saveFilter = function (key, value) {
-            if (value == null) return undefined;
-            return value;
-        };
-
-        var saveModel = function () {
-            try {
-                var serialized = ko.toJSON(mechanize, saveFilter);
-                window.localStorage.setItem("mechanize", serialized);
-                Notifications.show("Saved successfully.");
-            } catch (e) {
-                Notifications.show("Error occurred during save.");
-            }
-        };
-
-        window.dbg = function () {
-            console.log(ko.toJSON(mechanize, saveFilter, 2));
-        };
-
         var load = function (model, saved, path) {
             var addIntentoryItem = function (inventoryItems, item) {
                 var resource = item.resource && new ResourceModel(item.resource.type);
@@ -453,14 +475,6 @@
 
         mechanize(new MechanizeViewModel());
         
-        var autosaveIntervalId;
-        mechanize().autosave.subscribe(function (autosave) {
-            Notifications.show("Autosave is " + (autosave ? "on" : "off") + ".");
-
-            if (autosaveIntervalId) clearInterval(autosaveIntervalId);
-            if (autosave) autosaveIntervalId = window.setInterval(saveModel, 120000);
-        });
-
         var serialized = window.localStorage.getItem('mechanize');
         if (serialized) {
             try {
@@ -522,7 +536,7 @@
 
         $("header .max-toggle").click(function () {
             $(this).toggleClass("active").parent().toggleClass("maxed");
-        })
+        });
 
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");
