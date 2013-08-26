@@ -35,7 +35,7 @@ REM ***********  mini  **************
 	build\cssinjector.py -img -font < style.css > outputmin\style.css
 	del style.css
 
-	copy output\*.js outputmin\
+	copy output\libs.js outputmin\
 	build\jsmin < mechanize.js > outputmin\mechanize.js
 	copy output\index.html outputmin\
 
