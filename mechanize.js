@@ -4,7 +4,6 @@
 //  knockout
 //  sugarjs
 //  zepto
-//  seedrandom
 
 (function (ko, $) {
     "use strict";
@@ -549,8 +548,14 @@
             $(this).remove();
         });
 
-        $("header .max-toggle").click(function () {
-            $(this).toggleClass("active").parent().toggleClass("maxed");
+        $("header .max-toggle").click(function (e) {
+            //$(this).toggleClass("active").parent().toggleClass("maxed");
+            //e.preventDefault();
+        });
+
+        $("header").click(function (e) {
+            $(this).toggleClass("maxed");
+            e.preventDefault();
         });
 
         $("#systemMessage").hide();
