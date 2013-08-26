@@ -37,15 +37,42 @@ body {
 	padding-top: 2rem;
 }
 
-@-webkit-keyframes rotate { 
+// come on LESS, get your shit together
+@-webkit-keyframes rotatea { 
 	from { -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
 	to { -webkit-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
 }
-
 @-webkit-keyframes rotateb { 
 	from { -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
 	to { -webkit-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
 }
+
+@-o-keyframes rotatea { 
+	from { -o-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+	to { -o-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
+}
+@-o-keyframes rotateb { 
+	from { -o-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+	to { -o-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
+}
+@-moz-keyframes rotatea { 
+	from { -moz-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+	to { -moz-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
+}
+@-moz-keyframes rotateb { 
+	from { -moz-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+	to { -moz-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
+}
+@keyframes rotatea { 
+	from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+	to { transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
+}
+@keyframes rotateb { 
+	from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+	to { transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
+}
+
+
 
 header {
 	h1 {
@@ -82,6 +109,11 @@ header {
 	.transition-duration(200ms);
 	.transition-timing-function(linear);
 
+	&.maxed {
+		height: 100%;
+		max-height: none;
+		.transition-duration(0ms);
+	}
 
 	.rotation-clipper {
 		.fill-parent;
@@ -105,7 +137,7 @@ header {
 
 		.absolute-center(@size, @size);
 		.preserve-3d;
-		.animation(rotate 200s linear 0s infinite normal);
+		.animation(rotatea 200s linear 0s infinite normal);
 
 		.face {
 			.absolute-center(@face-size, @face-size);
@@ -155,6 +187,26 @@ header {
 		.face4 { .transform(rotateY(270deg) translateZ(@radius)); }
 		.face5 { .transform(rotateX(90deg) translateZ(@radius)); }
 		.face6 { .transform(rotateX(270deg) translateZ(@radius)); }
+	}
+
+	.max-toggle {
+		width: 2rem;
+		height: 2rem;
+		position: absolute;
+		bottom: 2rem;
+		right: 2rem;
+		cusrsor: pointer;
+
+		border-color: transparent white white transparent;
+		border-width: 1rem;
+		border-style: solid;
+
+		&:hover::before {
+			content: "fullscreen";
+			position: absolute;
+			display: block;
+			right: 2rem;
+		}
 	}
 }
 

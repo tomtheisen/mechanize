@@ -520,6 +520,10 @@
             $(this).remove();
         });
 
+        $("header .max-toggle").click(function () {
+            $(this).toggleClass("active").parent().toggleClass("maxed");
+        })
+
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");
     });
