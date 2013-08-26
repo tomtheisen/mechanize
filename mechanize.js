@@ -9,8 +9,7 @@
 (function (ko, $) {
     "use strict";
 
-    var mechanize = ko.observable();
-    window.mechanize = mechanize;
+    var mechanize;
 
     ko.bindingHandlers.title = {
         init: function (element, valueAccessor) {
@@ -170,6 +169,11 @@
         var self = this;
         self.outputs = ko.observableArray(outputs || []);
 
+        self.creationParams = {
+            size: size,
+            outputs: outputs
+        };
+
         self.activeItem = ko.observable();
         self.items = ko.observableArray(makeArray(size, function () {
             return new InventoryItemModel(null);
@@ -225,6 +229,10 @@
 
     var WastesModel = function (inventoryName) {
         var self = this;
+
+        self.creationParams = {
+            output: inventoryName
+        };
 
         self.junk = ko.observableArray(makeArray(80, function () { return { resource: ko.observable() }; }));
         self.junk().toJSON = function () { };
@@ -287,6 +295,10 @@
 
     var RockCollectorModel = function (receiverName) {
         var self = this;
+
+        self.creationParams = {
+            output: receiverName
+        };
 
         self.tracker = new TimeTracker(10000, 200, function (cancelToken) {
             var success = self.send(receiverName, new ResourceModel("rock"));
@@ -394,6 +406,10 @@
             devices = {};
             self.invalidateObservable();
         };
+
+        self.toJSON = function() {
+            return self.all();
+        };
     };
 
     var OptionsModel = function() {
@@ -418,12 +434,16 @@
         });
     };
 
+    var created = false;
     var MechanizeViewModel = function () {
+        if (created) kill("Must not call MechanizeViewModel more than once.");
+        created = true;
         var self = this;
 
         self.player = new PlayerModel("Bob");
         self.devices = new DeviceCollectionModel();
         self.options = new OptionsModel();
+        self.modelVersion = ko.observable("0.1.0");
         self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 
         self.initializeGame = function () {
@@ -443,6 +463,10 @@
                 inventoryItems.push(newItem);
             };
 
+            var addDevice = function (deviceCollection, device) {
+                deviceCollection.createDevice(device.name, device.type, device.creationParams);
+            };
+
             for (var key in saved) {
                 if (saved.hasOwnProperty(key)) {
                     var newPath = (path || "$") + "." + key;
@@ -455,16 +479,9 @@
                         model[key].removeAll();
                         savedVal.forEach(addIntentoryItem.bind(null, model[key]));
 
-                    } else if (newPath === "$.wastes.junk") {
-                        // todo
-
                     } else if (newPath === "$.devices") {
                         model[key].removeAll();
-
-                        // todo get args from ?? somewhere
-                        //var args
-                        //savedVal
-
+                        savedVal.forEach(addDevice.bind(null, model[key]));
 
                     } else {
                         load(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
@@ -472,17 +489,14 @@
                 }
             }
         };
-
-        mechanize(new MechanizeViewModel());
         
         var serialized = window.localStorage.getItem('mechanize');
         if (serialized) {
             try {
-                var model = new MechanizeViewModel();
+                mechanize = new MechanizeViewModel();
                 var saved = JSON.parse(serialized);
-                load(model, saved);
+                load(mechanize, saved);
 
-                mechanize(model);
                 ko.applyBindings(mechanize);
 
                 Notifications.show("Loaded successfully.");
@@ -493,7 +507,8 @@
             }
         } else {
             try {
-                mechanize().initializeGame();
+                mechanize = new MechanizeViewModel();
+                mechanize.initializeGame();
                 ko.applyBindings(mechanize);
 
                 Notifications.show("Initialized mechanize.  Welcome.");
@@ -503,6 +518,7 @@
                 return;
             }
         }
+        window.mechanize = mechanize;
 
         $("body").on("click", "#saveButton", saveModel);
 

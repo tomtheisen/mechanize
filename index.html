@@ -18,7 +18,7 @@
 				<!-- /ko -->
 			</div>
 			<div>
-				<strong>Selected:</strong> 
+				<strong>Selected:</strong>&nbsp;
 				<!-- ko if: activeItem -->
 					<div>
 						Send <span data-bind="text: activeItem().resource().type"></span> to:
@@ -46,7 +46,7 @@
 		</script>
 
 		<script type="text/html" id="DeviceTemplateTrashEjector">
-			<strong>Contents:</strong>
+			<strong>Contents:</strong>&nbsp;
 			<!-- ko if: contents -->
 				<span data-bind="text: contents().type"></span>
 				<div class="progress" data-bind="if: tracker">
@@ -140,7 +140,7 @@
 			<div id="playerData" class="panel" data-bind="with: player">
 				<h2>Player</h2>
 				<p>
-					<strong>Name:</strong> 
+					<strong>Name:</strong>&nbsp;
 					<span data-bind="text: name"></span>
 				</p>
 			</div>
