@@ -90,8 +90,10 @@
         return result;
     }
 
-    var TimeTracker = function (totalms, updatems, complete, repeat) {
+    var TimeTracker = function (totalms, updatems, complete, repeat, autostart) {
         var self = this;
+
+        if (autostart === undefined) autostart = true;
 
         updatems = updatems || 1000;
         var elapsedms = ko.observable(0);
@@ -146,7 +148,7 @@
             return Object.reject(ko.toJS(self), 'progress'); // sugar
         };
 
-        self.start();
+        if (autostart) self.start();
     };
 
     var ResourceModel = function (type) {
@@ -164,17 +166,15 @@
         };
     };
 
-    var InventoryModel = function (size, outputs) {
+    var InventoryModel = function (args) {
         var self = this;
-        self.outputs = ko.observableArray(outputs || []);
 
-        self.creationParams = {
-            size: size,
-            outputs: outputs
-        };
+        self.params = Object.clone(args);
+        self.outputs = ko.observableArray(args.outputs || []);
+        self.params.outputs = self.outputs;
 
         self.activeItem = ko.observable();
-        self.items = ko.observableArray(makeArray(size, function () {
+        self.items = ko.observableArray(makeArray(self.params.size, function () {
             return new InventoryItemModel(null);
         }));
 
@@ -226,12 +226,10 @@
         };
     };
 
-    var WastesModel = function (inventoryName) {
+    var WastesModel = function (args) {
         var self = this;
 
-        self.creationParams = {
-            output: inventoryName
-        };
+        self.params = Object.clone(args);
 
         self.junk = ko.observableArray(makeArray(80, function () { return { resource: ko.observable() }; }));
         self.junk().toJSON = function () { };
@@ -250,13 +248,13 @@
         };
         self.regenerateJunk();
 
-        var regenerator = new TimeTracker(30000, 200, self.regenerateJunk, true);
+        var regenerator = new TimeTracker(30000, 100, self.regenerateJunk, true);
         self.regenerator = function () {return regenerator; };
 
         self.collect = function (wasteCell) {
             if (!wasteCell.resource()) return;
 
-            var success = self.send(inventoryName, wasteCell.resource());
+            var success = self.send(self.params.output, wasteCell.resource());
             if (success) wasteCell.resource(null);
             return success;
         };
@@ -278,7 +276,7 @@
 
             self.contents(inventoryItem);
 
-            self.tracker(new TimeTracker(20000, 200, function () {
+            self.tracker(new TimeTracker(20000, 100, function () {
                 self.contents(null);
                 self.tracker(null);
             }));
@@ -287,20 +285,25 @@
         };
     };
 
-    var RockCollectorModel = function (receiverName) {
+    var RockCollectorModel = function (args) {
         var self = this;
 
-        self.creationParams = {
-            output: receiverName
+        self.params = Object.clone(args);
+
+        self.tracker = new TimeTracker(10000, 100, function (cancelToken) {
+            var success = self.send(self.params.output, new ResourceModel("rock"));
+            if (!success) cancelToken.cancel = true;
+        }, true, self.params.running);
+
+        self.start = function() {
+            self.params.running = true;
+            self.tracker.start();
         };
 
-        self.tracker = new TimeTracker(10000, 200, function (cancelToken) {
-            var success = self.send(receiverName, new ResourceModel("rock"));
-            if (!success) cancelToken.cancel = true;
-        }, true);
-
-        self.start = self.tracker.start;
-        self.stop = self.tracker.stop;
+        self.stop = function() {
+            self.params.running = false;
+            self.tracker.stop();
+        };
     };
 
     var DeviceCollectionModel = function () {
@@ -342,13 +345,13 @@
             var constructDevice = function (type, args) {
                 switch (type) {
                 case "TrashEjector": 
-                    return new TrashEjectorModel();
+                    return new TrashEjectorModel(args);
                 case "RockCollector": 
-                    return new RockCollectorModel(args.output);
+                    return new RockCollectorModel(args);
                 case "Inventory": 
-                    return new InventoryModel(args.size, args.outputs);
+                    return new InventoryModel(args);
                 case "Wastes": 
-                    return new WastesModel(args.output);
+                    return new WastesModel(args);
                 }
             };
             var device = Object.merge(constructDevice(type, args), { // sugar
@@ -461,7 +464,7 @@
 
             var addDevice = function (deviceCollection, deviceInfo) {
                 var device = deviceCollection.createDevice(
-                    deviceInfo.name, deviceInfo.type, deviceInfo.creationParams);
+                    deviceInfo.name, deviceInfo.type, deviceInfo.params);
                 if (deviceInfo.uistate) device.uistate(deviceInfo.uistate);
             };
 
@@ -548,14 +551,8 @@
             $(this).remove();
         });
 
-        $("header .max-toggle").click(function (e) {
+        $("header .max-toggle").click(function () {
             $(this).toggleClass("active").parent().toggleClass("maxed");
-            e.preventDefault();
-        });
-
-        $("header").click(function (e) {
-            // $(this).toggleClass("maxed");
-            // e.preventDefault();
         });
 
         $("#systemMessage").hide();
