@@ -224,6 +224,15 @@
             var success = self.send(receiverName, self.activeItem().resource());
             if (success) self.popActive();
         };
+
+        self.setDeviceInfo = function (deviceInfo) {
+            self.items().zip(deviceInfo.items).forEach(function (tuple) {
+                var slot = tuple[0];
+                var newItem = tuple[1];
+                var resource = newItem.resource && new ResourceModel(newItem.resource.type) || null;
+                slot.resource(resource);
+            });
+        };
     };
 
     var WastesModel = function (args) {
@@ -266,15 +275,17 @@
         self.name = name;
     };
 
-    var TrashEjectorModel = function () {
+    var TrashEjectorModel = function (args) {
+        args = args; // to supress unused arg jshint error for now
+
         var self = this;
         self.tracker = ko.observable();
         self.contents = ko.observable();
 
-        self.accept = function (inventoryItem) {
+        self.accept = function (resource) {
             if (self.tracker()) return false;
 
-            self.contents(inventoryItem);
+            self.contents(resource);
 
             self.tracker(new TimeTracker(20000, 100, function () {
                 self.contents(null);
@@ -282,6 +293,12 @@
             }));
 
             return true;
+        };
+
+        self.setDeviceInfo = function (deviceInfo) {
+            if (deviceInfo.contents) {
+                self.accept(new ResourceModel(deviceInfo.contents.type));
+            }
         };
     };
 
@@ -455,17 +472,12 @@
 
     window.addEventListener("load", function () {
         var load = function (model, saved, path) {
-            var addIntentoryItem = function (inventoryItems, item) {
-                var resource = item.resource && new ResourceModel(item.resource.type);
-                var newItem = new InventoryItemModel(resource);
-                newItem.active(item.active);
-                inventoryItems.push(newItem);
-            };
-
             var addDevice = function (deviceCollection, deviceInfo) {
                 var device = deviceCollection.createDevice(
                     deviceInfo.name, deviceInfo.type, deviceInfo.params);
+
                 if (deviceInfo.uistate) device.uistate(deviceInfo.uistate);
+                if (device.setDeviceInfo) device.setDeviceInfo(deviceInfo);
             };
 
             for (var key in saved) {
@@ -475,10 +487,6 @@
 
                     if (["number", "string", "boolean"].any(typeof savedVal)) { // sugar
                         if (ko.isObservable(model[key])) model[key](savedVal);
-
-                    } else if (newPath === "$.player.inventory.items") {
-                        model[key].removeAll();
-                        savedVal.forEach(addIntentoryItem.bind(null, model[key]));
 
                     } else if (newPath === "$.devices") {
                         model[key].removeAll();
