@@ -156,7 +156,7 @@
         self.type = type;
     };
 
-    var InventoryItemModel = function (resource) {
+    var InventorySlotModel = function (resource) {
         var self = this;
         self.resource = ko.observable(resource);
         self.active = ko.observable(false);
@@ -175,7 +175,7 @@
 
         self.activeItem = ko.observable();
         self.items = ko.observableArray(makeArray(self.params.size, function () {
-            return new InventoryItemModel(null);
+            return new InventorySlotModel(null);
         }));
 
         self.deactivate = function () {
@@ -323,6 +323,33 @@
         };
     };
 
+    var DeviceConstructorModel = function (args) {
+        var self = this;
+
+        self.params = Object.clone(args);
+
+        self.items = ko.observableArray(makeArray(self.params.size, function () {
+            return new InventorySlotModel(null);
+        }));
+
+        self.accept = function (resource) {
+            var emptySlot = self.items().find(function (item) {  // sugar
+                return !item.resource(); 
+            });
+            if (!emptySlot) return false;
+
+            emptySlot.resource(resource);
+            return true;
+        };
+
+        self.fabricate = function () {
+            Notifications.show("Fabricating.");
+            self.items().forEach(function (slot) {
+                slot.resource(null);
+            });
+        };
+    };
+
     var DeviceCollectionModel = function () {
         var self = this;
         var prefix = "mechanize_";
@@ -369,6 +396,10 @@
                     return new InventoryModel(args);
                 case "Wastes": 
                     return new WastesModel(args);
+                case "DeviceConstructor":
+                    return new DeviceConstructorModel(args);    
+                default:
+                    throw new RangeError("Cannot create a device of type " + type);
                 }
             };
             var device = Object.merge(constructDevice(type, args), { // sugar
@@ -463,10 +494,11 @@
         self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 
         self.initializeGame = function () {
-            self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock"]});
+            self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock", "Fabrication Lab"]});
             self.devices.createDevice("Airlock", "TrashEjector");
-            self.devices.createDevice("Rock Collector Bot", "RockCollector", {output: "Cargo Hold"});
+            self.devices.createDevice("Fabrication Lab", "DeviceConstructor", {size: 8});
             self.devices.createDevice("Resource Mining", "Wastes", {output: "Cargo Hold"}).detach();
+            //self.devices.createDevice("Rock Collector Bot", "RockCollector", {output: "Cargo Hold"});
         };
     };
 

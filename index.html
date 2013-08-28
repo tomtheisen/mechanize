@@ -26,7 +26,7 @@
 					<div data-bind="foreach: outputs">
 						<button data-bind="
 							text: $data, 
-							click: $parent.sendActiveTo"></li>
+							click: $parent.sendActiveTo"></button>
 					</div>					
 				<!-- /ko -->
 				<!-- ko ifnot: activeItem -->
@@ -78,6 +78,17 @@
 					<div class="resource none"></div>
 				<!-- /ko -->
 			</div>
+		</script>
+
+		<script type="text/html" id="DeviceTemplateDeviceConstructor">
+			<strong>Materials</strong>
+			<div class="inventory resource-container" data-bind="foreach: items">
+				<div class="resource" data-bind="
+					css: (resource() ? resource().type : 'none') + (active() ? ' active' : ''), 
+					title: (resource() ? resource().type : '')">
+				</div>
+			</div>
+			<button data-bind="click: fabricate">Fabricate</button>
 		</script>
 	</head>
 	<body>
