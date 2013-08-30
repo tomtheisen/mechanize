@@ -327,6 +327,7 @@
         var self = this;
 
         self.params = Object.clone(args);
+        self.fabricator = ko.observable();
 
         self.items = ko.observableArray(makeArray(self.params.size, function () {
             return new InventorySlotModel(null);
@@ -343,21 +344,29 @@
         };
 
         self.fabricate = function () {
+            if (self.fabricator()) return; // already fabricating, can't start again
+
             Notifications.show(self.name + " is fabricating.");
-            var materials = self.items().filter(function (slot) {
-                return slot.resource();
-            }).groupBy(function (slot) {
-                return slot.resource().type;
-            });
 
-            console.log(materials);
-            if (materials["rock"] && materials["rock"].length >= 4) {
-                Notifications.show("Made a thingy!");   
-            }
+            self.fabricator(new TimeTracker(10000, 100, function () {
+                var materials = self.items().filter(function (slot) {
+                    return slot.resource();
+                }).groupBy(function (slot) {
+                    return slot.resource().type;
+                });
 
-            self.items().forEach(function (slot) {
-                slot.resource(null);
-            });
+                if (materials["rock"] && materials["rock"].length >= 4) {
+                    Notifications.show("Made a thingy!");   
+                } else {
+                    Notifications.show("It was total crap!");
+                }
+
+                self.items().forEach(function (slot) {
+                    slot.resource(null);
+                });
+
+                self.fabricator(null);
+            }));
         };
     };
 

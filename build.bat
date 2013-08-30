@@ -17,6 +17,9 @@ REM ***********  javascript  **************
 	type zepto.min.js >> output\libs.js
 	echo ; >> output\libs.js
 
+	type drag-drop.min.js >> output\libs.js
+	echo ; >> output\libs.js
+
 	copy mechanize.js output\
 	build\buildnumber.py build.txt output\mechanize.js "{{@build}}"
 

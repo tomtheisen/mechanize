@@ -4,6 +4,15 @@
 		<link rel="stylesheet" href="style.css" />
 		<title>mechanize</title>
 
+		<script type="text/html" id="TemplateProgress">
+			<div class="progress" data-bind="if: tracker">
+				<div class="value" data-bind="
+					style: { marginRight: tracker().progress.marginRight }, 
+					text: text">
+				</div>
+			</div>
+		</script>
+
 		<script type="text/html" id="DeviceTemplateInventory">
 			<div class="inventory resource-container" data-bind="foreach: items">
 				<!-- ko if: resource -->
@@ -49,11 +58,10 @@
 			<strong>Contents:</strong>&nbsp;
 			<!-- ko if: contents -->
 				<span data-bind="text: contents().type"></span>
-				<div class="progress" data-bind="if: tracker">
-					<div class="value" data-bind="style: { marginRight: tracker().progress.marginRight }">
-						Airlock cycling ...
-					</div>
-				</div>
+				<!-- ko template: { 
+					name: 'TemplateProgress', 
+					data: { tracker: tracker, text: 'Airlock cycling ...' } } -->
+				<!-- /ko -->
 			<!-- /ko -->
 			<!-- ko ifnot: contents -->
 				<span>Empty</span>
@@ -61,11 +69,10 @@
 		</script>
 
 		<script type="text/html" id="DeviceTemplateWastes">
-			<div class="progress">
-				<div class="value" data-bind="style: { marginRight: regenerator().progress.marginRight }">
-					Sector Warp ...
-				</div>
-			</div>
+			<!-- ko template: { 
+				name: 'TemplateProgress', 
+				data: { tracker: regenerator, text: 'Sector Warp ...' } } -->
+			<!-- /ko -->
 
 			<div id="wastes" class="resource-container" data-bind="foreach: junk">
 				<!-- ko if: resource -->
@@ -88,7 +95,13 @@
 					title: (resource() ? resource().type : '')">
 				</div>
 			</div>
-			<button data-bind="click: fabricate">Fabricate</button>
+			<!-- ko template: { 
+				name: 'TemplateProgress', 
+				data: { tracker: fabricator, text: 'Fabricating ...' } } -->
+			<!-- /ko -->
+			<!-- ko ifnot: fabricator -->
+				<button data-bind="click: fabricate">Fabricate</button>
+			<!-- /ko -->
 		</script>
 	</head>
 	<body>
@@ -120,8 +133,8 @@
 						<div class="cube">
 							<div class="face face1">mechanize<br>by Tom Theisen</div>
 							<div class="face face2">made with knockout, less, sugarjs, and zepto</div>
-							<div class="face face3">also lessprefixer, seedrandom</div>
-							<div class="face face4">build <!-- ko text: build --><!-- /ko --></div>
+							<div class="face face3">also lessprefixer, seedrandom, dragdrop</div>
+							<div class="face face4">build <!-- ko text: build --><!-- /ko --></div>	
 							<div class="face face5"></div>
 							<div class="face face6"></div>
 						</div>
