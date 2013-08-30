@@ -343,7 +343,18 @@
         };
 
         self.fabricate = function () {
-            Notifications.show("Fabricating.");
+            Notifications.show(self.name + " is fabricating.");
+            var materials = self.items().filter(function (slot) {
+                return slot.resource();
+            }).groupBy(function (slot) {
+                return slot.resource().type;
+            });
+
+            console.log(materials);
+            if (materials["rock"] && materials["rock"].length >= 4) {
+                Notifications.show("Made a thingy!");   
+            }
+
             self.items().forEach(function (slot) {
                 slot.resource(null);
             });
@@ -490,7 +501,8 @@
         self.player = new PlayerModel("Bob");
         self.devices = new DeviceCollectionModel();
         self.options = new OptionsModel();
-        self.modelVersion = ko.observable("0.1.0");
+        self.modelVersion = "0.1.0";
+        self.build = "{{@build}}";
         self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 
         self.initializeGame = function () {
@@ -552,7 +564,7 @@
                 mechanize.initializeGame();
                 ko.applyBindings(mechanize);
 
-                Notifications.show("Initialized mechanize.  Welcome.");
+                Notifications.show("Initialized mechanize version " + mechanize.modelVersion + ".  Welcome.");  
             } catch (e) {
                 console.log(e.message);
                 kill("Failed to set up game.");

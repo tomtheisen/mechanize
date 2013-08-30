@@ -18,6 +18,7 @@ REM ***********  javascript  **************
 	echo ; >> output\libs.js
 
 	copy mechanize.js output\
+	build\buildnumber.py build.txt output\mechanize.js "{{@build}}"
 
 REM ***********  assets  **************
 	copy aldrich.woff output\
@@ -36,7 +37,7 @@ REM ***********  mini  **************
 	del style.css
 
 	copy output\libs.js outputmin\
-	build\jsmin < mechanize.js > outputmin\mechanize.js
+	build\jsmin < output\mechanize.js > outputmin\mechanize.js
 	copy output\index.html outputmin\
 
 	pushd .
