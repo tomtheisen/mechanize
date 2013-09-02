@@ -245,6 +245,24 @@ button, label {
 	font-size: 1rem;
 	cursor: pointer;
 	margin: 0.3rem;
+
+	&[disabled] {
+		background-color: @accent;
+		color: @panel;
+		cursor: not-allowed;
+	}
+}
+
+input[type=text],
+input:not([type]) {
+	font-family: inherit;
+	height: 1.6rem;
+	border-radius: 1rem;
+	padding: 0 0.5rem;
+	background-color: @background;
+	.placeholder-color(@panel);
+	color: @highlight;
+	border-width: 0;
 }
 
 a {

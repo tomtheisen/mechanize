@@ -329,6 +329,7 @@
 
         self.params = Object.clone(args);
         self.fabricator = ko.observable();
+        self.nameToCreate = ko.observable("");
 
         self.items = ko.observableArray(makeArray(self.params.size, function () {
             return new InventorySlotModel(null);
@@ -360,7 +361,11 @@
 
                 var materialRequirement = "rock";
                 if (materials[materialRequirement] && materials[materialRequirement].length >= 4) {
-                    Notifications.show("Made a thingy!");
+                    var name = self.nameToCreate();
+                    Notifications.show("Made '" + name + "'.");
+                    mechanize.devices.createDevice(
+                        name, "RockCollector", { output: "Cargo Hold" });
+                    self.nameToCreate("");
                 } else {
                     Notifications.show("It was total crap!");
                 }
@@ -426,6 +431,10 @@
                     throw new RangeError("Cannot create a device of type " + type);
                 }
             };
+            if (self.getDevice(name)) {
+                Notifications.show("Failed to create '" + name + "' because it already exists.");
+                return; 
+            }
             var device = constructDevice(type, args);
             Object.merge(device, { // sugar
                 name: name,
@@ -594,7 +603,7 @@
                 var maxZ = $("#gameSurface .panel").get().map(function (panel) {
                     return parseInt(panel.style.zIndex, 10) || 0;
                 }).max();
-                element.style.zIndex = maxZ + 1;
+                $(element).css("z-index", maxZ + 1).removeClass("error");
             };
 
             var makeDraggable = function (node) {

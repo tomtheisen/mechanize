@@ -29,7 +29,6 @@
 				<!-- /ko -->
 			</div>
 			<div>
-				<strong>Selected:</strong>&nbsp;
 				<!-- ko if: activeItem -->
 					<div>
 						Send <span data-bind="text: activeItem().resource().type"></span> to:
@@ -39,9 +38,6 @@
 							text: $data, 
 							click: $parent.sendActiveTo"></button>
 					</div>					
-				<!-- /ko -->
-				<!-- ko ifnot: activeItem -->
-					None
 				<!-- /ko -->
 			</div>
 		</script>
@@ -102,7 +98,8 @@
 				data: { tracker: fabricator, text: 'Fabricating ...' } } -->
 			<!-- /ko -->
 			<!-- ko ifnot: fabricator -->
-				<button data-bind="click: fabricate">Fabricate</button>
+				<input placeholder="Name to create" maxlength="15	" data-bind="value: nameToCreate, valueUpdate: 'afterkeydown'">
+				<button data-bind="click: fabricate, enable: nameToCreate">Fabricate</button>
 			<!-- /ko -->
 		</script>
 	</head>
