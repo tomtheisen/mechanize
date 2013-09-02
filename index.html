@@ -142,15 +142,16 @@
 
 				<h1>mechanize</h1>
 				<div id="gameControls">
+					<button id="arrangePanelsButton">Arrange all panels</button>
 					<button id="saveButton">save</button>
 					<button id="resetButton">reset</button>
 					<label><input type="checkbox" data-bind="checked: notifications.shown">log</label>
 					<label><input type="checkbox" data-bind="checked: options.autosave">autosave</label>
 					<label><input type="checkbox" data-bind="checked: options.visualEffects">visual effects</label>
 					<!-- ko if: notifications.shown -->
-					<ul id="notificationsLog" data-bind="foreach: notifications.log">
-						<li data-bind="text: $data"></li>
-					</ul>
+						<ul id="notificationsLog" data-bind="foreach: notifications.log">
+							<li data-bind="text: $data"></li>
+						</ul>
 					<!-- /ko -->
 				</div>
 

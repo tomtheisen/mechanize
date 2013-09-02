@@ -268,6 +268,10 @@
             if (success) wasteCell.resource(null);
             return success;
         };
+
+        self.shutDown = function () {
+            self.regenerator.stop();
+        };
     };
 
     var PlayerModel = function (name) {
@@ -320,6 +324,10 @@
 
         self.stop = function() {
             self.params.running = false;
+            self.tracker.stop();
+        };
+
+        self.shutDown = function () {
             self.tracker.stop();
         };
     };
@@ -377,6 +385,10 @@
                 self.fabricator(null);
             }));
         };
+
+        self.shutDown = function () {
+            self.fabricator.stop();
+        };
     };
 
     var DeviceCollectionModel = function () {
@@ -415,10 +427,18 @@
         };
 
         self.destroyDevice = function (name) {
-            if (!devices[prefix + name]) {
+            var device = devices[prefix + name];
+            if (!device) {
                 Notifications.show("Failed to destroy '" + name + "' because it does not exist.");
                 return false;
             }
+
+            if (device.indestructible) {
+                Notifications.show("Failed to destroy '" + name + "' because it is indestructible.");
+                return false;
+            }
+
+            if (Object.isFunction(device.shutDown)) device.shutDown(); // sugar
 
             delete devices[prefix + name];
             self.invalidateObservable();
@@ -462,6 +482,10 @@
                     var receiver = self.getDevice(receiverName);
                     if (!receiver) return false;
 
+                    if (!self.getDevice(name)) {
+                        kill("'" + name + "' attempted to send, but it doesn't exist.");
+                    }
+
                     var success = receiver.accept && receiver.accept(item);
                     var $receiver = $("[data-device='" + receiverName + "']");
                     var $sender = $("[data-device='" + name + "']");
@@ -474,8 +498,6 @@
                     } else {
                         $sender.addClass("error");
                         Notifications.show("Failed to send item from " + name + " to " + receiverName + ".");
-
-                        // window.setTimeout(function () {$sender.removeClass("error")}, 2000);
                     }
 
                     return success;
@@ -607,6 +629,23 @@
         }
         window.mechanize = mechanize;
 
+        var  arrangeAllPanels = function () {
+            var top = 0, left = 0;
+            var totalHeight = $("#gameSurface").height();
+
+            $("#gameSurface .panel").forEach(function (panel, index) {
+                var $panel = $(panel), height = $panel.height();
+
+                if (top + height > totalHeight) {
+                    top = 0;
+                    left += $panel.width();
+                };
+
+                $panel.css({ top: top + "px", left: left + "px" });
+                top += height;
+            });
+        };
+
         (function registerGameSurfaceDomObserver () {
             var dragDropBindings = [];
 
@@ -654,7 +693,7 @@
                 });
             });
 
-            $("#gameSurface .panel").forEach(makeDraggable);
+            arrangeAllPanels();
             observer.observe($("#gameSurface")[0], { childList: true });
         })();
 
@@ -679,6 +718,8 @@
                 window.location.reload();
             });
         });
+
+        $("body").on("click", "#arrangePanelsButton", arrangeAllPanels);
 
         $("#notificationsButton").click(function () {
             $("#notificationsLog").toggle();
