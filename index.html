@@ -5,12 +5,14 @@
 		<title>mechanize</title>
 
 		<script type="text/html" id="TemplateProgress">
-			<div class="progress" data-bind="if: tracker">
+			<!-- ko if: tracker -->
+			<div class="progress">
 				<div class="value" data-bind="
 					style: { marginRight: tracker().progress.marginRight }, 
 					text: text">
 				</div>
 			</div>
+			<!-- /ko -->
 		</script>
 
 		<script type="text/html" id="DeviceTemplateInventory">

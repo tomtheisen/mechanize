@@ -335,6 +335,8 @@
         }));
 
         self.accept = function (resource) {
+            if (self.fabricator()) return false;
+
             var emptySlot = self.items().find(function (item) {  // sugar
                 return !item.resource(); 
             });
