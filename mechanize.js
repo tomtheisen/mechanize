@@ -414,6 +414,17 @@
             return devices[prefix + name];
         };
 
+        self.destroyDevice = function (name) {
+            if (!devices[prefix + name]) {
+                Notifications.show("Failed to destroy '" + name + "' because it does not exist.");
+                return false;
+            }
+
+            delete devices[prefix + name];
+            self.invalidateObservable();
+            return true;
+        };
+
         self.createDevice = function (name, type, args) {
             var constructDevice = function (type, args) {
                 switch (type) {
@@ -608,7 +619,8 @@
 
             var makeDraggable = function (node) {
                 if (node.classList && node.classList.contains("panel")) {
-                    var handle = $(node).find("h2")[0];
+                    var $node = $(node);
+                    var handle = $node.find("h2")[0];
                     var options = { 
                         anchor: handle, 
                         boundingBox: 'offsetParent', 
@@ -618,7 +630,8 @@
                     var newLeft = $("#gameSurface .panel").get().map(function (panel) {
                         return parseInt(panel.style.left, 10) + $(panel).width() || 0;
                     }).max();
-                    node.style.left = newLeft + "px";
+                    var farRight = $("#gameSurface").width() - $node.width();
+                    $node.css("left", Math.min(newLeft, farRight) + "px");
 
                     var binding = DragDrop.bind(node, options);
                     Object.merge(binding, { element: node } ); // sugar
