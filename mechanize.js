@@ -602,6 +602,11 @@
                         dragstart: bringToFront.bind(null, node)
                     };
                     bringToFront(node);
+                    var newLeft = $("#gameSurface .panel").get().map(function (panel) {
+                        return parseInt(panel.style.left) + $(panel).width() || 0;
+                    }).max();
+                    node.style.left = newLeft + "px";
+
                     var binding = DragDrop.bind(node, options);
                     Object.merge(binding, { element: node } ); // sugar
                     dragDropBindings.push(binding);
