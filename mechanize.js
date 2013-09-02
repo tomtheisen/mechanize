@@ -586,19 +586,22 @@
         (function registerGameSurfaceDomObserver () {
             window.dragDropBindings = [];
 
+            var bringToFront = function (element) {
+                var maxZ = $("#gameSurface .panel").get().map(function (panel) {
+                    return parseInt(panel.style.zIndex) || 0;
+                }).max();
+                element.style.zIndex = maxZ + 1;
+            };
+
             var makeDraggable = function (node) {
                 if (node.classList && node.classList.contains("panel")) {
                     var handle = $(node).find("h2")[0];
                     var options = { 
                         anchor: handle, 
                         boundingBox: 'offsetParent', 
-                        dragstart: function () {
-                            var maxZ = $("#gameSurface .panel").get().map(function (panel) {
-                                return parseInt(panel.style.zIndex) || 0;
-                            }).max();
-                            node.style.zIndex = maxZ + 1;
-                        }
+                        dragstart: bringToFront.bind(null, node)
                     };
+                    bringToFront(node);
                     var binding = DragDrop.bind(node, options);
                     Object.merge(binding, { element: node } ); // sugar
                     dragDropBindings.push(binding);
