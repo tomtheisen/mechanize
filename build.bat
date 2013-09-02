@@ -17,7 +17,7 @@ REM ***********  javascript  **************
 	type zepto.min.js >> output\libs.js
 	echo ; >> output\libs.js
 
-	type drag-drop.min.js >> output\libs.js
+	build\jsmin < drag-drop.js >> output\libs.js
 	echo ; >> output\libs.js
 
 	copy mechanize.js output\
@@ -52,3 +52,4 @@ REM ***********  mini  **************
 		attrib -R mechanize.html
 	popd
 
+echo Mechanize build complete.

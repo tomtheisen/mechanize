@@ -422,7 +422,8 @@
                     throw new RangeError("Cannot create a device of type " + type);
                 }
             };
-            var device = Object.merge(constructDevice(type, args), { // sugar
+            var device = constructDevice(type, args);
+            Object.merge(device, { // sugar
                 name: name,
                 type: type,
                 uistate: ko.observable("expanded"),
@@ -581,6 +582,47 @@
             }
         }
         window.mechanize = mechanize;
+
+        (function registerGameSurfaceDomObserver () {
+            window.dragDropBindings = [];
+
+            var makeDraggable = function (node) {
+                if (node.classList && node.classList.contains("panel")) {
+                    var handle = $(node).find("h2")[0];
+                    var options = { 
+                        anchor: handle, 
+                        boundingBox: 'offsetParent', 
+                        dragstart: function () {
+                            var maxZ = $("#gameSurface .panel").get().map(function (panel) {
+                                return parseInt(panel.style.zIndex) || 0;
+                            }).max();
+                            node.style.zIndex = maxZ + 1;
+                        }
+                    };
+                    var binding = DragDrop.bind(node, options);
+                    Object.merge(binding, { element: node } ); // sugar
+                    dragDropBindings.push(binding);
+                }
+            };
+
+            var unmakeDraggable = function (node) {
+                var binding = dragDropBindings.find(function (b) {
+                    return b.element === node;
+                });
+                if (!binding) return;
+                DragDrop.unbind(binding);
+            };
+
+            var observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function (mutation) {
+                    Array.prototype.forEach.call(mutation.addedNodes, makeDraggable);
+                    Array.prototype.forEach.call(mutation.removedNodes, unmakeDraggable);
+                });
+            });
+
+            $("#gameSurface .panel").forEach(makeDraggable);
+            observer.observe($("#gameSurface")[0], { childList: true });
+        })();
 
         $("body").on("click", "#saveButton", saveModel);
 

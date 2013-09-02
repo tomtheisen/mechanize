@@ -35,6 +35,7 @@ body {
 	color: @highlight;
 	margin: 0;
 	padding-top: 2rem;
+	height: 100%;
 }
 
 // come on LESS, get your shit together
@@ -256,7 +257,9 @@ a {
 
 #gameSurface {
 	width: 100%;
+	height: 100%;
 	white-space: nowrap;
+	position: relative;
 
 	&>* {
 		white-space: normal;
@@ -313,12 +316,15 @@ a {
 	background-color: @panel;
 	color: @highlight;
 	padding: 0.9rem;
-	margin: 1.2rem;
 	width: 22rem;
-	display: inline-block;
 	vertical-align: top;
 	z-index: 1;
-	position: relative;
+	position: absolute;
+	border: solid @background 0.3rem;
+
+	h2 {
+		cursor: move;
+	}
 }
 
 .resource-container {
