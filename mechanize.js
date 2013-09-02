@@ -4,8 +4,9 @@
 //  knockout
 //  sugarjs
 //  zepto
+//  DragDrop
 
-(function (ko, $) {
+(function (ko, $, DragDrop) {
     "use strict";
 
     var mechanize;
@@ -355,8 +356,9 @@
                     return slot.resource().type;
                 });
 
-                if (materials["rock"] && materials["rock"].length >= 4) {
-                    Notifications.show("Made a thingy!");   
+                var materialRequirement = "rock";
+                if (materials[materialRequirement] && materials[materialRequirement].length >= 4) {
+                    Notifications.show("Made a thingy!");
                 } else {
                     Notifications.show("It was total crap!");
                 }
@@ -584,11 +586,11 @@
         window.mechanize = mechanize;
 
         (function registerGameSurfaceDomObserver () {
-            window.dragDropBindings = [];
+            var dragDropBindings = [];
 
             var bringToFront = function (element) {
                 var maxZ = $("#gameSurface .panel").get().map(function (panel) {
-                    return parseInt(panel.style.zIndex) || 0;
+                    return parseInt(panel.style.zIndex, 10) || 0;
                 }).max();
                 element.style.zIndex = maxZ + 1;
             };
@@ -603,7 +605,7 @@
                     };
                     bringToFront(node);
                     var newLeft = $("#gameSurface .panel").get().map(function (panel) {
-                        return parseInt(panel.style.left) + $(panel).width() || 0;
+                        return parseInt(panel.style.left, 10) + $(panel).width() || 0;
                     }).max();
                     node.style.left = newLeft + "px";
 
@@ -669,4 +671,4 @@
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");
     });
-})(window.ko, window.$);
+})(window.ko, window.$, window.DragDrop);
