@@ -16,418 +16,419 @@
 @space: #0D1216;
 
 * {
-	.box-sizing(border-box);
+    .box-sizing(border-box);
 }
 
 html {
-	height: 100%;
-	margin: 0;
-	font-size: 10pt;
+    height: 100%;
+    margin: 0;
+    font-size: 10pt;
 }
 
 :last-child {
-	margin-bottom: 0 !important;
+    margin-bottom: 0 !important;
 }
 
 body {
-	font-family: 'Aldrich', sans-serif;
-	background-color: @background;
-	color: @highlight;
-	margin: 0;
-	padding-top: 2rem;
-	height: 100%;
+    font-family: 'Aldrich', sans-serif;
+    background-color: @background;
+    color: @highlight;
+    margin: 0;
+    padding-top: 2rem;
+    height: 100%;
 }
 
 // come on LESS, get your shit together
 @-webkit-keyframes rotatea { 
-	from { -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-	to { -webkit-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
+    from { -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    to { -webkit-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
 }
 @-webkit-keyframes rotateb { 
-	from { -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-	to { -webkit-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
+    from { -webkit-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    to { -webkit-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
 }
 
 @-o-keyframes rotatea { 
-	from { -o-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-	to { -o-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
+    from { -o-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    to { -o-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
 }
 @-o-keyframes rotateb { 
-	from { -o-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-	to { -o-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
+    from { -o-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    to { -o-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
 }
 @-moz-keyframes rotatea { 
-	from { -moz-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-	to { -moz-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
+    from { -moz-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    to { -moz-transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
 }
 @-moz-keyframes rotateb { 
-	from { -moz-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-	to { -moz-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
+    from { -moz-transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    to { -moz-transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
 }
 @keyframes rotatea { 
-	from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-	to { transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
+    from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    to { transform: rotateX(360deg) rotateY(720deg) rotateZ(1080deg); }
 }
 @keyframes rotateb { 
-	from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
-	to { transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
+    from { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg); }
+    to { transform: rotateX(720deg) rotateY(-1080deg) rotateZ(360deg); }
 }
 
 header {
-	h1 {
-		color: @background;
-	}
+    h1 {
+        color: @background;
+    }
 
-	button, label {
-		.hover-highlight-background(@panel);
+    button, label {
+        .hover-highlight-background(@panel);
 
-		&.warning {
-			.hover-highlight-background(#662937);
-		}
-	}
+        &.warning {
+            .hover-highlight-background(#662937);
+        }
+    }
 
-	.no-select;
-	background-color: black;
-	color: @highlight;
-	max-height: 1.6rem;
-	margin: 0;
-	padding: 0 2rem;
-	overflow: hidden;
-	position: fixed;
-	z-index: 99;
-	width: 100%;
-	top: 0;
-	left: 0;
+    .no-select;
+    background-color: black;
+    color: @highlight;
+    max-height: 1.6rem;
+    margin: 0;
+    padding: 0 2rem;
+    overflow: hidden;
+    position: fixed;
+    z-index: 99;
+    width: 100%;
+    top: 0;
+    left: 0;
 
-	&:hover {
-		max-height: 40rem;
-		padding-bottom: 2rem;
-	}
+    &:hover {
+        max-height: 40rem;
+        padding-bottom: 2rem;
+    }
 
-	.transition-property(~"padding-bottom, max-height");
-	.transition-duration(200ms);
-	.transition-timing-function(linear);
+    .transition-property(~"padding-bottom, max-height");
+    .transition-duration(200ms);
+    .transition-timing-function(linear);
 
-	&.maxed {
-		height: 100%;
-		max-height: none;
-		.transition-duration(0ms);
-	}
+    &.maxed {
+        height: 100%;
+        max-height: none;
+        .transition-duration(0ms);
+    }
 
-	.rotation-clipper {
-		display: none;
-		body.vfx & { display: block; }
+    .rotation-clipper {
+        display: none;
+        body.vfx & { display: block; }
 
-		.fill-parent;
+        .fill-parent;
 
-		font-size: 200%;
-		overflow: hidden;
+        font-size: 200%;
+        overflow: hidden;
 
-		z-index: -1;
-	}
+        z-index: -1;
+    }
 
-	.rotation-container {
-		.fill-parent;
-		.preserve-3d;
-		.perspective(24em);
-	}
+    .rotation-container {
+        .fill-parent;
+        .preserve-3d;
+        .perspective(24em);
+    }
 
-	.cuboid {
-		@size: 25em;
-		@radius: @size * 0.6;
-		@face-size: @size * 0.4;
+    .cuboid {
+        @size: 25em;
+        @radius: @size * 0.6;
+        @face-size: @size * 0.4;
 
-		.absolute-center(@size, @size);
-		.preserve-3d;
-		.animation(rotatea 200s linear 0s infinite normal);
+        .absolute-center(@size, @size);
+        .preserve-3d;
+        .animation(rotatea 200s linear 0s infinite normal);
 
-		.face {
-			.absolute-center(@face-size, @face-size);
-			border: solid #333 (@face-size * 0.05);
-			.opacity(0.5);
-		}
+        .face {
+            .absolute-center(@face-size, @face-size);
+            border: solid #333 (@face-size * 0.05);
+            .opacity(0.5);
+        }
 
-		.face1 { .transform(translateZ(@radius)); }
-		.face2 { .transform(rotateY(45deg) translateZ(@radius)); }
-		.face3 { .transform(rotateY(90deg) translateZ(@radius)); }
-		.face4 { .transform(rotateY(135deg) translateZ(@radius)); }
-		.face5 { .transform(rotateY(180deg) translateZ(@radius)); }
-		.face6 { .transform(rotateY(225deg) translateZ(@radius)); }
-		.face7 { .transform(rotateY(270deg) translateZ(@radius)); }
-		.face8 { .transform(rotateY(315deg) translateZ(@radius)); }
-		.face9 { .transform(rotateX(45deg) translateZ(@radius)); }
-		.face10 { .transform(rotateX(90deg) translateZ(@radius)); }
-		.face11 { .transform(rotateX(135deg) translateZ(@radius)); }
-		.face12 { .transform(rotateX(225deg) translateZ(@radius)); }
-		.face13 { .transform(rotateX(270deg) translateZ(@radius)); }
-		.face14 { .transform(rotateX(315deg) translateZ(@radius)); }
-		.face15 { .transform(rotateY(90deg) rotateX(45deg) translateZ(@radius)); }
-		.face16 { .transform(rotateY(90deg) rotateX(135deg) translateZ(@radius)); }
-		.face17 { .transform(rotateY(90deg) rotateX(225deg) translateZ(@radius)); }
-		.face18 { .transform(rotateY(90deg) rotateX(315deg) translateZ(@radius)); }
-	}
+        .face1 { .transform(translateZ(@radius)); }
+        .face2 { .transform(rotateY(45deg) translateZ(@radius)); }
+        .face3 { .transform(rotateY(90deg) translateZ(@radius)); }
+        .face4 { .transform(rotateY(135deg) translateZ(@radius)); }
+        .face5 { .transform(rotateY(180deg) translateZ(@radius)); }
+        .face6 { .transform(rotateY(225deg) translateZ(@radius)); }
+        .face7 { .transform(rotateY(270deg) translateZ(@radius)); }
+        .face8 { .transform(rotateY(315deg) translateZ(@radius)); }
+        .face9 { .transform(rotateX(45deg) translateZ(@radius)); }
+        .face10 { .transform(rotateX(90deg) translateZ(@radius)); }
+        .face11 { .transform(rotateX(135deg) translateZ(@radius)); }
+        .face12 { .transform(rotateX(225deg) translateZ(@radius)); }
+        .face13 { .transform(rotateX(270deg) translateZ(@radius)); }
+        .face14 { .transform(rotateX(315deg) translateZ(@radius)); }
+        .face15 { .transform(rotateY(90deg) rotateX(45deg) translateZ(@radius)); }
+        .face16 { .transform(rotateY(90deg) rotateX(135deg) translateZ(@radius)); }
+        .face17 { .transform(rotateY(90deg) rotateX(225deg) translateZ(@radius)); }
+        .face18 { .transform(rotateY(90deg) rotateX(315deg) translateZ(@radius)); }
+    }
 
-	.cube {
-		@size: 10em;
-		@radius: @size * 0.5;
+    .cube {
+        @size: 10em;
+        @radius: @size * 0.5;
 
-		.absolute-center(@size, @size);
-		.preserve-3d;
-		.animation(rotateb 90s linear 0s infinite normal);
+        .absolute-center(@size, @size);
+        .preserve-3d;
+        .animation(rotateb 90s linear 0s infinite normal);
 
-		.face {
-			.fill-parent();
-			background-color: rgba(64, 64, 64, 0.5);
-			color: black;
-			padding: 1em;
-			border: solid #111 (@size * 0.05);
-		}
+        .face {
+            .fill-parent();
+            background-color: rgba(64, 64, 64, 0.5);
+            color: black;
+            padding: 1em;
+            border: solid #111 (@size * 0.05);
+        }
 
-		.face1 { .transform(translateZ(@radius)); }
-		.face2 { .transform(rotateY(90deg) translateZ(@radius)); }
-		.face3 { .transform(rotateY(180deg) translateZ(@radius)); }
-		.face4 { .transform(rotateY(270deg) translateZ(@radius)); }
-		.face5 { .transform(rotateX(90deg) translateZ(@radius)); }
-		.face6 { .transform(rotateX(270deg) translateZ(@radius)); }
-	}
+        .face1 { .transform(translateZ(@radius)); }
+        .face2 { .transform(rotateY(90deg) translateZ(@radius)); }
+        .face3 { .transform(rotateY(180deg) translateZ(@radius)); }
+        .face4 { .transform(rotateY(270deg) translateZ(@radius)); }
+        .face5 { .transform(rotateX(90deg) translateZ(@radius)); }
+        .face6 { .transform(rotateX(270deg) translateZ(@radius)); }
+    }
 
-	.max-toggle {
-		width: 2rem;
-		height: 2rem;
-		position: absolute;
-		bottom: 2rem;
-		right: 2rem;
-		cusrsor: pointer;
+    .max-toggle {
+        width: 2rem;
+        height: 2rem;
+        position: absolute;
+        bottom: 2rem;
+        right: 2rem;
+        cusrsor: pointer;
 
-		border-color: transparent white white transparent;
-		border-width: 1rem;
-		border-style: solid;
+        border-color: transparent white white transparent;
+        border-width: 1rem;
+        border-style: solid;
 
-		&:hover::before {
-			content: "fullscreen";
-			position: absolute;
-			display: block;
-			right: 2rem;
-		}
-	}
+        &:hover::before {
+            content: "fullscreen";
+            position: absolute;
+            display: block;
+            right: 2rem;
+        }
+    }
 }
 
 h1, h2, h3, h4 {
-	margin: 0 0 1rem 0;
+    margin: 0 0 1rem 0;
 }
 
 h1 {
-	font-size: 2rem;
+    font-size: 2rem;
 }
 
 h3 {
-	font-size: 1.1rem;
+    font-size: 1.1rem;
 }
 
 p {
-	padding: 0.3rem;
+    padding: 0.3rem;
 }
 
 ul {
-	padding: 0;
-	list-style-type: none;
+    padding: 0;
+    list-style-type: none;
 }
 
 button, label {
-	display: inline-block;
-	.hover-highlight-background(@accent);
-	color: @highlight;
-	border-width: 0; 
-	.border-radius(1rem);
-	height: 1.6rem;
-	padding: 0 1.2rem;
-	font-family: 'Aldrich', sans-serif;
-	font-size: 1rem;
-	cursor: pointer;
-	margin: 0.3rem;
+    display: inline-block;
+    .hover-highlight-background(@accent);
+    color: @highlight;
+    border-width: 0; 
+    .border-radius(1rem);
+    height: 1.6rem;
+    padding: 0 1.2rem;
+    font-family: 'Aldrich', sans-serif;
+    font-size: 1rem;
+    cursor: pointer;
+    margin: 0.3rem;
 
-	&[disabled] {
-		background-color: @accent;
-		color: @panel;
-		cursor: not-allowed;
-	}
+    &[disabled] {
+        background-color: @accent;
+        color: @panel;
+        cursor: not-allowed;
+    }
 }
 
 input[type=text],
 input:not([type]) {
-	font-family: inherit;
-	height: 1.6rem;
-	border-radius: 1rem;
-	padding: 0 0.5rem;
-	background-color: @background;
-	.placeholder-color(@panel);
-	color: @highlight;
-	border-width: 0;
+    font-family: inherit;
+    height: 1.6rem;
+    border-radius: 1rem;
+    padding: 0 0.5rem;
+    background-color: @background;
+    .placeholder-color(@panel);
+    color: @highlight;
+    border-width: 0;
 }
 
 a {
-	color: @highlight;
+    color: @highlight;
 }
 
 #systemMessage {
-	padding: 3rem;
+    padding: 3rem;
 }
 
 #gameSurface {
-	width: 100%;
-	height: 100%;
-	white-space: nowrap;
-	position: relative;
+    width: 100%;
+    height: 100%;
+    white-space: nowrap;
+    position: relative;
 
-	&>* {
-		white-space: normal;
-	}
+    &>* {
+        white-space: normal;
+    }
 }
 
 #notifications {
-	position: fixed;
-	margin: 1.2rem;
-	right: 0;
-	bottom: 0;
-	
-	.notification {
-		margin: 1.2rem;
-		.border-radius(1.2rem);
-		padding: 0.6rem 1.2rem;
-		background-color: @panel;
-		max-width: 60rem;
-		max-height: 5rem;
-		white-space: nowrap;
-		overflow: hidden;
-		cursor: pointer;
-		text-align: right;
-	}
+    position: fixed;
+    margin: 1.2rem;
+    right: 0;
+    bottom: 0;
+    
+    .notification {
+        margin: 1.2rem;
+        .border-radius(1.2rem);
+        padding: 0.6rem 1.2rem;
+        background-color: @panel;
+        max-width: 60rem;
+        max-height: 5rem;
+        white-space: nowrap;
+        overflow: hidden;
+        cursor: pointer;
+        text-align: right;
+    }
 }
 
 #notificationsLog {
-	.allow-select();
+    .allow-select();
 }
 
 .progress {
-	height: 2.4rem;
-	.border-radius(0 1.2rem 1.2rem 0);
-	padding: 0.6rem 0.6rem 0.6rem 0;
-	overflow: hidden;
-	margin: 1rem 0;
-	background-color: @accent;
+    height: 2.4rem;
+    .border-radius(0 1.2rem 1.2rem 0);
+    padding: 0.6rem 0.6rem 0.6rem 0;
+    overflow: hidden;
+    margin: 1rem 0;
+    background-color: @accent;
 
-	.value {
-		.border-radius(0 0.6rem 0.6rem 0);
-		height: 1.2rem;
-		text-indent: 1em;
-		font-size: 0.8rem;
-		background-color: @highlight;
-		color: @panel;
-		overflow: hidden;
-		position: relative;
-		white-space: nowrap;
-	}
+    .value {
+        .border-radius(0 0.6rem 0.6rem 0);
+        height: 1.2rem;
+        text-indent: 1em;
+        font-size: 0.8rem;
+        background-color: @highlight;
+        color: @panel;
+        overflow: hidden;
+        position: relative;
+        white-space: nowrap;
+    }
 }
 
 .panel {
-	.border-radius(1.2rem);
-	background-color: @panel;
-	color: @highlight;
-	padding: 0.9rem;
-	width: 22rem;
-	vertical-align: top;
-	z-index: 1;
-	position: absolute;
-	border: solid @background 0.3rem;
+    .border-radius(1.2rem);
+    background-color: @panel;
+    color: @highlight;
+    padding: 0.9rem;
+    width: 22rem;
+    vertical-align: top;
+    z-index: 1;
+    position: absolute;
+    border: solid @background 0.3rem;
 
-	h2 {
-		cursor: move;
-	}
+    h2 {
+        cursor: move;
+    }
 }
 
 .resource-container {
-	overflow: auto;
-	margin-top: 1.2rem;
-	padding: 0.6rem;
-	background-color: @space;
-	border: solid @accent 0.6rem;
-	.border-radius(0.6rem);
-	margin: 0.6rem 0;
-	display: inline-block;
+    overflow: auto;
+    margin-top: 1.2rem;
+    padding: 0.6rem;
+    background-color: @space;
+    border: solid @accent 0.6rem;
+    .border-radius(0.6rem);
+    margin: 0.6rem 0;
+    display: inline-block;
 }
 
 .wrap-every(@n) {
-	/* http://stackoverflow.com/a/18122516/44743 */
-	@t: ~":nth-child(@{n}n+1)";
-  	&@{t} {
+    /* http://stackoverflow.com/a/18122516/44743 */
+    @t: ~":nth-child(@{n}n+1)";
+    &@{t} {
         clear: left;
     }
 }
 
 .resource {
-	@resource-size: 24px;
+    @resource-size: 24px;
 
-	float: left;
-	width: @resource-size;
-	height: @resource-size;
-	margin: 1px;
-	position: relative;
+    float: left;
+    width: @resource-size;
+    height: @resource-size;
+    margin: 1px;
+    position: relative;
 
-	.wrap-every(8);
-	
-	.collect-delay(@delay) {
-		&:hover {
-			.collect-progress 	{ .transition-duration(@delay); }
-			.collector 			{ .transition-delay(@delay); }
-		}
-	}
+    .wrap-every(8);
+    
+    .collect-delay(@delay) {
+        &:hover {
+            .collect-progress   { .transition-duration(@delay); }
+            .collector          { .transition-delay(@delay); }
+        }
+    }
 
-	.resource(@tile-index, @collection-delay) {
-		background-position: (-@resource-size * @tile-index) 0;
-		.collect-delay(@collection-delay);
-	}
+    .resource(@tile-index, @collection-delay) {
+        background-position: (-@resource-size * @tile-index) 0;
+        .collect-delay(@collection-delay);
+    }
 
-	background-image: url(resource-tiles.png);
-	background-size: auto @resource-size;
-	background-color: red;  /* for debugging, should never see */
-	&.rock { .resource(1, 2s); }
-	&.iron { .resource(2, 5s); }
-	&.none { background-color: #000; }
+    background-image: url(resource-tiles.png);
+    background-size: auto @resource-size;
+    background-color: red;  /* for debugging, should never see */
+    &.rock      { .resource(1, 2s);  }
+    &.iron      { .resource(2, 5s);  }
+    &.concrete  { .resource(3, 10s); }
+    &.none { background-color: #000; }
 
 
-	.collect-progress {
-		width: 0%;
-		height: 10%;
-		position: absolute;
-		background-color: @green;
-	}
+    .collect-progress {
+        width: 0%;
+        height: 10%;
+        position: absolute;
+        background-color: @green;
+    }
 
-	.collector {
-		width: 100%;
-		height: 100%;
-		position: absolute;
-		visibility: hidden;
+    .collector {
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        visibility: hidden;
 
-		background-color: white;
-		.opacity(0.2);
-	}
+        background-color: white;
+        .opacity(0.2);
+    }
 
-	&:hover {
-		.collect-progress {
-			.transition-timing-function(linear);
-			width: 100%;
-		}
+    &:hover {
+        .collect-progress {
+            .transition-timing-function(linear);
+            width: 100%;
+        }
 
-		.collector {
-			visibility: visible;
-			cursor: pointer;
-		}
-	}
+        .collector {
+            visibility: visible;
+            cursor: pointer;
+        }
+    }
 }
 
 .active {
-	border: solid #ccc 1px;
-	.animation(active-pulse 0.5s ease 0s infinite alternate);
+    border: solid #ccc 1px;
+    .animation(active-pulse 0.5s ease 0s infinite alternate);
 }
 
 // come on LESS, get your shit together
@@ -437,67 +438,67 @@ a {
 @keyframes active-pulse { from {border-color: #333;} to {border-color: #ddd;}}
 
 .inventory {
-	.resource { cursor: pointer; }
-	.resource.none { cursor: default; }
+    .resource { cursor: pointer; }
+    .resource.none { cursor: default; }
 }
 
 .panel .device {
-	margin-bottom: 1.2rem;
+    margin-bottom: 1.2rem;
 
-	.deviceHeader {
-		.detacher {
-			height: 100%;
-			padding: 0 0.3rem;
-			margin: 0;
-			cursor: pointer;
-			width: 2.4rem;
-			height: 1.6rem;
-			line-height: 1.6rem;
-			position: relative;
-			left: 2.4rem;
-		}
+    .deviceHeader {
+        .detacher {
+            height: 100%;
+            padding: 0 0.3rem;
+            margin: 0;
+            cursor: pointer;
+            width: 2.4rem;
+            height: 1.6rem;
+            line-height: 1.6rem;
+            position: relative;
+            left: 2.4rem;
+        }
 
-		height: 1.6rem;
-		line-height: 1.6rem;
-		padding: 0;
-		margin-right: 2.4rem;
-		position: relative;
-		cursor: pointer;
-		white-space: nowrap;
-	}
+        height: 1.6rem;
+        line-height: 1.6rem;
+        padding: 0;
+        margin-right: 2.4rem;
+        position: relative;
+        cursor: pointer;
+        white-space: nowrap;
+    }
 
-	.controls {
-		margin-left: 1.2rem;
+    .controls {
+        margin-left: 1.2rem;
 
-		& > :first-child {
-			margin-top: 0.6rem;
-		}
-	}
+        & > :first-child {
+            margin-top: 0.6rem;
+        }
+    }
 }
 
 .collapser.collapsed::before {content: "\25b6"; }
 .collapser.expanded::before {content: "\25bc"; }
 .collapser.collapsed + * {
-	display: none;
+    display: none;
 }
 
 .device {
-	.animate-color (@color)  {
-		background-color: (@color);
-		.transition-duration(0s);
-	}
+    .animate-color (@color)  {
+        background-color: (@color);
+        .transition-duration(0s);
+    }
 
-	.detacher {
-		display: block;
-		float: right;
-	}
+    .detacher {
+        display: block;
+        float: right;
+    }
 
-	.deviceHeader {
-		.border-radius(0.6rem);
-		background-color: @panel;
-		.transition(background-color 500ms ease-out);
-	}
+    .deviceHeader {
+        .border-radius(0.6rem);
+        background-color: @panel;
+        .transition(background-color 500ms ease-out);
+    }
 
-	&.bumped .deviceHeader { .animate-color(@panel + #222); }
-	&.error  .deviceHeader { .animate-color(@panel + #400); }	
+    &.bumped .deviceHeader { .animate-color(@panel + #222); }
+    &.error  .deviceHeader { .animate-color(@panel + #400); }   
 }

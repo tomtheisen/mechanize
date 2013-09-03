@@ -85,7 +85,7 @@
 			</div>
 		</script>
 
-		<script type="text/html" id="DeviceTemplateDeviceConstructor">
+		<script type="text/html" id="DeviceTemplateConstructor">
 			<strong>Materials</strong>
 			<div class="inventory resource-container" data-bind="foreach: items">
 				<div class="resource" data-bind="
@@ -98,8 +98,7 @@
 				data: { tracker: fabricator, text: 'Fabricating ...' } } -->
 			<!-- /ko -->
 			<!-- ko ifnot: fabricator -->
-				<input placeholder="Name to create" maxlength="15	" data-bind="value: nameToCreate, valueUpdate: 'afterkeydown'">
-				<button data-bind="click: fabricate, enable: nameToCreate">Fabricate</button>
+				<button data-bind="click: fabricate">Fabricate</button>
 			<!-- /ko -->
 		</script>
 	</head>

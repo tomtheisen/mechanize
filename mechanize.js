@@ -228,8 +228,7 @@
 
         self.setDeviceInfo = function (deviceInfo) {
             self.items().zip(deviceInfo.items).forEach(function (tuple) {
-                var slot = tuple[0];
-                var newItem = tuple[1];
+                var slot = tuple[0], newItem = tuple[1];
                 var resource = newItem.resource && new ResourceModel(newItem.resource.type) || null;
                 slot.resource(resource);
             });
@@ -245,20 +244,20 @@
         self.junk().toJSON = function () { };
 
         self.regenerateJunk = function () {
-            self.junk().forEach(function (j) {
+            self.junk().forEach(function (slot) {
                 var rnd = Math.random(), type = null;
-                if (rnd < 0.01) {
+                if (rnd < 0.003) {
                     type = "iron";
                 } else if (rnd < 0.05) {
                     type = "rock";
                 }
 
-                j.resource(type && new ResourceModel(type));
+                slot.resource(type && new ResourceModel(type));
             });
         };
         self.regenerateJunk();
 
-        var regenerator = new TimeTracker(30000, 100, self.regenerateJunk, true);
+        var regenerator = new TimeTracker(45000, 100, self.regenerateJunk, true);
         self.regenerator = function () {return regenerator; };
 
         self.collect = function (wasteCell) {
@@ -332,12 +331,12 @@
         };
     };
 
-    var DeviceConstructorModel = function (args) {
+    var ConstructorModel = function (args) {
         var self = this;
 
         self.params = Object.clone(args);
         self.fabricator = ko.observable();
-        self.nameToCreate = ko.observable("");
+        // self.nameToCreate = ko.observable("");
 
         self.items = ko.observableArray(makeArray(self.params.size, function () {
             return new InventorySlotModel(null);
@@ -360,7 +359,7 @@
 
             Notifications.show(self.name + " is fabricating.");
 
-            self.fabricator(new TimeTracker(10000, 100, function () {
+            self.fabricator(new TimeTracker(60000, 100, function () {
                 var materials = self.items().filter(function (slot) {
                     return slot.resource();
                 }).groupBy(function (slot) {
@@ -368,12 +367,9 @@
                 });
 
                 var materialRequirement = "rock";
-                if (materials[materialRequirement] && materials[materialRequirement].length >= 4) {
-                    var name = self.nameToCreate();
-                    Notifications.show("Made '" + name + "'.");
-                    mechanize.devices.createDevice(
-                        name, "RockCollector", { output: "Cargo Hold" });
-                    self.nameToCreate("");
+                if (materials[materialRequirement] && materials[materialRequirement].length == 8) {
+                    var newResource = new ResourceModel("concrete");
+                    self.send(self.params.output, newResource);
                 } else {
                     Notifications.show("It was total crap!");
                 }
@@ -384,6 +380,14 @@
 
                 self.fabricator(null);
             }));
+        };
+
+        self.setDeviceInfo = function (deviceInfo) {
+            self.items().zip(deviceInfo.items).forEach(function (tuple) {
+                var slot = tuple[0], newItem = tuple[1];
+                var resource = newItem.resource && new ResourceModel(newItem.resource.type) || null;
+                slot.resource(resource);
+            });
         };
 
         self.shutDown = function () {
@@ -456,8 +460,8 @@
                     return new InventoryModel(args);
                 case "Wastes": 
                     return new WastesModel(args);
-                case "DeviceConstructor":
-                    return new DeviceConstructorModel(args);    
+                case "Constructor":
+                    return new ConstructorModel(args);    
                 default:
                     throw new RangeError("Cannot create a device of type " + type);
                 }
@@ -564,13 +568,30 @@
         self.initializeGame = function () {
             self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock", "Fabrication Lab"]});
             self.devices.createDevice("Airlock", "TrashEjector");
-            self.devices.createDevice("Fabrication Lab", "DeviceConstructor", {size: 8});
+            self.devices.createDevice("Fabrication Lab", "Constructor", {size: 8, output: "Cargo Hold"});
             self.devices.createDevice("Resource Mining", "Wastes", {output: "Cargo Hold"}).detach();
             //self.devices.createDevice("Rock Collector Bot", "RockCollector", {output: "Cargo Hold"});
         };
     };
 
     window.addEventListener("load", function () {
+        var arrangeAllPanels = function () {
+            var top = 0, left = 0;
+            var totalHeight = $("#gameSurface").height();
+
+            $("#gameSurface .panel").forEach(function (panel, index) {
+                var $panel = $(panel), height = $panel.height();
+
+                if (top + height > totalHeight) {
+                    top = 0;
+                    left += $panel.width();
+                };
+
+                $panel.css({ top: top + "px", left: left + "px" });
+                top += height;
+            });
+        };
+
         var load = function (model, saved, path) {
             var addDevice = function (deviceCollection, deviceInfo) {
                 var device = deviceCollection.createDevice(
@@ -589,7 +610,6 @@
                         if (ko.isObservable(model[key])) model[key](savedVal);
 
                     } else if (newPath === "$.devices") {
-                        model[key].removeAll();
                         savedVal.forEach(addDevice.bind(null, model[key]));
 
                     } else {
@@ -628,23 +648,6 @@
             }
         }
         window.mechanize = mechanize;
-
-        var  arrangeAllPanels = function () {
-            var top = 0, left = 0;
-            var totalHeight = $("#gameSurface").height();
-
-            $("#gameSurface .panel").forEach(function (panel, index) {
-                var $panel = $(panel), height = $panel.height();
-
-                if (top + height > totalHeight) {
-                    top = 0;
-                    left += $panel.width();
-                };
-
-                $panel.css({ top: top + "px", left: left + "px" });
-                top += height;
-            });
-        };
 
         (function registerGameSurfaceDomObserver () {
             var dragDropBindings = [];
@@ -693,9 +696,10 @@
                 });
             });
 
-            arrangeAllPanels();
+            $("#gameSurface .panel").forEach(makeDraggable);
             observer.observe($("#gameSurface")[0], { childList: true });
         })();
+        arrangeAllPanels();
 
         $("body").on("click", "#saveButton", saveModel);
 
