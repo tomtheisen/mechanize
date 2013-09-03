@@ -8,8 +8,10 @@
 			<!-- ko if: tracker -->
 			<div class="progress">
 				<div class="value" data-bind="
-					style: { marginRight: tracker().progress.marginRight }, 
-					text: text">
+					style: { marginRight: tracker().progress.marginRight }">
+					<span data-bind="text: text"></span>
+					&hellip;
+					<span data-bind="text: tracker().progress.remainingFormatted"></span>
 				</div>
 			</div>
 			<!-- /ko -->
@@ -45,7 +47,7 @@
 		<script type="text/html" id="DeviceTemplateRockCollector">
 			<div class="progress" data-bind="if: tracker">
 				<div class="value" data-bind="style: { marginRight: tracker.progress.marginRight }">
-					Collecting ...
+					Collecting &hellip;
 				</div>
 			</div>
 			<button data-bind="click: start">start</button>
@@ -58,7 +60,7 @@
 				<span data-bind="text: contents().type"></span>
 				<!-- ko template: { 
 					name: 'TemplateProgress', 
-					data: { tracker: tracker, text: 'Airlock cycling ...' } } -->
+					data: { tracker: tracker, text: 'Airlock cycling' } } -->
 				<!-- /ko -->
 			<!-- /ko -->
 			<!-- ko ifnot: contents -->
@@ -69,7 +71,7 @@
 		<script type="text/html" id="DeviceTemplateWastes">
 			<!-- ko template: { 
 				name: 'TemplateProgress', 
-				data: { tracker: regenerator, text: 'Sector Warp ...' } } -->
+				data: { tracker: regenerator, text: 'Sector Warp' } } -->
 			<!-- /ko -->
 
 			<div id="wastes" class="resource-container" data-bind="foreach: junk">
@@ -95,7 +97,7 @@
 			</div>
 			<!-- ko template: { 
 				name: 'TemplateProgress', 
-				data: { tracker: fabricator, text: 'Fabricating ...' } } -->
+				data: { tracker: fabricator, text: 'Fabricating' } } -->
 			<!-- /ko -->
 			<!-- ko ifnot: fabricator -->
 				<button data-bind="click: fabricate">Fabricate</button>
@@ -103,7 +105,7 @@
 		</script>
 	</head>
 	<body>
-		<div id="systemMessage">loading ...</div>
+		<div id="systemMessage">loading &hellip;</div>
 		<div id="gameSurface" style="visibility: hidden;">
 			<header>
 				<div class="rotation-clipper">

@@ -91,6 +91,21 @@
         return result;
     }
 
+    function getFormattedTimespan(totalSeconds) {
+        var seconds = totalSeconds % 60;
+        var totalMinutes = Math.floor(totalSeconds / 60);
+        var minutes = totalMinutes % 60;
+        var totalHours = Math.floor(totalMinutes / 60);
+
+        var formatted = "";
+
+        if (totalHours) formatted += totalHours + ":";
+        if (formatted || minutes) formatted += (formatted && minutes < 10 && "0") + minutes + ":";
+        formatted += (formatted && seconds < 10 && "0") + seconds;
+
+        return formatted;
+    }
+
     var TimeTracker = function (totalms, updatems, complete, repeat, autostart) {
         var self = this;
 
@@ -111,6 +126,11 @@
 
         self.progress.marginRight = ko.computed(function () {
             return (100 - 100 * self.progress()) + '%';
+        });
+
+        self.progress.remainingFormatted = ko.computed(function () {
+            var seconds = (totalms - elapsedms()) / 1000;
+            return getFormattedTimespan(Math.round(seconds));
         });
 
         var completed = ko.observable(false);
@@ -257,7 +277,7 @@
         };
         self.regenerateJunk();
 
-        var regenerator = new TimeTracker(45000, 100, self.regenerateJunk, true);
+        var regenerator = new TimeTracker(45000, null, self.regenerateJunk, true);
         self.regenerator = function () {return regenerator; };
 
         self.collect = function (wasteCell) {
@@ -271,8 +291,7 @@
         self.shutDown = function () {
             self.regenerator.stop();
         };
-    };
-
+    };null
     var PlayerModel = function (name) {
         var self = this;
 
@@ -291,7 +310,7 @@
 
             self.contents(resource);
 
-            self.tracker(new TimeTracker(20000, 100, function () {
+            self.tracker(new TimeTracker(20000, null, function () {
                 self.contents(null);
                 self.tracker(null);
             }));
@@ -304,14 +323,13 @@
                 self.accept(new ResourceModel(deviceInfo.contents.type));
             }
         };
-    };
-
+    };null
     var RockCollectorModel = function (args) {
         var self = this;
 
         self.params = Object.clone(args);
 
-        self.tracker = new TimeTracker(10000, 100, function (cancelToken) {
+        self.tracker = new TimeTracker(10000, null, function (cancelToken) {
             var success = self.send(self.params.output, new ResourceModel("rock"));
             if (!success) cancelToken.cancel = true;
         }, true, self.params.running);
@@ -329,8 +347,7 @@
         self.shutDown = function () {
             self.tracker.stop();
         };
-    };
-
+    };null
     var ConstructorModel = function (args) {
         var self = this;
 
@@ -359,7 +376,7 @@
 
             Notifications.show(self.name + " is fabricating.");
 
-            self.fabricator(new TimeTracker(60000, 100, function () {
+            self.fabricator(new TimeTracker(60000, null, function () {
                 var materials = self.items().filter(function (slot) {
                     return slot.resource();
                 }).groupBy(function (slot) {
@@ -371,7 +388,7 @@
                     var newResource = new ResourceModel("concrete");
                     self.send(self.params.output, newResource);
                 } else {
-                    Notifications.show("It was total crap!");
+                    Notifications.show("'" + self.name + "' did not produce anything of value.");
                 }
 
                 self.items().forEach(function (slot) {
