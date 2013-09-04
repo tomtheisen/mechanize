@@ -274,7 +274,13 @@
             var idx = Math.floor(Math.random() * self.junk().length);
             self.junk()[idx].resource(new ResourceModel(type));
         };
-        self.regenerateJunk();
+        if (self.params.randomize) {
+            for (var i = 0; i < self.junk().length / 2; i++) {
+                self.regenerateJunk();  
+            }
+            self.regenerateJunk();
+            self.params.randomize = false;
+        }
 
         var regenerator = new TimeTracker(15000, null, self.regenerateJunk, true);
         self.regenerator = function () {return regenerator; };
@@ -289,6 +295,11 @@
 
         self.shutDown = function () {
             self.regenerator.stop();
+        };
+
+        self.setDeviceInfo = function (deviceInfo) {
+            console.log("todo: WastesModel setDeviceInfo");
+            void(deviceInfo);
         };
     };
 
@@ -376,8 +387,6 @@
         self.fabricate = function () {
             if (self.fabricator()) return; // already fabricating, can't start again
 
-            Notifications.show(self.name + " is fabricating.");
-
             self.fabricator(new TimeTracker(60000, null, function () {
                 var materials = self.items().filter(function (slot) {
                     return slot.resource();
@@ -386,9 +395,11 @@
                 });
 
                 var materialRequirement = "rock";
+                var newType = "concrete";
                 if (materials[materialRequirement] && materials[materialRequirement].length === 8) {
-                    var newResource = new ResourceModel("concrete");
+                    var newResource = new ResourceModel(newType);
                     self.send(self.params.output, newResource);
+                    Notifications.show("'" + self.name + "' produced " + newType + ".");
                 } else {
                     Notifications.show("'" + self.name + "' did not produce anything of value.");
                 }
@@ -588,7 +599,7 @@
             self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock", "Fabrication Lab"]});
             self.devices.createDevice("Airlock", "TrashEjector");
             self.devices.createDevice("Fabrication Lab", "Constructor", {size: 8, output: "Cargo Hold"});
-            self.devices.createDevice("Resource Mining", "Wastes", {size: 32, output: "Cargo Hold"}).detach();
+            self.devices.createDevice("Resource Mining", "Wastes", {size: 32, output: "Cargo Hold", randomize: true}).detach();
             //self.devices.createDevice("Rock Collector Bot", "RockCollector", {output: "Cargo Hold"});
         };
     };

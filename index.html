@@ -59,7 +59,7 @@
 		<script type="text/html" id="DeviceTemplateTrashEjector">
 			<strong>Contents:</strong>&nbsp;
 			<!-- ko if: contents -->
-				<span data-bind="text: contents().type"></span>
+				<span class="inline resource" data-bind="css: contents().type"></span>
 				<!-- ko template: { 
 					name: 'TemplateProgress', 
 					data: { tracker: tracker, text: 'Airlock cycling' } } -->
@@ -90,7 +90,7 @@
 		</script>
 
 		<script type="text/html" id="DeviceTemplateConstructor">
-			<strong>Materials</strong>
+			<h4>Materials</h4>
 			<div class="inventory resource-container" data-bind="foreach: items">
 				<div class="resource" data-bind="
 					css: (resource() ? resource().type : 'none') + (active() ? ' active' : ''), 
@@ -104,6 +104,12 @@
 			<!-- ko ifnot: fabricator -->
 				<button data-bind="click: fabricate">Fabricate</button>
 			<!-- /ko -->
+			<h4>Known formulas</h4>
+			<ul>
+				<li>
+					8 &times; <span class="inline resource rock"></span> &rarr; <span class="inline resource concrete"></span>
+				</li>
+			</ul>
 		</script>
 	</head>
 	<body>
@@ -145,7 +151,7 @@
 
 				<h1>mechanize</h1>
 				<div id="gameControls">
-					<button id="arrangePanelsButton">Arrange all panels</button>
+					<button id="arrangePanelsButton">arrange all panels</button>
 					<button id="saveButton">save</button>
 					<button id="resetButton">reset</button>
 					<label><input type="checkbox" data-bind="checked: notifications.shown">log</label>
