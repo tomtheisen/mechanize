@@ -45,11 +45,13 @@
 		</script>
 
 		<script type="text/html" id="DeviceTemplateRockCollector">
+			<!-- todo use progress template
 			<div class="progress" data-bind="if: tracker">
 				<div class="value" data-bind="style: { marginRight: tracker.progress.marginRight }">
 					Collecting &hellip;
 				</div>
 			</div>
+			-->
 			<button data-bind="click: start">start</button>
 			<button data-bind="click: stop">stop</button>
 		</script>
@@ -71,7 +73,7 @@
 		<script type="text/html" id="DeviceTemplateWastes">
 			<!-- ko template: { 
 				name: 'TemplateProgress', 
-				data: { tracker: regenerator, text: 'Sector Warp' } } -->
+				data: { tracker: regenerator, text: 'Equilibrium field warp' } } -->
 			<!-- /ko -->
 
 			<div id="wastes" class="resource-container" data-bind="foreach: junk">

@@ -260,24 +260,23 @@
 
         self.params = Object.clone(args);
 
-        self.junk = ko.observableArray(makeArray(80, function () { return { resource: ko.observable() }; }));
-        self.junk().toJSON = function () { };
+        self.junk = ko.observableArray(
+            makeArray(self.params.size, function () { return { resource: ko.observable() }; }));
 
         self.regenerateJunk = function () {
-            self.junk().forEach(function (slot) {
-                var rnd = Math.random(), type = null;
-                if (rnd < 0.003) {
-                    type = "iron";
-                } else if (rnd < 0.05) {
-                    type = "rock";
-                }
+            var rnd = Math.random(), type;
+            if (rnd < 0.05) {
+                type = "iron";
+            } else {
+                type = "rock";
+            }
 
-                slot.resource(type && new ResourceModel(type));
-            });
+            var idx = Math.floor(Math.random() * self.junk().length);
+            self.junk()[idx].resource(new ResourceModel(type));
         };
         self.regenerateJunk();
 
-        var regenerator = new TimeTracker(45000, null, self.regenerateJunk, true);
+        var regenerator = new TimeTracker(15000, null, self.regenerateJunk, true);
         self.regenerator = function () {return regenerator; };
 
         self.collect = function (wasteCell) {
@@ -291,7 +290,8 @@
         self.shutDown = function () {
             self.regenerator.stop();
         };
-    };null
+    };
+
     var PlayerModel = function (name) {
         var self = this;
 
@@ -323,7 +323,8 @@
                 self.accept(new ResourceModel(deviceInfo.contents.type));
             }
         };
-    };null
+    };
+
     var RockCollectorModel = function (args) {
         var self = this;
 
@@ -347,7 +348,8 @@
         self.shutDown = function () {
             self.tracker.stop();
         };
-    };null
+    };
+
     var ConstructorModel = function (args) {
         var self = this;
 
@@ -384,7 +386,7 @@
                 });
 
                 var materialRequirement = "rock";
-                if (materials[materialRequirement] && materials[materialRequirement].length == 8) {
+                if (materials[materialRequirement] && materials[materialRequirement].length === 8) {
                     var newResource = new ResourceModel("concrete");
                     self.send(self.params.output, newResource);
                 } else {
@@ -586,7 +588,7 @@
             self.devices.createDevice("Cargo Hold", "Inventory", {size: 16, outputs: ["Airlock", "Fabrication Lab"]});
             self.devices.createDevice("Airlock", "TrashEjector");
             self.devices.createDevice("Fabrication Lab", "Constructor", {size: 8, output: "Cargo Hold"});
-            self.devices.createDevice("Resource Mining", "Wastes", {output: "Cargo Hold"}).detach();
+            self.devices.createDevice("Resource Mining", "Wastes", {size: 32, output: "Cargo Hold"}).detach();
             //self.devices.createDevice("Rock Collector Bot", "RockCollector", {output: "Cargo Hold"});
         };
     };
@@ -596,13 +598,13 @@
             var top = 0, left = 0;
             var totalHeight = $("#gameSurface").height();
 
-            $("#gameSurface .panel").forEach(function (panel, index) {
+            $("#gameSurface .panel").forEach(function (panel) {
                 var $panel = $(panel), height = $panel.height();
 
                 if (top + height > totalHeight) {
                     top = 0;
                     left += $panel.width();
-                };
+                }
 
                 $panel.css({ top: top + "px", left: left + "px" });
                 top += height;
@@ -660,6 +662,7 @@
                 Notifications.show("Initialized mechanize version " + mechanize.modelVersion + ".  Welcome.");  
             } catch (e) {
                 console.log(e.message);
+                console.log(e.stack);
                 kill("Failed to set up game.");
                 return;
             }
