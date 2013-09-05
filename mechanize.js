@@ -368,6 +368,11 @@
         self.fabricator = ko.observable();
         // self.nameToCreate = ko.observable("");
 
+        self.formulas = ko.observableArray([
+            {requirement: [{type: "rock", quantity: 8}], result: ["concrete"]},
+            {requirement: [{type: "iron", quantity: 99}], result: ["iron"]}
+        ]);
+
         self.items = ko.observableArray(makeArray(self.params.size, function () {
             return new InventorySlotModel(null);
         }));
@@ -394,12 +399,18 @@
                     return slot.resource().type;
                 });
 
-                var materialRequirement = "rock";
-                var newType = "concrete";
-                if (materials[materialRequirement] && materials[materialRequirement].length === 8) {
-                    var newResource = new ResourceModel(newType);
-                    self.send(self.params.output, newResource);
-                    Notifications.show("'" + self.name + "' produced " + newType + ".");
+                var matched = ko.utils.unwrapObservable(self.formulas).find(function (formula) {
+                    return formula.requirement.all(function (ingredient) {
+                        return materials[ingredient.type] && materials[ingredient.type].length >= ingredient.quantity;
+                    });
+                });
+
+                if (matched) {
+                    matched.result.forEach(function (produced) {
+                        var newResource = new ResourceModel(produced);
+                        self.send(self.params.output, newResource);
+                    });
+                    Notifications.show("'" + self.name + "' produced " + matched.result.join(", ") + ".");
                 } else {
                     Notifications.show("'" + self.name + "' did not produce anything of value.");
                 }
@@ -755,6 +766,10 @@
         });
 
         $("body").on("click", "#arrangePanelsButton", arrangeAllPanels);
+
+        $("body").on("click", ".collapser.auto", function() {
+            $(this).toggleClass("expanded").toggleClass("collapsed");
+        });
 
         $("#notificationsButton").click(function () {
             $("#notificationsLog").toggle();
