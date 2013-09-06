@@ -1,3 +1,6 @@
+/// <reference path="sugar.d.ts" />
+/// <reference path="knockout.d.ts" />
+
 /* jshint curly: false, eqnull: true, indent: 4, devel: true, noempty: false */
 
 // dependencies
@@ -6,22 +9,16 @@
 //  zepto
 //  DragDrop
 
-(function (ko, $, DragDrop) {
-    "use strict";
-
+(function (ko: KnockoutStatic, $, DragDrop) {
     var mechanize;
 
-    ko.bindingHandlers.title = {
-        init: function (element, valueAccessor) {
-            element.title = valueAccessor();
-        },
-        update: function (element, valueAccessor) {
-            element.title = valueAccessor();
-        }
+    ko.bindingHandlers["title"] = {
+        init:   (element, valueAccessor) => { element.title = valueAccessor(); },
+        update: (element, valueAccessor) => { element.title = valueAccessor(); },
     };
 
     var killed = false;     // set when fatal error occurs and all execution should stop
-    var kill = function (message) {
+    var kill = function (message: string) {
         message = message || "Something bad happened. :(";
 
         $("#gameSurface").hide();
@@ -33,7 +30,7 @@
         killed = true;
     };
 
-    var saveFilter = function (key, value) {
+    var saveFilter = function (key: string, value) {
         if (value == null) return undefined;
         return value;
     };
@@ -48,14 +45,10 @@
         }
     };
 
-    window.dbg = function () {
-        console.log(ko.toJSON(mechanize, saveFilter, 2));
-    };
-
     var Notifications = (function () {
         var notifications = ko.observableArray([]);
 
-        var show = function (message) {
+        var show = function (message: string) {
             notifications.push(message);
             if (ko.utils.unwrapObservable(notifications).length > 20) {
                 notifications.shift();
@@ -81,7 +74,7 @@
     })();
 
     function makeArray(length, element) {
-        var isFunction = Object.isFunction(element); // sugar
+        var isFunction = typeof(element) === "function";
 
         var result = [];
         for (var i=0; i < length; i++) {
@@ -106,7 +99,7 @@
         return formatted;
     }
 
-    var TimeTracker = function (totalms, updatems, complete, repeat, autostart) {
+    var TimeTracker = function (totalms, updatems, complete, repeat?, autostart?) {
         var self = this;
 
         if (autostart === undefined) autostart = true;
@@ -166,7 +159,7 @@
         };
 
         self.toJSON = function () {
-            return Object.reject(ko.toJS(self), 'progress'); // sugar
+            return (<any> Object).reject(ko.toJS(self), 'progress'); // sugar
         };
 
         if (autostart) self.start();
@@ -183,14 +176,14 @@
         self.active = ko.observable(false);
 
         self.toJSON = function () {
-            return Object.reject(ko.toJS(self), 'active'); // sugar
+            return (<any> Object).reject(ko.toJS(self), 'active'); // sugar
         };
     };
 
     var InventoryModel = function (args) {
         var self = this;
 
-        self.params = Object.clone(args);
+        self.params = (<any> Object).clone(args);
         self.outputs = ko.observableArray(args.outputs || []);
         self.params.outputs = self.outputs;
 
@@ -258,7 +251,7 @@
     var WastesModel = function (args) {
         var self = this;
 
-        self.params = Object.clone(args);
+        self.params = (<any> Object).clone(args);
 
         self.junk = ko.observableArray(
             makeArray(self.params.size, function () { return { resource: ko.observable() }; }));
@@ -339,7 +332,7 @@
     var RockCollectorModel = function (args) {
         var self = this;
 
-        self.params = Object.clone(args);
+        self.params = (<any> Object).clone(args);
 
         self.tracker = new TimeTracker(10000, null, function (cancelToken) {
             var success = self.send(self.params.output, new ResourceModel("rock"));
@@ -364,7 +357,7 @@
     var ConstructorModel = function (args) {
         var self = this;
 
-        self.params = Object.clone(args);
+        self.params = (<any> Object).clone(args);
         self.fabricator = ko.observable();
         // self.nameToCreate = ko.observable("");
 
@@ -442,7 +435,7 @@
         var devices = {};
 
         self.getDevices = function () {
-            return Object.values(devices); // sugar
+            return (<any> Object).values(devices); // sugar
         };
 
         var invalidationToken = ko.observable(0);
@@ -483,7 +476,7 @@
                 return false;
             }
 
-            if (Object.isFunction(device.shutDown)) device.shutDown(); // sugar
+            if ((<any> Object).isFunction(device.shutDown)) device.shutDown(); // sugar
 
             delete devices[prefix + name];
             self.invalidateObservable();
@@ -512,7 +505,7 @@
                 return; 
             }
             var device = constructDevice(type, args);
-            Object.merge(device, { // sugar
+            (<any> Object).merge(device, { // sugar
                 name: name,
                 type: type,
                 uistate: ko.observable("expanded"),
@@ -633,7 +626,7 @@
             });
         };
 
-        var load = function (model, saved, path) {
+        var load = function (model, saved, path?) {
             var addDevice = function (deviceCollection, deviceInfo) {
                 var device = deviceCollection.createDevice(
                     deviceInfo.name, deviceInfo.type, deviceInfo.params);
@@ -660,7 +653,7 @@
             }
         };
         
-        var serialized = window.localStorage.getItem('mechanize');
+        var serialized: string = window.localStorage.getItem('mechanize');
         if (serialized) {
             try {
                 mechanize = new MechanizeViewModel();
@@ -689,7 +682,6 @@
                 return;
             }
         }
-        window.mechanize = mechanize;
 
         (function registerGameSurfaceDomObserver () {
             var dragDropBindings = [];
@@ -718,7 +710,7 @@
                     $node.css("left", Math.min(newLeft, farRight) + "px");
 
                     var binding = DragDrop.bind(node, options);
-                    Object.merge(binding, { element: node } ); // sugar
+                    (<any> Object).merge(binding, { element: node } ); // sugar
                     dragDropBindings.push(binding);
                 }
             };
@@ -731,12 +723,13 @@
                 DragDrop.unbind(binding);
             };
 
-            var observer = new MutationObserver(function(mutations) {
+            var observer = new (<any> MutationObserver)(function (mutations) {
                 mutations.forEach(function (mutation) {
                     Array.prototype.forEach.call(mutation.addedNodes, makeDraggable);
                     Array.prototype.forEach.call(mutation.removedNodes, unmakeDraggable);
                 });
             });
+
 
             $("#gameSurface .panel").forEach(makeDraggable);
             observer.observe($("#gameSurface")[0], { childList: true });
@@ -786,4 +779,4 @@
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");
     });
-})(window.ko, window.$, window.DragDrop);
+})(window["ko"], window["$"], window["DragDrop"]);
