@@ -2533,6 +2533,8 @@ interface Array<T> {
 	**/
 	map<U>(map: (n: T) => U, scope?: any): U[];
 
+
+	max(): T;
 	/**
 	* Returns the element in the array with the greatest value.
 	* @method max([map], [all] = false)

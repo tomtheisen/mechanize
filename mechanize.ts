@@ -1,5 +1,6 @@
 /// <reference path="sugar.d.ts" />
 /// <reference path="knockout.d.ts" />
+/// <reference path="zepto.d.ts" />
 
 /* jshint curly: false, eqnull: true, indent: 4, devel: true, noempty: false */
 
@@ -14,7 +15,6 @@ ko.bindingHandlers["title"] = {
     update: (element, valueAccessor) => { element.title = valueAccessor(); },
 };
 
-declare var $;
 declare var DragDrop;
 
 interface CancelToken {
@@ -30,6 +30,10 @@ class ResourceModel {
 
 var mechanize;
 
+function makeHandler(fn: () => void) {
+    return (e: Event) => { fn(); return true; };
+}
+
 var killed = false;     // set when fatal error occurs and all execution should stop
 var kill = function (message: string) {
     message = message || "Something bad happened. :(";
@@ -43,13 +47,15 @@ var kill = function (message: string) {
     killed = true;
 };
 
-var saveModel = function () {
+var saveModel = function (e: Event) {
     try {
         var serialized = ko.toJSON(mechanize, (key: string, value) => value == null ? undefined : value);
         window.localStorage.setItem("mechanize", serialized);
         Notifications.show("Saved successfully.");
+        return true;
     } catch (e) {
         Notifications.show("Error occurred during save.");
+        return false;
     }
 };
 
@@ -671,14 +677,14 @@ window.addEventListener("load", function () {
     (function registerGameSurfaceDomObserver () {
         var dragDropBindings = [];
 
-        var bringToFront = function (element) {
+        var bringToFront = function (element: HTMLElement) {
             var maxZ = $("#gameSurface .panel").get().map(function (panel) {
                 return parseInt(panel.style.zIndex, 10) || 0;
             }).max();
             $(element).css("z-index", maxZ + 1).removeClass("error");
         };
 
-        var makeDraggable = function (node) {
+        var makeDraggable = function (node: HTMLElement) {
             if (node.classList && node.classList.contains("panel")) {
                 var $node = $(node);
                 var handle = $node.find("h2")[0];
@@ -723,7 +729,7 @@ window.addEventListener("load", function () {
 
     $("body").on("click", "#saveButton", saveModel);
 
-    $("body").on("click", "#resetButton", function () {
+    $("body").on("click", "#resetButton", function (e: Event) {
         var $controls = $("#gameControls > *").hide();
 
         var $yes = $("<button />").addClass("warning").text("yes");
@@ -732,34 +738,34 @@ window.addEventListener("load", function () {
         var $confirmation = $("<div />").text("Reset and lose all data?").append($yes).append($no);
         $("#gameControls").append($confirmation);
 
-        $no.click(function () {
+        $no.on("click", e => {
             $confirmation.remove();
             $controls.show();
+            return true;
         });
 
-        $yes.click(function () {
+        $yes.on("click", e => {
             window.localStorage.removeItem('mechanize');
             window.location.reload();
+            return true;
         });
+
+        return true;
     });
 
-    $("body").on("click", "#arrangePanelsButton", arrangeAllPanels);
+    $("body").on("click", "#arrangePanelsButton", makeHandler(arrangeAllPanels));
 
-    $("body").on("click", ".collapser.auto", function() {
-        $(this).toggleClass("expanded").toggleClass("collapsed");
-    });
+    $("body").on("click", ".collapser.auto", 
+        makeHandler(() => { $(this).toggleClass("expanded").toggleClass("collapsed"); }));
 
-    $("#notificationsButton").click(function () {
-        $("#notificationsLog").toggle();
-    });
+    $("#notificationsButton").on("click", 
+        makeHandler(() => { $("#notificationsLog").toggle(); }));
 
-    $("#notifications").on("click", ".notification", function () {
-        $(this).remove();
-    });
+    $("#notifications").on("click", ".notification", 
+        makeHandler(() => { $(this).remove(); }));
 
-    $("header .max-toggle").click(function () {
-        $(this).toggleClass("active").parent().toggleClass("maxed");
-    });
+    $("header .max-toggle").on("click", 
+        makeHandler(() => { $(this).toggleClass("active").parent().toggleClass("maxed"); }));
 
     $("#systemMessage").hide();
     $("#gameSurface").css("visibility", "");
