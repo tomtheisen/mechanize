@@ -1,4 +1,7 @@
-mkdir output
+@echo off
+echo Mechanize build
+
+if not exist output mkdir output
 del /s /q output\*.*
 
 REM ***********  html  **************
@@ -32,7 +35,7 @@ REM ***********  less  **************
 	del style.css
 
 REM ***********  mini  **************
-	mkdir outputmin
+	if not exist outputmin mkdir outputmin
 	del /s /q outputmin\*.*
 
 	build\dotless\dotless.compiler.exe -m style.less style.css
@@ -48,8 +51,9 @@ REM ***********  mini  **************
 		..\build\htmlinjector.py -script -css -minify < index.html > mechanize.html
 
 		attrib +R mechanize.html
-		del /q *.*
+		del /q *.* 2>NUL
 		attrib -R mechanize.html
 	popd
 
 echo Mechanize build complete.
+type build.txt
