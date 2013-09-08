@@ -1,8 +1,7 @@
+//# sourceMappingURL=mechanize.js.map
 /// <reference path="sugar.d.ts" />
 /// <reference path="knockout.d.ts" />
 /// <reference path="zepto.d.ts" />
-
-/* jshint curly: false, eqnull: true, indent: 4, devel: true, noempty: false */
 
 // dependencies
 //  knockout
@@ -66,7 +65,7 @@ module Mechanize {
         }
     }
 
-    var mechanize;
+    export var mechanize;
 
     function makeHandler (fn: () => void) {
         return (e: Event) => { fn(); return true; };
@@ -150,12 +149,12 @@ module Mechanize {
     class TimeTracker {
         elapsedms = ko.observable(0);
         totalms: number;
-        progress = ko.computed(() => this.elapsedms() / this.totalms);
+        progress: KnockoutObservable<number>;
         completed = ko.observable(false);
 
         private intervalId: number;
         private updatems: number;
-        private complete: (cancel: CancelToken) => void;
+        private completeCallback: () => boolean;
         private repeat: boolean;
 
         stop() {
@@ -167,37 +166,43 @@ module Mechanize {
             this.stop();
             this.elapsedms(0);
             this.completed(false);
-            
-            this.intervalId = setInterval(function () {
-                if (killed) return;
 
-                this.elapsedms(this.elapsedms() + this.updatems);
+            var _this = this;
+            this.intervalId = setInterval(this.tick.bind(this), this.updatems);
+        }
 
-                if (this.elapsedms() >= this.totalms) {
-                    this.stop();
-                    this.elapsedms(this.totalms);
-                    this.completed(true);
+        private tick() {
+            if (killed) return;
 
-                    var cancelToken: CancelToken = { cancel: false };
-                    if (this.complete) this.complete(cancelToken);
-                    if (this.repeat && !cancelToken.cancel) this.start();
-                }
-            }, this.updatems);
+            this.elapsedms(this.elapsedms() + this.updatems);
+
+            if (this.elapsedms() >= this.totalms) {
+                this.stop();
+                this.elapsedms(this.totalms);
+                this.completed(true);
+
+                var cancelToken: CancelToken = { cancel: false };
+                var cancel = this.completeCallback && this.completeCallback() === false;
+                if (this.repeat && cancel) this.start();
+            }
         }
 
         toJSON() {
             return (<any> Object).reject(ko.toJS(self), 'progress'); // sugar
         }
 
-        constructor(totalms: number, updatems: number = 1000, complete?: (cancel: CancelToken) => void, repeat: boolean = false, autostart: boolean = true) {
-            this.updatems = updatems;
+        constructor(totalms: number, updatems: number, complete: () => boolean, repeat: boolean = false, autostart: boolean = true) {
+            var _this = this;
+
+            this.updatems = updatems || 1000;
             this.totalms = totalms;
-            this.complete = complete;
+            this.progress = ko.computed(() => this.elapsedms() / this.totalms);
+            this.completeCallback = complete;
             this.repeat = repeat;
 
             this.progress["marginRight"] = ko.computed(() => (100 - 100 * this.progress()) + '%');
             this.progress["remainingFormatted"] = ko.computed(function () {
-                var seconds = (totalms - this.elapsedms()) / 1000;
+                var seconds = (totalms - _this.elapsedms()) / 1000;
                 return getFormattedTimespan(Math.round(seconds));
             });
 
@@ -216,7 +221,7 @@ module Mechanize {
     var InventoryModel = function (args) {
         var self = this;
 
-        self.params = (<any> Object).clone(args);
+        self.params = (<any> Object).clone(args); // sugar
         self.outputs = ko.observableArray(args.outputs || []);
         self.params.outputs = self.outputs;
 
@@ -285,7 +290,7 @@ module Mechanize {
         self.params = (<any> Object).clone(args);
 
         self.junk = ko.observableArray(
-            makeArray(self.params.size, () => { resource: ko.observable() }));
+            makeArray(self.params.size, () => { return { resource: ko.observable() }; }));
 
         self.regenerateJunk = function () {
             var rnd = Math.random(), type;
@@ -340,6 +345,7 @@ module Mechanize {
             self.tracker(new TimeTracker(20000, null, function () {
                 self.contents(null);
                 self.tracker(null);
+                return true;
             }));
 
             return true;
@@ -357,9 +363,8 @@ module Mechanize {
 
         self.params = (<any> Object).clone(args);
 
-        self.tracker = new TimeTracker(10000, null, function (cancelToken: CancelToken) {
-            var success = self.send(self.params.output, new ResourceModel("rock"));
-            if (!success) cancelToken.cancel = true;
+        self.tracker = new TimeTracker(10000, null, function () {
+            return self.send(self.params.output, new ResourceModel("rock"));
         }, true, self.params.running);
 
         self.start = function () {
@@ -426,6 +431,8 @@ module Mechanize {
 
                 self.items().forEach(slot => { slot.resource(null); });
                 self.fabricator(null);
+
+                return true;
             }));
         };
 
