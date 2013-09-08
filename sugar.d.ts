@@ -2566,10 +2566,11 @@ interface Array<T> {
 	**/
 	max<U>(map: (n: T) => U): T;
 
-	/**
-	* @see max
-	**/
-	max<U>(map: (n: T) => U): T[];
+    // this doesn't seem to agree with the sugar spec http://sugarjs.com/api/Array/max
+	///**
+	//* @see max
+	//**/
+	//max<U>(map: (n: T) => U): T[];
 
 	/***
 	* Returns the element in the array with the lowest value.
@@ -2589,11 +2590,12 @@ interface Array<T> {
 	**/
 	min(map: string): T;
 
-	/**
-	* @see min If true return all min values in the array, default = false.
-	* @param all
-	**/
-	min(map: string, all: boolean): T[];
+    // TT: this doesn't seem to agree with the specs http://sugarjs.com/api/Array/max
+	///**
+	//* @see min If true return all min values in the array, default = false.
+	//* @param all
+	//**/
+	//min(map: string, all: boolean): T[];
 
 	/**
 	* @see min
