@@ -78,7 +78,6 @@ module Mechanize {
             this.elapsedms(0);
             this.completed(false);
 
-            var _this = this;
             this.intervalId = setInterval(this.tick.bind(this), this.updatems);
         }
 
@@ -102,17 +101,15 @@ module Mechanize {
         }
 
         constructor(totalms: number, updatems: number, complete: () => boolean, repeat: boolean = false, autostart: boolean = true) {
-            var _this = this;
-
             this.updatems = updatems || 1000;
             this.totalms = totalms;
-            this.progress = ko.computed(() => _this.elapsedms() / _this.totalms);
+            this.progress = ko.computed(() => this.elapsedms() / this.totalms);
             this.completeCallback = complete;
             this.repeat = repeat;
 
             this.progress["marginRight"] = ko.computed(() => (100 - 100 * this.progress()) + '%');
-            this.progress["remainingFormatted"] = ko.computed(function () {
-                var seconds = (totalms - _this.elapsedms()) / 1000;
+            this.progress["remainingFormatted"] = ko.computed(() => {
+                var seconds = (totalms - this.elapsedms()) / 1000;
                 return Utils.getFormattedTimespan(Math.round(seconds));
             });
 
@@ -140,6 +137,10 @@ module Mechanize {
     export class Device {
         params: any;    // used in device serialization to restore state
         deviceCollection: DeviceCollectionModel;
+        name: string;
+        type: string;
+        uistate = ko.observable("expanded");
+        indestructible = false;
 
         constructor(deviceCollection: DeviceCollectionModel, args) {
             this.params = (<any> Object).clone(args); // sugar
@@ -153,10 +154,6 @@ module Mechanize {
         setDeviceInfo(deviceInfo) {
             throw new Error("setDeviceInfo not implemented.");
         }
-
-        name: string;
-        type: string;
-        uistate = ko.observable("expanded");
 
         collapse() { this.uistate("collapsed"); }
         expand() { this.uistate("expanded"); }
@@ -189,6 +186,7 @@ module Mechanize {
             return success;
         }
 
+        shutDown() { } // for overloading
     }
 
     class InventoryModel extends Device {
@@ -377,29 +375,28 @@ module Mechanize {
         fabricate() {
             if (this.fabricator()) return; // already fabricating, can't start again
 
-            var _this = this;
-            this.fabricator(new TimeTracker(60000, null, function () {
-                var materials = this.items().filter(slot => slot.resource())
+            this.fabricator(new TimeTracker(60000, null, () => {
+                var materials = this.items().filter(slot => !!slot.resource())
                     .groupBy(slot => slot.resource().type);
 
-                var matched = _this.formulas().find(function (formula) {
+                var matched = this.formulas().find(function (formula) {
                     return formula.requirement.all(function (ingredient) {
                         return materials[ingredient.type] && materials[ingredient.type].length >= ingredient.quantity;
                     });
                 });
 
                 if (matched) {
-                    matched.result.forEach(function (produced) {
+                    matched.result.forEach(produced => {
                         var newResource = new ResourceModel(produced);
-                        _this.send(_this.params.output, newResource);
+                        this.send(this.params.output, newResource);
                     });
-                    Notifications.show("'" + _this.name + "' produced " + matched.result.join(", ") + ".");
+                    Notifications.show("'" + this.name + "' produced " + matched.result.join(", ") + ".");
                 } else {
-                    Notifications.show("'" + _this.name + "' did not produce anything of value.");
+                    Notifications.show("'" + this.name + "' did not produce anything of value.");
                 }
 
-                _this.items().forEach(slot => { slot.resource(null); });
-                _this.fabricator(null);
+                this.items().forEach(slot => { slot.resource(null); });
+                this.fabricator(null);
 
                 return true;
             }));
@@ -450,7 +447,7 @@ module Mechanize {
         }
 
         destroyDevice(name: string) {
-            var device = this.devices[this.prefix + name];
+            var device : Device = this.devices[this.prefix + name];
             if (!device) {
                 Notifications.show("Failed to destroy '" + name + "' because it does not exist.");
                 return false;
@@ -461,7 +458,7 @@ module Mechanize {
                 return false;
             }
 
-            if ((<any> Object).isFunction(device.shutDown)) device.shutDown(); // sugar
+            if (typeof(device.shutDown) === "function") device.shutDown(); 
 
             delete this.devices[this.prefix + name];
             this.invalidateObservable();

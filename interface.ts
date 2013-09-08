@@ -201,17 +201,22 @@ module Interface {
 
         $("body").on("click", "#arrangePanelsButton", Utils.makeHandler(arrangeAllPanels));
 
-        $("body").on("click", ".collapser.auto",
-            Utils.makeHandler(() => { $(this).toggleClass("expanded").toggleClass("collapsed"); }));
+        $("body").on("click", ".collapser.auto", Utils.makeHandler(function() {
+            $(this).toggleClass("expanded").toggleClass("collapsed");
+        }));
 
-        $("#notificationsButton").on("click",
-            Utils.makeHandler(() => { $("#notificationsLog").toggle(); }));
+        $("#notificationsButton").on("click", Utils.makeHandler(function() {
+            $("#notificationsLog").toggle();
+        }));
 
-        $("#notifications").on("click", ".notification",
-            Utils.makeHandler(() => { $(this).remove(); }));
+        $("#notifications").on("click", ".notification", Utils.makeHandler(function()  {
+            $(this).remove();
+        }));
 
-        $("header .max-toggle").on("click",
-            Utils.makeHandler(() => { $(this).toggleClass("active").parent().toggleClass("maxed"); }));
+        $("header .max-toggle").on("click", Utils.makeHandler(function () {
+            debugger;
+            $(this).toggleClass("active").parent().toggleClass("maxed");
+        }));
 
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");

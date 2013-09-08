@@ -1,6 +1,6 @@
 module Utils {
     export function makeHandler(fn: () => void) {
-        return (e: Event) => { fn(); return true; };
+        return function(e: Event) { fn.call(this); return true; };
     }
 
     export function makeArray(length: number, element): Array {
