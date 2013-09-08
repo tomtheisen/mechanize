@@ -1,4 +1,3 @@
-//# sourceMappingURL=mechanize.js.map
 /// <reference path="typescript refs\sugar.d.ts" />
 /// <reference path="typescript refs\knockout.d.ts" />
 /// <reference path="typescript refs\zepto.d.ts" />
@@ -11,15 +10,10 @@
 //  DragDrop
 
 declare var DragDrop;
-
 module Mechanize {
-    export var mechanize;
+    import Notifications = Interface.Notifications;
 
-    class Unserializable {
-        toJSON() { return undefined; }
-    }
-
-    class ResourceModel {
+    export class ResourceModel {
         type: string;
 
         constructor(type: string) {
@@ -27,7 +21,7 @@ module Mechanize {
         }
     }
 
-    class PlayerModel {
+    export class PlayerModel {
         name: string;
 
         constructor(name: string) {
@@ -35,7 +29,7 @@ module Mechanize {
         }
     }
 
-    class OptionsModel {
+    export class OptionsModel {
         autosave: KnockoutObservable<boolean>;
         visualEffects: KnockoutObservable<boolean>;
 
@@ -47,7 +41,7 @@ module Mechanize {
                 Notifications.show("Autosave is " + (autosave ? "on" : "off") + ".");
 
                 if (autosaveIntervalId) clearInterval(autosaveIntervalId);
-                if (autosave) autosaveIntervalId = window.setInterval(saveModel, 120000);
+                if (autosave) autosaveIntervalId = window.setInterval(Interface.saveModel, 120000);
             });
 
             this.visualEffects = ko.observable(false);
@@ -63,53 +57,7 @@ module Mechanize {
         }
     }
 
-    var killed = false;     // set when fatal error occurs and all execution should stop
-    var kill = function (message: string) {
-        message = message || "Something bad happened. :(";
-
-        $("#gameSurface").hide();
-        $("#systemMessage").text(message)
-            .append('<br><a href="javascript:location.reload();">Reload</a>')
-            .append('<br><a href="javascript:window.localStorage.removeItem(\'mechanize\');location.reload();">Reset data</a>')
-            .show();
-
-        killed = true;
-    };
-
-    function saveModel(e: Event) {
-        try {
-            var serialized = ko.toJSON(mechanize, (key: string, value) => value == null ? undefined : value);
-            window.localStorage.setItem("mechanize", serialized);
-            Notifications.show("Saved successfully.");
-            return true;
-        } catch (e) {
-            Notifications.show("Error occurred during save.");
-            return false;
-        }
-    };
-
-    module Notifications {
-        export var log = ko.observableArray([]);
-        export var shown = ko.observable(false);
-
-        export function toJSON() { return undefined; }
-        export function show(message: string) {
-            log.push(message);
-            if (ko.utils.unwrapObservable(log).length > 20) {
-                log.shift();
-            }
-
-            var $notification = $("<div />").addClass("notification").text(message)
-                .appendTo("#notifications");
-
-            var args = { "max-height": "0px", "max-width": "0px", opacity: 0 };
-            window.setTimeout(function () {
-                $notification.animate(args, 4000, "ease", () => { $notification.remove(); });
-            }, 10000);
-        }
-    }
-
-    class TimeTracker {
+    export class TimeTracker {
         elapsedms = ko.observable(0);
         totalms: number;
         progress: KnockoutObservable<number>;
@@ -135,7 +83,7 @@ module Mechanize {
         }
 
         private tick() {
-            if (killed) return;
+            if (Interface.killed) return;
 
             this.elapsedms(this.elapsedms() + this.updatems);
 
@@ -172,11 +120,11 @@ module Mechanize {
         }
     }
 
-    interface ResourceHolder {
+    export interface ResourceHolder {
         resource: KnockoutObservable<ResourceModel>;
     }
 
-    class InventorySlotModel implements ResourceHolder {
+    export class InventorySlotModel implements ResourceHolder {
         resource: KnockoutObservable<ResourceModel>;
         active = ko.observable(false);
 
@@ -189,7 +137,7 @@ module Mechanize {
         }
     }
 
-    class Device {
+    export class Device {
         params: any;    // used in device serialization to restore state
         deviceCollection: DeviceCollectionModel;
 
@@ -224,7 +172,7 @@ module Mechanize {
             if (!receiver) return false;
 
             if (!this.deviceCollection.getDevice(this.name)) {
-                kill("'" + this.name + "' attempted to send, but it doesn't exist.");
+                Interface.kill("'" + this.name + "' attempted to send, but it doesn't exist.");
             }
 
             var success = receiver.accept && receiver.accept(item);
@@ -476,7 +424,7 @@ module Mechanize {
         }
     }
 
-    class DeviceCollectionModel extends Unserializable {
+    export class DeviceCollectionModel {
         prefix = "mechanize_";
         devices = {};
 
@@ -520,7 +468,7 @@ module Mechanize {
             return true;
         }
 
-        createDevice(name: string, type: string, args): Device {
+        createDevice(name: string, type: string, args?): Device {
             var constructDevice = function (collection: DeviceCollectionModel, type: string, args): Device {
                 switch (type) {
                     case "TrashEjector":
@@ -549,7 +497,6 @@ module Mechanize {
             this.invalidateObservable();
             return device;
         }
-
         removeDevice(name: string) {
             delete this.devices[this.prefix + name];
             this.invalidateObservable();
@@ -559,198 +506,31 @@ module Mechanize {
             this.devices = {};
             this.invalidateObservable();
         }
+
+        toJSON() { return undefined; }
     }
 
     var created = false;
-    var MechanizeViewModel = function () {
-        if (created) kill("Must not call MechanizeViewModel more than once.");
-        created = true;
-        var self = this;
+    export class MechanizeViewModel {
+        player: PlayerModel;
+        devices = new DeviceCollectionModel();
+        options = new OptionsModel();
+        modelVersion = "0.1.0";
+        build = "{{@build}}";
+        notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 
-        self.player = new PlayerModel("Bob");
-        self.devices = new DeviceCollectionModel();
-        self.options = new OptionsModel();
-        self.modelVersion = "0.1.0";
-        self.build = "{{@build}}";
-        self.notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
-
-        self.initializeGame = function () {
-            self.devices.createDevice("Cargo Hold", "Inventory", { size: 16, outputs: ["Airlock", "Fabrication Lab"] });
-            self.devices.createDevice("Airlock", "TrashEjector");
-            self.devices.createDevice("Fabrication Lab", "Constructor", { size: 8, output: "Cargo Hold" });
-            self.devices.createDevice("Resource Mining", "Wastes", { size: 32, output: "Cargo Hold", randomize: true }).detach();
-            //self.devices.createDevice("Rock Collector Bot", "RockCollector", {output: "Cargo Hold"});
-        };
-    };
-
-    window.addEventListener("load", function () {
-        var arrangeAllPanels = function () {
-            var top = 0, left = 0;
-            var totalHeight = $("#gameSurface").height();
-
-            $("#gameSurface .panel").forEach(function (panel) {
-                var $panel = $(panel), height = $panel.height();
-
-                if (top + height > totalHeight) {
-                    top = 0;
-                    left += $panel.width();
-                }
-
-                $panel.css({ top: top + "px", left: left + "px" });
-                top += height;
-            });
-        };
-
-        var load = function (model, saved, path?) {
-            var addDevice = function (deviceCollection, deviceInfo) {
-                var device = deviceCollection.createDevice(
-                    deviceInfo.name, deviceInfo.type, deviceInfo.params);
-
-                if (deviceInfo.uistate) device.uistate(deviceInfo.uistate);
-                if (device.setDeviceInfo) device.setDeviceInfo(deviceInfo);
-            };
-
-            for (var key in saved) {
-                if (saved.hasOwnProperty(key)) {
-                    var newPath = (path || "$") + "." + key;
-                    var savedVal = saved[key];
-
-                    if (["number", "string", "boolean"].any(typeof savedVal)) { // sugar
-                        if (ko.isObservable(model[key])) model[key](savedVal);
-
-                    } else if (newPath === "$.devices") {
-                        savedVal.forEach(addDevice.bind(null, model[key]));
-
-                    } else {
-                        load(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
-                    }
-                }
-            }
-        };
-
-        var serialized: string = window.localStorage.getItem('mechanize');
-        if (serialized) {
-            try {
-                mechanize = new MechanizeViewModel();
-                var saved = JSON.parse(serialized);
-                load(mechanize, saved);
-
-                ko.applyBindings(mechanize);
-
-                Notifications.show("Loaded successfully.");
-            } catch (e) {
-                console.log(e.message);
-                kill("Error occurred during load.");
-                return;
-            }
-        } else {
-            try {
-                mechanize = new MechanizeViewModel();
-                mechanize.initializeGame();
-                ko.applyBindings(mechanize);
-
-                Notifications.show("Initialized mechanize version " + mechanize.modelVersion + ".  Welcome.");
-            } catch (e) {
-                console.log(e.message);
-                console.log(e.stack);
-                kill("Failed to set up game.");
-                return;
-            }
+        initializeGame() {
+            this.devices.createDevice("Cargo Hold", "Inventory", { size: 16, outputs: ["Airlock", "Fabrication Lab"] });
+            this.devices.createDevice("Airlock", "TrashEjector");
+            this.devices.createDevice("Fabrication Lab", "Constructor", { size: 8, output: "Cargo Hold" });
+            this.devices.createDevice("Resource Mining", "Wastes", { size: 32, output: "Cargo Hold", randomize: true }).detach();
         }
 
-        (function registerGameSurfaceDomObserver() {
-            var dragDropBindings = [];
+        constructor() {
+            if (created) Interface.kill("Must not call MechanizeViewModel more than once.");
+            created = true;
 
-            var bringToFront = function (element: HTMLElement) {
-                var maxZ = $("#gameSurface .panel").get().map(function (panel) {
-                    return parseInt(panel.style.zIndex, 10) || 0;
-                }).max();
-                $(element).css("z-index", maxZ + 1).removeClass("error");
-            };
-
-            var makeDraggable = function (node: HTMLElement) {
-                if (node.classList && node.classList.contains("panel")) {
-                    var $node = $(node);
-                    var handle = $node.find("h2")[0];
-                    var options = {
-                        anchor: handle,
-                        boundingBox: 'offsetParent',
-                        dragstart: bringToFront.bind(null, node)
-                    };
-                    bringToFront(node);
-                    var newLeft = $("#gameSurface .panel").get().map(function (panel) {
-                        return parseInt(panel.style.left, 10) + $(panel).width() || 0;
-                    }).max();
-                    var farRight = $("#gameSurface").width() - $node.width();
-                    $node.css("left", Math.min(newLeft, farRight) + "px");
-
-                    var binding = DragDrop.bind(node, options);
-                    (<any> Object).merge(binding, { element: node }); // sugar
-                    dragDropBindings.push(binding);
-                }
-            };
-
-            var unmakeDraggable = function (node) {
-                var binding = dragDropBindings.find(function (b) {
-                    return b.element === node;
-                });
-                if (!binding) return;
-                DragDrop.unbind(binding);
-            };
-
-            var observer = new (<any> MutationObserver)(function (mutations) {
-                mutations.forEach(function (mutation) {
-                    Array.prototype.forEach.call(mutation.addedNodes, makeDraggable);
-                    Array.prototype.forEach.call(mutation.removedNodes, unmakeDraggable);
-                });
-            });
-
-            $("#gameSurface .panel").forEach(makeDraggable);
-            observer.observe($("#gameSurface")[0], { childList: true });
-        })();
-        arrangeAllPanels();
-
-        $("body").on("click", "#saveButton", saveModel);
-
-        $("body").on("click", "#resetButton", function (e: Event) {
-            var $controls = $("#gameControls > *").hide();
-
-            var $yes = $("<button />").addClass("warning").text("yes");
-            var $no = $("<button />").text("no");
-
-            var $confirmation = $("<div />").text("Reset and lose all data?").append($yes).append($no);
-            $("#gameControls").append($confirmation);
-
-            $no.on("click", e => {
-                $confirmation.remove();
-                $controls.show();
-                return true;
-            });
-
-            $yes.on("click", e => {
-                window.localStorage.removeItem('mechanize');
-                window.location.reload();
-                return true;
-            });
-
-            return true;
-        });
-
-        $("body").on("click", "#arrangePanelsButton", Utils.makeHandler(arrangeAllPanels));
-
-        $("body").on("click", ".collapser.auto",
-            Utils.makeHandler(() => { $(this).toggleClass("expanded").toggleClass("collapsed"); }));
-
-        $("#notificationsButton").on("click",
-            Utils.makeHandler(() => { $("#notificationsLog").toggle(); }));
-
-        $("#notifications").on("click", ".notification",
-            Utils.makeHandler(() => { $(this).remove(); }));
-
-        $("header .max-toggle").on("click",
-            Utils.makeHandler(() => { $(this).toggleClass("active").parent().toggleClass("maxed"); }));
-
-        $("#systemMessage").hide();
-        $("#gameSurface").css("visibility", "");
-    });
+            this.player = new PlayerModel("Bob");
+        }
+    }
 }
