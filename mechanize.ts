@@ -15,6 +15,10 @@ declare var DragDrop;
 module Mechanize {
     export var mechanize;
 
+    class Unserializable {
+        toJSON() { return undefined; }
+    }
+
     class ResourceModel {
         type: string;
 
@@ -38,7 +42,7 @@ module Mechanize {
         constructor() {
             this.autosave = ko.observable(false);
 
-            var autosaveIntervalId : number;
+            var autosaveIntervalId: number;
             this.autosave.subscribe(function (autosave: boolean) {
                 Notifications.show("Autosave is " + (autosave ? "on" : "off") + ".");
 
@@ -72,7 +76,7 @@ module Mechanize {
         killed = true;
     };
 
-    function saveModel (e: Event) {
+    function saveModel(e: Event) {
         try {
             var serialized = ko.toJSON(mechanize, (key: string, value) => value == null ? undefined : value);
             window.localStorage.setItem("mechanize", serialized);
@@ -88,10 +92,7 @@ module Mechanize {
         export var log = ko.observableArray([]);
         export var shown = ko.observable(false);
 
-        export function toJSON() {
-            return undefined;
-        }
-
+        export function toJSON() { return undefined; }
         export function show(message: string) {
             log.push(message);
             if (ko.utils.unwrapObservable(log).length > 20) {
@@ -157,7 +158,7 @@ module Mechanize {
 
             this.updatems = updatems || 1000;
             this.totalms = totalms;
-            this.progress = ko.computed(() => this.elapsedms() / this.totalms);
+            this.progress = ko.computed(() => _this.elapsedms() / _this.totalms);
             this.completeCallback = complete;
             this.repeat = repeat;
 
@@ -171,79 +172,139 @@ module Mechanize {
         }
     }
 
-    var InventorySlotModel = function (resource) {
-        var self = this;
-        self.resource = ko.observable(resource);
-        self.active = ko.observable(false);
+    class InventorySlotModel {
+        resource: KnockoutObservable<ResourceModel>;
+        active = ko.observable(false);
 
-        self.toJSON = () => (<any> Object).reject(ko.toJS(self), 'active'); // sugar
-    };
+        constructor(resource: ResourceModel) {
+            this.resource = ko.observable(resource);
+        }
 
-    var InventoryModel = function (args) {
-        var self = this;
+        toJSON() {
+            return (<any> Object).reject(ko.toJS(self), 'active'); // sugar
+        }
+    }
 
-        self.params = (<any> Object).clone(args); // sugar
-        self.outputs = ko.observableArray(args.outputs || []);
-        self.params.outputs = self.outputs;
+    class Device {
+        params: any;    // used in device serialization to restore state
+        deviceCollection: DeviceCollectionModel;
 
-        self.activeItem = ko.observable();
-        self.items = ko.observableArray(Utils.makeArray(self.params.size, () => new InventorySlotModel(null)));
+        constructor(deviceCollection: DeviceCollectionModel, args) {
+            this.params = (<any> Object).clone(args); // sugar
+            this.deviceCollection = deviceCollection;
+        }
 
-        self.deactivate = function () {
-            if (!self.activeItem()) return;
+        accept(resource: ResourceModel) {
+            return false;
+        }
 
-            self.activeItem().active(false);
-            self.activeItem(null);
-        };
+        setDeviceInfo(deviceInfo) {
+            throw new Error("setDeviceInfo not implemented.");
+        }
 
-        self.accept = function (resource) {
-            var emptySlot = self.items().find(function (item) {  // sugar
-                return !item.resource();
-            });
+        name: string;
+        type: string;
+        uistate = ko.observable("expanded");
+
+        collapse() { this.uistate("collapsed"); }
+        expand() { this.uistate("expanded"); }
+        detach() { this.uistate("detached"); }
+
+        toggleCollapse() {
+            var state = { "collapsed": "expanded", "expanded": "collapsed" }[this.uistate()];
+            if (state) this.uistate(state);
+        }
+
+        send(receiverName: string, item: ResourceModel) {
+            var receiver = this.deviceCollection.getDevice(receiverName);
+            if (!receiver) return false;
+
+            if (!this.deviceCollection.getDevice(name)) {
+                kill("'" + name + "' attempted to send, but it doesn't exist.");
+            }
+
+            var success = receiver.accept && receiver.accept(item);
+            var $receiver = $("[data-device='" + receiverName + "']");
+            var $sender = $("[data-device='" + name + "']");
+            if (success) {
+                $receiver.addClass("bumped");
+                window.setTimeout(() => $receiver.removeClass("bumped"), 1000);
+            } else {
+                $sender.addClass("error");
+                Notifications.show("Failed to send item from " + name + " to " + receiverName + ".");
+            }
+
+            return success;
+        }
+
+    }
+
+    class InventoryModel extends Device {
+        outputs: KnockoutObservableArray<string>;
+        activeItem: KnockoutObservable<InventorySlotModel> = ko.observable();
+        items: KnockoutObservableArray<InventorySlotModel>;
+
+        deactivate() {
+            if (!this.activeItem()) return;
+
+            this.activeItem().active(false);
+            this.activeItem(null);
+        }
+
+        accept(resource: ResourceModel) {
+            var emptySlot = this.items().find(item => !item.resource()); // sugar
             if (!emptySlot) return false;
 
             emptySlot.resource(resource);
             return true;
-        };
+        }
 
-        self.select = function (item) {
+        select(item: InventorySlotModel) {
             if (!item.resource()) return;
 
             var alreadyActive = item.active();
-            self.deactivate();
+            this.deactivate();
 
             if (!alreadyActive) {
-                self.activeItem(item);
+                this.activeItem(item);
                 item.active(true);
             } else {
                 item.active(false);
             }
-        };
+        }
 
-        self.popActive = function () {
-            var active = self.activeItem();
+        popActive(): ResourceModel {
+            var active = this.activeItem();
             if (!active) return null;
 
-            self.activeItem(null);
+            this.activeItem(null);
             active.active(false);
             var resource = active.resource();
             active.resource(null);
             return resource;
-        };
+        }
 
-        self.sendActiveTo = function (receiverName) {
-            var success = self.send(receiverName, self.activeItem().resource());
-            if (success) self.popActive();
-        };
+        sendActiveTo(receiverName: string) {
+            var success = this.send(receiverName, this.activeItem().resource());
+            if (success) this.popActive();
+        }
 
-        self.setDeviceInfo = function (deviceInfo) {
-            self.items().zip(deviceInfo.items).forEach(function (tuple) {
+        setDeviceInfo(deviceInfo) {
+            this.items().zip(deviceInfo.items).forEach(function (tuple) {
                 var slot = tuple[0], newItem = tuple[1];
                 var resource = newItem.resource && new ResourceModel(newItem.resource.type) || null;
                 slot.resource(resource);
             });
-        };
-    };
+        }
+
+        constructor(deviceCollection: DeviceCollectionModel, args) {
+            super(deviceCollection, args);
+            this.outputs = ko.observableArray(args.outputs);
+            this.params.outputs = this.outputs;
+
+            this.items = ko.observableArray(Utils.makeArray(args.size, () => new InventorySlotModel(null)));
+        }
+    }
 
     var WastesModel = function (args) {
         var self = this;
@@ -410,41 +471,33 @@ module Mechanize {
         };
     };
 
-    var DeviceCollectionModel = function () {
-        var self = this;
-        var prefix = "mechanize_";
-        var devices = {};
+    class DeviceCollectionModel extends Unserializable {
+        prefix = "mechanize_";
+        devices = {};
 
-        self.getDevices = function () {
-            return (<any> Object).values(devices); // sugar
-        };
+        getDevices(): Device[] {
+            return (<any> Object).values(this.devices); // sugar
+        }
 
-        var invalidationToken = ko.observable(0);
-        self.all = ko.computed(function () {
-            invalidationToken();
-            return self.getDevices();
+        invalidationToken = ko.observable(0);
+        invalidateObservable() {
+            this.invalidationToken.notifySubscribers(null);
+        }
+
+        all = ko.computed(() => {
+            this.invalidationToken();
+            return this.getDevices();
         });
 
-        self.attached = ko.computed(function () {
-            return self.all().filter(function (d) {
-                return ["expanded", "collapsed"].any(d.uistate()); // sugar
-            });
-        });
+        attached = ko.computed(() => this.all().filter(d => ["expanded", "collapsed"].any(d.uistate()))); // sugar
+        detached = ko.computed(() => this.all().filter(d => d.uistate() === "detached")); // sugar
 
-        self.detached = ko.computed(function () {
-            return self.all().filter(d => d.uistate() === "detached");
-        });
+        getDevice(name: string) {
+            return this.devices[this.prefix + name];
+        }
 
-        self.invalidateObservable = function () {
-            invalidationToken.notifySubscribers(null);
-        };
-
-        self.getDevice = function (name) {
-            return devices[prefix + name];
-        };
-
-        self.destroyDevice = function (name) {
-            var device = devices[prefix + name];
+        destroyDevice(name: string) {
+            var device = this.devices[this.prefix + name];
             if (!device) {
                 Notifications.show("Failed to destroy '" + name + "' because it does not exist.");
                 return false;
@@ -457,20 +510,20 @@ module Mechanize {
 
             if ((<any> Object).isFunction(device.shutDown)) device.shutDown(); // sugar
 
-            delete devices[prefix + name];
-            self.invalidateObservable();
+            delete this.devices[this.prefix + name];
+            this.invalidateObservable();
             return true;
-        };
+        }
 
-        self.createDevice = function (name: string, type: string, args) {
-            var constructDevice = function (type, args) {
+        createDevice(name: string, type: string, args): Device {
+            var constructDevice = function (type: string, args) {
                 switch (type) {
                     case "TrashEjector":
                         return new TrashEjectorModel(args);
                     case "RockCollector":
                         return new RockCollectorModel(args);
                     case "Inventory":
-                        return new InventoryModel(args);
+                        return new InventoryModel(this, args);
                     case "Wastes":
                         return new WastesModel(args);
                     case "Constructor":
@@ -479,7 +532,7 @@ module Mechanize {
                         throw new RangeError("Cannot create a device of type " + type);
                 }
             };
-            if (self.getDevice(name)) {
+            if (this.getDevice(name)) {
                 Notifications.show("Failed to create '" + name + "' because it already exists.");
                 return;
             }
@@ -496,10 +549,10 @@ module Mechanize {
                     if (state) device.uistate(state);
                 },
                 send: function (receiverName, item) {
-                    var receiver = self.getDevice(receiverName);
+                    var receiver = this.getDevice(receiverName);
                     if (!receiver) return false;
 
-                    if (!self.getDevice(name)) {
+                    if (!this.getDevice(name)) {
                         kill("'" + name + "' attempted to send, but it doesn't exist.");
                     }
 
@@ -521,25 +574,21 @@ module Mechanize {
                 }
             });
 
-            devices[prefix + name] = device;
-            self.invalidateObservable();
+            this.devices[this.prefix + name] = device;
+            this.invalidateObservable();
             return device;
-        };
+        }
 
-        self.removeDevice = function (name) {
-            delete devices[prefix + name];
-            self.invalidateObservable();
-        };
+        removeDevice(name: string) {
+            delete this.devices[this.prefix + name];
+            this.invalidateObservable();
+        }
 
-        self.removeAll = function () {
-            devices = {};
-            self.invalidateObservable();
-        };
-
-        self.toJSON = function () {
-            return ko.toJS(self.all());
-        };
-    };
+        removeAll() {
+            this.devices = {};
+            this.invalidateObservable();
+        }
+    }
 
     var created = false;
     var MechanizeViewModel = function () {
