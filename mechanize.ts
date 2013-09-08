@@ -145,7 +145,7 @@ module Mechanize {
                 this.completed(true);
 
                 var cancel = this.completeCallback && this.completeCallback() === false;
-                if (this.repeat && cancel) this.start();
+                if (this.repeat && !cancel) this.start();
             }
         }
 
@@ -223,19 +223,19 @@ module Mechanize {
             var receiver = this.deviceCollection.getDevice(receiverName);
             if (!receiver) return false;
 
-            if (!this.deviceCollection.getDevice(name)) {
-                kill("'" + name + "' attempted to send, but it doesn't exist.");
+            if (!this.deviceCollection.getDevice(this.name)) {
+                kill("'" + this.name + "' attempted to send, but it doesn't exist.");
             }
 
             var success = receiver.accept && receiver.accept(item);
             var $receiver = $("[data-device='" + receiverName + "']");
-            var $sender = $("[data-device='" + name + "']");
+            var $sender = $("[data-device='" + this.name + "']");
             if (success) {
                 $receiver.addClass("bumped");
                 window.setTimeout(() => $receiver.removeClass("bumped"), 1000);
             } else {
                 $sender.addClass("error");
-                Notifications.show("Failed to send item from " + name + " to " + receiverName + ".");
+                Notifications.show("Failed to send item from " + this.name + " to " + receiverName + ".");
             }
 
             return success;
@@ -263,7 +263,7 @@ module Mechanize {
             return true;
         }
 
-        select(item: InventorySlotModel) {
+        select = (item: InventorySlotModel) => {
             if (!item.resource()) return;
 
             var alreadyActive = item.active();
@@ -288,7 +288,7 @@ module Mechanize {
             return resource;
         }
 
-        sendActiveTo(receiverName: string) {
+        sendActiveTo = (receiverName: string) => {
             var success = this.send(receiverName, this.activeItem().resource());
             if (success) this.popActive();
         }
@@ -326,7 +326,7 @@ module Mechanize {
 
         regenerator = ko.observable(new TimeTracker(15000, null, () => { this.regenerateJunk(); return true; }, true));
 
-        collect(wasteCell) {
+        collect = (wasteCell) => {
             if (!wasteCell.resource()) return;
 
             var success = this.send(this.params.output, wasteCell.resource());
@@ -357,88 +357,84 @@ module Mechanize {
         }
     }
 
-    var TrashEjectorModel = function (args) {
-        var self = this;
-        self.tracker = ko.observable();
-        self.contents = ko.observable();
+    class TrashEjectorModel extends Device {
+        tracker: KnockoutObservable<TimeTracker> = ko.observable();
+        contents: KnockoutObservable<ResourceModel> = ko.observable();
 
-        self.accept = function (resource) {
-            if (self.tracker()) return false;
+        accept(resource: ResourceModel) {
+            if (this.tracker()) return false;
 
-            self.contents(resource);
+            this.contents(resource);
 
-            self.tracker(new TimeTracker(20000, null, function () {
-                self.contents(null);
-                self.tracker(null);
+            this.tracker(new TimeTracker(20000, null, function () {
+                this.contents(null);
+                this.tracker(null);
                 return true;
             }));
 
             return true;
-        };
+        }
 
-        self.setDeviceInfo = function (deviceInfo) {
+        setDeviceInfo(deviceInfo) {
             if (deviceInfo.contents) {
-                self.accept(new ResourceModel(deviceInfo.contents.type));
+                this.accept(new ResourceModel(deviceInfo.contents.type));
             }
-        };
-    };
+        }
+    }
 
-    var RockCollectorModel = function (args) {
-        var self = this;
+    class RockCollectorModel extends Device {
+        tracker: TimeTracker;
 
-        self.params = (<any> Object).clone(args);
+        start() {
+            this.params.running = true;
+            this.tracker.start();
+        }
 
-        self.tracker = new TimeTracker(10000, null, function () {
-            return self.send(self.params.output, new ResourceModel("rock"));
-        }, true, self.params.running);
+        stop() {
+            this.params.running = false;
+            this.tracker.stop();
+        }
 
-        self.start = function () {
-            self.params.running = true;
-            self.tracker.start();
-        };
+        shutDown() {
+            this.tracker.stop();
+        }
 
-        self.stop = function () {
-            self.params.running = false;
-            self.tracker.stop();
-        };
+        constructor(deviceCollection: DeviceCollectionModel, args) {
+            super(deviceCollection, args);
 
-        self.shutDown = function () {
-            self.tracker.stop();
-        };
-    };
+            this.tracker = new TimeTracker(10000, null, function () {
+                return this.send(this.params.output, new ResourceModel("rock"));
+            }, true, this.params.running);
+        }
+    }
 
-    var ConstructorModel = function (args) {
-        var self = this;
-
-        self.params = (<any> Object).clone(args);
-        self.fabricator = ko.observable();
-        // self.nameToCreate = ko.observable("");
-
-        self.formulas = ko.observableArray([
+    class ConstructorModel extends Device {
+        fabricator: KnockoutObservable<TimeTracker> = ko.observable();
+        formulas = ko.observableArray([
             { requirement: [{ type: "rock", quantity: 8 }], result: ["concrete"] },
             { requirement: [{ type: "iron", quantity: 99 }], result: ["iron"] }
         ]);
+        items: KnockoutObservableArray<InventorySlotModel>;
 
-        self.items = ko.observableArray(Utils.makeArray(self.params.size, () => new InventorySlotModel(null)));
+        accept(resource: ResourceModel) {
+            if (this.fabricator()) return false;
 
-        self.accept = function (resource) {
-            if (self.fabricator()) return false;
-
-            var emptySlot = self.items().find(item => !item.resource());  // sugar
+            var emptySlot = this.items().find(item => !item.resource());  // sugar
             if (!emptySlot) return false;
 
             emptySlot.resource(resource);
             return true;
-        };
+        }
 
-        self.fabricate = function () {
-            if (self.fabricator()) return; // already fabricating, can't start again
+        fabricate() {
+            if (this.fabricator()) return; // already fabricating, can't start again
 
-            self.fabricator(new TimeTracker(60000, null, function () {
-                var materials = self.items().filter(slot => slot.resource())
+            var _this = this;
+            this.fabricator(new TimeTracker(60000, null, function () {
+                var materials = this.items().filter(slot => slot.resource())
                     .groupBy(slot => slot.resource().type);
 
-                var matched = ko.utils.unwrapObservable(self.formulas).find(function (formula) {
+                var matched = _this.formulas().find(function (formula) {
                     return formula.requirement.all(function (ingredient) {
                         return materials[ingredient.type] && materials[ingredient.type].length >= ingredient.quantity;
                     });
@@ -447,32 +443,38 @@ module Mechanize {
                 if (matched) {
                     matched.result.forEach(function (produced) {
                         var newResource = new ResourceModel(produced);
-                        self.send(self.params.output, newResource);
+                        _this.send(_this.params.output, newResource);
                     });
-                    Notifications.show("'" + self.name + "' produced " + matched.result.join(", ") + ".");
+                    Notifications.show("'" + _this.name + "' produced " + matched.result.join(", ") + ".");
                 } else {
-                    Notifications.show("'" + self.name + "' did not produce anything of value.");
+                    Notifications.show("'" + _this.name + "' did not produce anything of value.");
                 }
 
-                self.items().forEach(slot => { slot.resource(null); });
-                self.fabricator(null);
+                _this.items().forEach(slot => { slot.resource(null); });
+                _this.fabricator(null);
 
                 return true;
             }));
-        };
+        }
 
-        self.setDeviceInfo = function (deviceInfo) {
-            self.items().zip(deviceInfo.items).forEach(function (tuple) {
+        setDeviceInfo(deviceInfo) {
+            this.items().zip(deviceInfo.items).forEach(function (tuple) {
                 var slot = tuple[0], newItem = tuple[1];
                 var resource = newItem.resource && new ResourceModel(newItem.resource.type) || null;
                 slot.resource(resource);
             });
-        };
+        }
 
-        self.shutDown = function () {
-            self.fabricator.stop();
-        };
-    };
+        shutDown() {
+            this.fabricator().stop();
+        }
+
+        constructor(deviceCollection: DeviceCollectionModel, args) {
+            super(deviceCollection, args);
+
+            this.items = ko.observableArray(Utils.makeArray(args.size, () => new InventorySlotModel(null)));
+        }
+    }
 
     class DeviceCollectionModel extends Unserializable {
         prefix = "mechanize_";
@@ -519,18 +521,18 @@ module Mechanize {
         }
 
         createDevice(name: string, type: string, args): Device {
-            var constructDevice = function (type: string, args) {
+            var constructDevice = function (collection: DeviceCollectionModel, type: string, args): Device {
                 switch (type) {
                     case "TrashEjector":
-                        return new TrashEjectorModel(args);
+                        return new TrashEjectorModel(collection, args);
                     case "RockCollector":
-                        return new RockCollectorModel(args);
+                        return new RockCollectorModel(collection, args);
                     case "Inventory":
-                        return new InventoryModel(this, args);
+                        return new InventoryModel(collection, args);
                     case "Wastes":
-                        return new WastesModel(this, args);
+                        return new WastesModel(collection, args);
                     case "Constructor":
-                        return new ConstructorModel(args);
+                        return new ConstructorModel(collection, args);
                     default:
                         throw new RangeError("Cannot create a device of type " + type);
                 }
@@ -539,43 +541,9 @@ module Mechanize {
                 Notifications.show("Failed to create '" + name + "' because it already exists.");
                 return;
             }
-            var device = constructDevice(type, args);
-            (<any> Object).merge(device, { // sugar
-                name: name,
-                type: type,
-                uistate: ko.observable("expanded"),
-                collapse: function () { device.uistate("collapsed"); },
-                expand: function () { device.uistate("expanded"); },
-                detach: function () { device.uistate("detached"); },
-                toggleCollapse: function () {
-                    var state = { "collapsed": "expanded", "expanded": "collapsed" }[device.uistate()];
-                    if (state) device.uistate(state);
-                },
-                send: function (receiverName, item) {
-                    var receiver = this.getDevice(receiverName);
-                    if (!receiver) return false;
-
-                    if (!this.getDevice(name)) {
-                        kill("'" + name + "' attempted to send, but it doesn't exist.");
-                    }
-
-                    var success = receiver.accept && receiver.accept(item);
-                    var $receiver = $("[data-device='" + receiverName + "']");
-                    var $sender = $("[data-device='" + name + "']");
-                    if (success) {
-                        $receiver.addClass("bumped");
-
-                        window.setTimeout(function () {
-                            $receiver.removeClass("bumped");
-                        }, 1000);
-                    } else {
-                        $sender.addClass("error");
-                        Notifications.show("Failed to send item from " + name + " to " + receiverName + ".");
-                    }
-
-                    return success;
-                }
-            });
+            var device = constructDevice(this, type, args);
+            device.name = name;
+            device.type = type;
 
             this.devices[this.prefix + name] = device;
             this.invalidateObservable();
