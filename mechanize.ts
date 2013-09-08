@@ -1,7 +1,8 @@
 //# sourceMappingURL=mechanize.js.map
-/// <reference path="sugar.d.ts" />
-/// <reference path="knockout.d.ts" />
-/// <reference path="zepto.d.ts" />
+/// <reference path="typescript refs\sugar.d.ts" />
+/// <reference path="typescript refs\knockout.d.ts" />
+/// <reference path="typescript refs\zepto.d.ts" />
+/// <reference path="utils.ts" />
 
 // dependencies
 //  knockout
@@ -9,17 +10,10 @@
 //  zepto
 //  DragDrop
 
-ko.bindingHandlers["title"] = {
-    init:   (element: HTMLElement, valueAccessor: () => string) => { element.title = valueAccessor(); },
-    update: (element: HTMLElement, valueAccessor: () => string) => { element.title = valueAccessor(); },
-};
-
 declare var DragDrop;
 
 module Mechanize {
-    interface CancelToken {
-        cancel: boolean;
-    }
+    export var mechanize;
 
     class ResourceModel {
         type: string;
@@ -63,12 +57,6 @@ module Mechanize {
                 }
             });
         }
-    }
-
-    export var mechanize;
-
-    function makeHandler (fn: () => void) {
-        return (e: Event) => { fn(); return true; };
     }
 
     var killed = false;     // set when fatal error occurs and all execution should stop
@@ -120,32 +108,6 @@ module Mechanize {
         }
     }
 
-    function makeArray(length: number, element): Array {
-        var isFunction = typeof (element) === "function";
-
-        var result = [];
-        for (var i = 0; i < length; i++) {
-            result.push(isFunction ? element() : element);
-        }
-
-        return result;
-    }
-
-    function getFormattedTimespan(totalSeconds: number): string {
-        var seconds = totalSeconds % 60;
-        var totalMinutes = Math.floor(totalSeconds / 60);
-        var minutes = totalMinutes % 60;
-        var totalHours = Math.floor(totalMinutes / 60);
-
-        var formatted = "";
-
-        if (totalHours) formatted += totalHours + ":";
-        if (formatted || minutes) formatted += (formatted && minutes < 10 && "0") + minutes + ":";
-        formatted += (formatted && seconds < 10 && "0") + seconds;
-
-        return formatted;
-    }
-
     class TimeTracker {
         elapsedms = ko.observable(0);
         totalms: number;
@@ -181,7 +143,6 @@ module Mechanize {
                 this.elapsedms(this.totalms);
                 this.completed(true);
 
-                var cancelToken: CancelToken = { cancel: false };
                 var cancel = this.completeCallback && this.completeCallback() === false;
                 if (this.repeat && cancel) this.start();
             }
@@ -203,7 +164,7 @@ module Mechanize {
             this.progress["marginRight"] = ko.computed(() => (100 - 100 * this.progress()) + '%');
             this.progress["remainingFormatted"] = ko.computed(function () {
                 var seconds = (totalms - _this.elapsedms()) / 1000;
-                return getFormattedTimespan(Math.round(seconds));
+                return Utils.getFormattedTimespan(Math.round(seconds));
             });
 
             if (autostart) this.start();
@@ -226,7 +187,7 @@ module Mechanize {
         self.params.outputs = self.outputs;
 
         self.activeItem = ko.observable();
-        self.items = ko.observableArray(makeArray(self.params.size, () => new InventorySlotModel(null)));
+        self.items = ko.observableArray(Utils.makeArray(self.params.size, () => new InventorySlotModel(null)));
 
         self.deactivate = function () {
             if (!self.activeItem()) return;
@@ -290,7 +251,7 @@ module Mechanize {
         self.params = (<any> Object).clone(args);
 
         self.junk = ko.observableArray(
-            makeArray(self.params.size, () => { return { resource: ko.observable() }; }));
+            Utils.makeArray(self.params.size, () => { return { resource: ko.observable() }; }));
 
         self.regenerateJunk = function () {
             var rnd = Math.random(), type;
@@ -394,7 +355,7 @@ module Mechanize {
             { requirement: [{ type: "iron", quantity: 99 }], result: ["iron"] }
         ]);
 
-        self.items = ko.observableArray(makeArray(self.params.size, () => new InventorySlotModel(null)));
+        self.items = ko.observableArray(Utils.makeArray(self.params.size, () => new InventorySlotModel(null)));
 
         self.accept = function (resource) {
             if (self.fabricator()) return false;
@@ -755,19 +716,19 @@ module Mechanize {
             return true;
         });
 
-        $("body").on("click", "#arrangePanelsButton", makeHandler(arrangeAllPanels));
+        $("body").on("click", "#arrangePanelsButton", Utils.makeHandler(arrangeAllPanels));
 
         $("body").on("click", ".collapser.auto",
-            makeHandler(() => { $(this).toggleClass("expanded").toggleClass("collapsed"); }));
+            Utils.makeHandler(() => { $(this).toggleClass("expanded").toggleClass("collapsed"); }));
 
         $("#notificationsButton").on("click",
-            makeHandler(() => { $("#notificationsLog").toggle(); }));
+            Utils.makeHandler(() => { $("#notificationsLog").toggle(); }));
 
         $("#notifications").on("click", ".notification",
-            makeHandler(() => { $(this).remove(); }));
+            Utils.makeHandler(() => { $(this).remove(); }));
 
         $("header .max-toggle").on("click",
-            makeHandler(() => { $(this).toggleClass("active").parent().toggleClass("maxed"); }));
+            Utils.makeHandler(() => { $(this).toggleClass("active").parent().toggleClass("maxed"); }));
 
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");

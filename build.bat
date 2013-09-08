@@ -23,7 +23,7 @@ REM ***********  javascript  **************
 	build\jsmin < drag-drop.js >> output\libs.js
 	echo ; >> output\libs.js
 
-	cmd /c "tsc --outDir output mechanize.ts"
+	cmd /c "tsc --out output\mechanize.js kobindings.ts utils.ts mechanize.ts"
 	build\buildnumber.py build.txt output\mechanize.js "{{@build}}"
 
 REM ***********  assets  **************
