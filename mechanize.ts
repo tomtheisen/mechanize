@@ -30,6 +30,14 @@ module Mechanize {
         }
     }
 
+    class PlayerModel {
+        name: string;
+
+        constructor(name: string) {
+            this.name = name;
+        }
+    }
+
     class OptionsModel {
         autosave: KnockoutObservable<boolean>;
         visualEffects: KnockoutObservable<boolean>;
@@ -139,71 +147,63 @@ module Mechanize {
         return formatted;
     }
 
-    var TimeTracker = function (totalms: number, updatems: number, complete: (cancel: CancelToken) => void, repeat?: boolean, autostart?: boolean) {
-        var self = this;
+    class TimeTracker {
+        elapsedms = ko.observable(0);
+        totalms: number;
+        progress = ko.computed(() => this.elapsedms() / this.totalms);
+        completed = ko.observable(false);
 
-        if (autostart === undefined) autostart = true;
+        private intervalId: number;
+        private updatems: number;
+        private complete: (cancel: CancelToken) => void;
+        private repeat: boolean;
 
-        updatems = updatems || 1000;
-        var elapsedms = ko.observable(0);
-        var intervalId = null;
+        stop() {
+            if (this.intervalId) clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
 
-        self.elapsedms = ko.computed(function () {
-            return elapsedms();
-        });
-        self.totalms = totalms;
-
-        self.progress = ko.computed(function () {
-            return elapsedms() / totalms;
-        });
-
-        self.progress.marginRight = ko.computed(function () {
-            return (100 - 100 * self.progress()) + '%';
-        });
-
-        self.progress.remainingFormatted = ko.computed(function () {
-            var seconds = (totalms - elapsedms()) / 1000;
-            return getFormattedTimespan(Math.round(seconds));
-        });
-
-        var completed = ko.observable(false);
-        self.isComplete = ko.computed(function () {
-            return completed();
-        });
-
-        self.stop = function () {
-            if (intervalId) clearInterval(intervalId);
-            intervalId = null;
-        };
-
-        self.start = function () {
-            self.stop();
-            elapsedms(0);
-            completed(false);
-
-            intervalId = setInterval(function () {
+        start() {
+            this.stop();
+            this.elapsedms(0);
+            this.completed(false);
+            
+            this.intervalId = setInterval(function () {
                 if (killed) return;
 
-                elapsedms(elapsedms() + updatems);
+                this.elapsedms(this.elapsedms() + this.updatems);
 
-                if (elapsedms() >= totalms) {
-                    self.stop();
-                    elapsedms(totalms);
-                    completed(true);
+                if (this.elapsedms() >= this.totalms) {
+                    this.stop();
+                    this.elapsedms(this.totalms);
+                    this.completed(true);
 
                     var cancelToken: CancelToken = { cancel: false };
-                    if (complete) complete(cancelToken);
-                    if (repeat && !cancelToken.cancel) self.start();
+                    if (this.complete) this.complete(cancelToken);
+                    if (this.repeat && !cancelToken.cancel) this.start();
                 }
-            }, updatems);
-        };
+            }, this.updatems);
+        }
 
-        self.toJSON = function () {
+        toJSON() {
             return (<any> Object).reject(ko.toJS(self), 'progress'); // sugar
-        };
+        }
 
-        if (autostart) self.start();
-    };
+        constructor(totalms: number, updatems: number = 1000, complete?: (cancel: CancelToken) => void, repeat: boolean = false, autostart: boolean = true) {
+            this.updatems = updatems;
+            this.totalms = totalms;
+            this.complete = complete;
+            this.repeat = repeat;
+
+            this.progress["marginRight"] = ko.computed(() => (100 - 100 * this.progress()) + '%');
+            this.progress["remainingFormatted"] = ko.computed(function () {
+                var seconds = (totalms - this.elapsedms()) / 1000;
+                return getFormattedTimespan(Math.round(seconds));
+            });
+
+            if (autostart) this.start();
+        }
+    }
 
     var InventorySlotModel = function (resource) {
         var self = this;
@@ -285,7 +285,7 @@ module Mechanize {
         self.params = (<any> Object).clone(args);
 
         self.junk = ko.observableArray(
-            makeArray(self.params.size, function () { return { resource: ko.observable() }; }));
+            makeArray(self.params.size, () => { resource: ko.observable() }));
 
         self.regenerateJunk = function () {
             var rnd = Math.random(), type;
@@ -325,12 +325,6 @@ module Mechanize {
             console.log("todo: WastesModel setDeviceInfo");
             void (deviceInfo);
         };
-    };
-
-    var PlayerModel = function (name) {
-        var self = this;
-
-        self.name = name;
     };
 
     var TrashEjectorModel = function (args) {
@@ -395,9 +389,7 @@ module Mechanize {
             { requirement: [{ type: "iron", quantity: 99 }], result: ["iron"] }
         ]);
 
-        self.items = ko.observableArray(makeArray(self.params.size, function () {
-            return new InventorySlotModel(null);
-        }));
+        self.items = ko.observableArray(makeArray(self.params.size, () => new InventorySlotModel(null)));
 
         self.accept = function (resource) {
             if (self.fabricator()) return false;
