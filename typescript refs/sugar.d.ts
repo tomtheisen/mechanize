@@ -2908,6 +2908,7 @@ interface Array<T> {
 	* @note removed because of TSC bug https://typescript.codeplex.com/workitem/1143?FocusElement=CommentTextBox
 	**/
 	//zip(...arrays: T[]): T[][];
+	zip(...arrays: any[]): any[][];
 }
 
 interface ObjectStatic {

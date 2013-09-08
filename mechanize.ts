@@ -172,7 +172,11 @@ module Mechanize {
         }
     }
 
-    class InventorySlotModel {
+    interface ResourceHolder {
+        resource: KnockoutObservable<ResourceModel>;
+    }
+
+    class InventorySlotModel implements ResourceHolder {
         resource: KnockoutObservable<ResourceModel>;
         active = ko.observable(false);
 
@@ -306,15 +310,9 @@ module Mechanize {
         }
     }
 
-    var WastesModel = function (args) {
-        var self = this;
-
-        self.params = (<any> Object).clone(args);
-
-        self.junk = ko.observableArray(
-            Utils.makeArray(self.params.size, () => { return { resource: ko.observable() }; }));
-
-        self.regenerateJunk = function () {
+    class WastesModel extends Device {
+        junk: KnockoutObservableArray<ResourceHolder>;
+        regenerateJunk() {
             var rnd = Math.random(), type;
             if (rnd < 0.05) {
                 type = "iron";
@@ -322,37 +320,42 @@ module Mechanize {
                 type = "rock";
             }
 
-            var idx = Math.floor(Math.random() * self.junk().length);
-            self.junk()[idx].resource(new ResourceModel(type));
-        };
-        if (self.params.randomize) {
-            for (var i = 0; i < self.junk().length / 2; i++) {
-                self.regenerateJunk();
-            }
-            self.regenerateJunk();
-            self.params.randomize = false;
+            var idx = Math.floor(Math.random() * this.junk().length);
+            this.junk()[idx].resource(new ResourceModel(type));
         }
 
-        var regenerator = new TimeTracker(15000, null, self.regenerateJunk, true);
-        self.regenerator = function () { return regenerator; };
+        regenerator = ko.observable(new TimeTracker(15000, null, () => { this.regenerateJunk(); return true; }, true));
 
-        self.collect = function (wasteCell) {
+        collect(wasteCell) {
             if (!wasteCell.resource()) return;
 
-            var success = self.send(self.params.output, wasteCell.resource());
+            var success = this.send(this.params.output, wasteCell.resource());
             if (success) wasteCell.resource(null);
             return success;
-        };
+        }
 
-        self.shutDown = function () {
-            self.regenerator.stop();
-        };
+        shutDown() {
+            this.regenerator().stop();
+        }
 
-        self.setDeviceInfo = function (deviceInfo) {
+        setDeviceInfo(deviceInfo) {
             console.log("todo: WastesModel setDeviceInfo");
-            void (deviceInfo);
-        };
-    };
+        }
+
+        constructor(deviceCollection: DeviceCollectionModel, args) {
+            super(deviceCollection, args);
+
+            this.junk = ko.observableArray(Utils.makeArray(args.size, () => { return { resource: ko.observable() }; }));
+
+            if (args.randomize) {
+                for (var i = 0; i < this.junk().length / 2; i++) {
+                    this.regenerateJunk();
+                }
+
+                this.params.randomize = false;
+            }
+        }
+    }
 
     var TrashEjectorModel = function (args) {
         var self = this;
@@ -525,7 +528,7 @@ module Mechanize {
                     case "Inventory":
                         return new InventoryModel(this, args);
                     case "Wastes":
-                        return new WastesModel(args);
+                        return new WastesModel(this, args);
                     case "Constructor":
                         return new ConstructorModel(args);
                     default:
