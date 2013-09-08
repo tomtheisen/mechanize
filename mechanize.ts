@@ -11,8 +11,8 @@
 //  DragDrop
 
 ko.bindingHandlers["title"] = {
-    init:   (element, valueAccessor) => { element.title = valueAccessor(); },
-    update: (element, valueAccessor) => { element.title = valueAccessor(); },
+    init:   (element: HTMLElement, valueAccessor: () => string) => { element.title = valueAccessor(); },
+    update: (element: HTMLElement, valueAccessor: () => string) => { element.title = valueAccessor(); },
 };
 
 declare var DragDrop;
@@ -60,7 +60,7 @@ module Mechanize {
 
     var mechanize;
 
-    function makeHandler(fn: () => void) {
+    function makeHandler (fn: () => void) {
         return (e: Event) => { fn(); return true; };
     }
 
@@ -77,7 +77,7 @@ module Mechanize {
         killed = true;
     };
 
-    var saveModel = function (e: Event) {
+    function saveModel (e: Event) {
         try {
             var serialized = ko.toJSON(mechanize, (key: string, value) => value == null ? undefined : value);
             window.localStorage.setItem("mechanize", serialized);
@@ -89,13 +89,18 @@ module Mechanize {
         }
     };
 
-    var Notifications = (function () {
-        var notifications = ko.observableArray([]);
+    module Notifications {
+        export var log = ko.observableArray([]);
+        export var shown = ko.observable(false);
 
-        var show = function (message: string) {
-            notifications.push(message);
-            if (ko.utils.unwrapObservable(notifications).length > 20) {
-                notifications.shift();
+        export function toJSON() {
+            return undefined;
+        }
+
+        export function show(message: string) {
+            log.push(message);
+            if (ko.utils.unwrapObservable(log).length > 20) {
+                log.shift();
             }
 
             var $notification = $("<div />").addClass("notification").text(message)
@@ -105,15 +110,8 @@ module Mechanize {
             window.setTimeout(function () {
                 $notification.animate(args, 4000, "ease", () => { $notification.remove(); });
             }, 10000);
-        };
-
-        return {
-            show: show,
-            log: notifications,
-            shown: ko.observable(false),
-            toJSON: () => undefined,
-        };
-    })();
+        }
+    }
 
     function makeArray(length: number, element): Array {
         var isFunction = typeof (element) === "function";
