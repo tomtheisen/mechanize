@@ -2,6 +2,7 @@
 /// <reference path="typescript refs\knockout.d.ts" />
 /// <reference path="typescript refs\zepto.d.ts" />
 /// <reference path="utils.ts" />
+/// <reference path="interface.ts" />
 
 // dependencies
 //  knockout
@@ -58,7 +59,7 @@ module Mechanize {
         elapsedms = ko.observable(0);
         totalms: number;
         progress: KnockoutObservable<number>;
-        completed = ko.observable(false);
+        running = ko.observable(false);
 
         private intervalId: number;
         private updatems: number;
@@ -68,12 +69,13 @@ module Mechanize {
         stop() {
             if (this.intervalId) clearInterval(this.intervalId);
             this.intervalId = null;
+            this.running(false);
         }
 
         start() {
             this.stop();
             this.elapsedms(0);
-            this.completed(false);
+            this.running(true);
 
             this.intervalId = setInterval(this.tick.bind(this), this.updatems);
         }
@@ -86,7 +88,6 @@ module Mechanize {
             if (this.elapsedms() >= this.totalms) {
                 this.stop();
                 this.elapsedms(this.totalms);
-                this.completed(true);
 
                 var cancel = this.completeCallback && this.completeCallback() === false;
                 if (this.repeat && !cancel) this.start();
@@ -95,6 +96,15 @@ module Mechanize {
 
         toJSON() {
             return (<any> Object).reject(ko.toJS(this), 'progress', 'intervalId'); // sugar
+        }
+
+        setInfo(serialized) {
+            this.updatems = serialized.updatems;
+            this.totalms = serialized.totalms;
+            this.repeat = serialized.repeat;
+
+            if (serialized.running) this.start(); else this.stop();
+            this.elapsedms(serialized.elapsedms);
         }
 
         constructor(totalms: number, updatems: number, complete: () => boolean, repeat: boolean = false, autostart: boolean = true) {
@@ -301,10 +311,11 @@ module Mechanize {
                 var resource: ResourceModel = newItem.resource && new ResourceModel(newItem.resource.type) || null;
                 holder.resource(resource);
             });
+            this.regenerator().setInfo(deviceSerialized.regenerator);
         }
 
         toJSON() {
-            return (<any> Object).merge(super.toJSON(), { junk: this.junk });
+            return (<any> Object).merge(super.toJSON(), { junk: this.junk, regenerator: this.regenerator });
         }
 
         constructor(deviceCollection: DeviceCollectionModel, args) {
