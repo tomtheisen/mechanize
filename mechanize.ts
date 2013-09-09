@@ -94,7 +94,7 @@ module Mechanize {
         }
 
         toJSON() {
-            return (<any> Object).reject(ko.toJS(self), 'progress'); // sugar
+            return (<any> Object).reject(ko.toJS(this), 'progress', 'intervalId'); // sugar
         }
 
         constructor(totalms: number, updatems: number, complete: () => boolean, repeat: boolean = false, autostart: boolean = true) {
@@ -296,7 +296,15 @@ module Mechanize {
         }
 
         setDeviceInfo(deviceSerialized) {
-            console.log("todo: WastesModel setDeviceInfo");
+            this.junk().zip(deviceSerialized.junk).forEach(function (tuple) {
+                var holder: ResourceHolder = tuple[0], newItem = tuple[1];
+                var resource: ResourceModel = newItem.resource && new ResourceModel(newItem.resource.type) || null;
+                holder.resource(resource);
+            });
+        }
+
+        toJSON() {
+            return (<any> Object).merge(super.toJSON(), { junk: this.junk });
         }
 
         constructor(deviceCollection: DeviceCollectionModel, args) {
