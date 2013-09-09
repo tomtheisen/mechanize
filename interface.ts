@@ -1,4 +1,10 @@
+/// <reference path="typescript refs\sugar.d.ts" />
+/// <reference path="typescript refs\knockout.d.ts" />
+/// <reference path="typescript refs\zepto.d.ts" />
+/// <reference path="utils.ts" />
+/// <reference path="mechanize.ts" />
 
+declare var DragDrop;
 module Interface {
     export var mechanize;
 
@@ -160,7 +166,7 @@ module Interface {
                 }
             }
         }
-    };
+    }
 
     window.addEventListener("load", function () {
         var serialized: string = window.localStorage.getItem('mechanize');
@@ -214,7 +220,6 @@ module Interface {
         }));
 
         $("header .max-toggle").on("click", Utils.makeHandler(function () {
-            debugger;
             $(this).toggleClass("active").parent().toggleClass("maxed");
         }));
 
