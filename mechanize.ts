@@ -95,7 +95,7 @@ module Mechanize {
         }
 
         toJSON() {
-            return (<any> Object).reject(ko.toJS(this), 'progress', 'intervalId'); // sugar
+            return (<any> Object).reject(ko.toJS(this), "progress", "intervalId"); // sugar
         }
 
         setInfo(serialized) {
@@ -114,7 +114,7 @@ module Mechanize {
             this.completeCallback = complete;
             this.repeat = repeat;
 
-            this.progress["marginRight"] = ko.computed(() => (100 - 100 * this.progress()) + '%');
+            this.progress["marginRight"] = ko.computed(() => (100 - 100 * this.progress()) + "%");
             this.progress["remainingFormatted"] = ko.computed(() => {
                 var seconds = (totalms - this.elapsedms()) / 1000;
                 return Utils.getFormattedTimespan(Math.round(seconds));
@@ -137,7 +137,7 @@ module Mechanize {
         }
 
         toJSON() {
-            return (<any> Object).reject(ko.toJS(this), 'active'); // sugar
+            return (<any> Object).reject(ko.toJS(this), "active"); // sugar
         }
     }
 
@@ -176,7 +176,7 @@ module Mechanize {
             if (!receiver) return false;
 
             if (!this.deviceCollection.getDevice(this.name)) {
-                Interface.kill("'" + this.name + "' attempted to send, but it doesn't exist.");
+                Interface.kill(this.name + " attempted to send, but it doesn't exist.");
             }
 
             var success = receiver.accept && receiver.accept(item);
@@ -337,16 +337,17 @@ module Mechanize {
         tracker: KnockoutObservable<TimeTracker> = ko.observable();
         contents: KnockoutObservable<ResourceModel> = ko.observable();
 
+        eject = () => {
+            this.contents(null);
+            this.tracker(null);
+            return true;
+        };
+
         accept(resource: ResourceModel) {
             if (this.tracker()) return false;
 
             this.contents(resource);
-
-            this.tracker(new TimeTracker(20000, null, function () {
-                this.contents(null);
-                this.tracker(null);
-                return true;
-            }));
+            this.tracker(new TimeTracker(20000, null, this.eject));
 
             return true;
         }
@@ -354,11 +355,12 @@ module Mechanize {
         setDeviceInfo(deviceSerialized) {
             if (deviceSerialized.contents) {
                 this.accept(new ResourceModel(deviceSerialized.contents.type));
+                this.tracker().setInfo(deviceSerialized.tracker);
             }
         }
 
         toJSON() {
-            return (<any> Object).merge(super.toJSON(), { contents: this.contents });
+            return (<any> Object).merge(super.toJSON(), { contents: this.contents, tracker: this.tracker });
         }
     }
 
@@ -424,9 +426,9 @@ module Mechanize {
                         var newResource = new ResourceModel(produced);
                         this.send(this.params.output, newResource);
                     });
-                    Interface.Notifications.show("'" + this.name + "' produced " + matched.result.join(", ") + ".");
+                    Interface.Notifications.show(this.name + " produced " + matched.result.join(", ") + ".");
                 } else {
-                    Interface.Notifications.show("'" + this.name + "' did not produce anything of value.");
+                    Interface.Notifications.show(this.name + " did not produce anything of value.");
                 }
 
                 this.items().forEach(slot => { slot.resource(null); });
@@ -442,10 +444,14 @@ module Mechanize {
                 var resource = newItem.resource && new ResourceModel(newItem.resource.type) || null;
                 slot.resource(resource);
             });
+            if (deviceSerialized.fabricator) {
+                this.fabricate();
+                this.fabricator().setInfo(deviceSerialized.fabricator);
+            }
         }
 
         toJSON() {
-            return (<any> Object).merge(super.toJSON(), { items: this.items });
+            return (<any> Object).merge(super.toJSON(), { items: this.items, fabricator: this.fabricator });
         }
 
         shutDown() {
@@ -487,12 +493,12 @@ module Mechanize {
         destroyDevice(name: string) {
             var device : Device = this.devices[this.prefix + name];
             if (!device) {
-                Interface.Notifications.show("Failed to destroy '" + name + "' because it does not exist.");
+                Interface.Notifications.show("Failed to destroy " + name + " because it does not exist.");
                 return false;
             }
 
             if (device.indestructible) {
-                Interface.Notifications.show("Failed to destroy '" + name + "' because it is indestructible.");
+                Interface.Notifications.show("Failed to destroy " + name + " because it is indestructible.");
                 return false;
             }
 
@@ -521,7 +527,7 @@ module Mechanize {
                 }
             };
             if (this.getDevice(name)) {
-                Interface.Notifications.show("Failed to create '" + name + "' because it already exists.");
+                Interface.Notifications.show("Failed to create " + name + " because it already exists.");
                 return;
             }
             var device = constructDevice(this, type, args);
