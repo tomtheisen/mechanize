@@ -20,12 +20,11 @@ module Mechanize {
     }
 
     export class OptionsModel {
-        autosave: KnockoutObservable<boolean>;
-        visualEffects: KnockoutObservable<boolean>;
+        autosave = ko.observable(false);
+        visualEffects = ko.observable(false);
+        fullScreen = ko.observable(false);
 
         constructor() {
-            this.autosave = ko.observable(false);
-
             var autosaveIntervalId: number;
             this.autosave.subscribe(function (autosave: boolean) {
                 Notifications.show("Autosave is " + (autosave ? "on" : "off") + ".");
@@ -33,12 +32,19 @@ module Mechanize {
                 if (autosaveIntervalId) clearInterval(autosaveIntervalId);
                 if (autosave) autosaveIntervalId = window.setInterval(Interface.saveModel, 120000);
             });
-
-            this.visualEffects = ko.observable(false);
             this.visualEffects.subscribe(function (vfx) {
                 Notifications.show("Visual effects are " + (vfx ? "on" : "off") + ".");
                 Interface.setVisualEffects(vfx);
             });
+            this.fullScreen.subscribe(function (full) {
+                Notifications.show("Fullscreen is " + (full ? "on" : "off") + ".");
+                if (full) Utils.fullScreen();
+                else Utils.exitFullScreen();
+            });
+        }
+
+        toJSON() {
+            return sugarObject.reject(ko.toJS(this), "fullScreen"); // sugar
         }
     }
 

@@ -28,4 +28,32 @@ module Utils {
 
         return formatted;
     }
+
+    export function fullScreen() {
+        var de: any = document.documentElement;
+        if (de.requestFullscreen) de.requestFullscreen();
+        else if (de.mozRequestFullScreen) de.mozRequestFullScreen();
+        else if (de.webkitRequestFullscreen) de.webkitRequestFullscreen();
+    }
+
+    export function exitFullScreen() {
+        var d: any = document;
+        if (d.cancelFullScreen) d.cancelFullScreen();
+        else if (d.mozCancelFullScreen) d.mozCancelFullScreen();
+        else if (d.webkitCancelFullScreen) d.webkitCancelFullScreen();
+    }
+
+    export function toggleFullScreen() {
+        if (currentlyFullScreen()) {
+            exitFullScreen();
+        } else {
+            fullScreen();
+        }
+    }
+
+    export function currentlyFullScreen(): boolean {
+        var d: any = document;
+        return !!(d.fullscreenElement ||    // alternative standard method
+            d.mozFullScreenElement || d.webkitFullscreenElement);
+    }
 }

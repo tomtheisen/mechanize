@@ -203,19 +203,25 @@ module Interface {
 
         $("header .max-toggle").on("click", Utils.makeHandler(toggleHeaderMax));
 
-        $("body").on("keypress", (e: KeyboardEvent) => {
+        $(document).on("keydown", (e: KeyboardEvent) => {
             var commands = {
-                96: toggleHeaderMax,
-                97: arrangeAllPanels,
-                99: clearAllErrors,
-                100: detachAllPanels,
-                101: expandAllPanels,
-                109: collapseAllPanels,
+                27: toggleHeaderMax,
+                192: toggleHeaderMax,
+                65: arrangeAllPanels,
+                67: clearAllErrors,
+                68: detachAllPanels,
+                69: expandAllPanels,
+                70: Utils.toggleFullScreen,
+                77: collapseAllPanels,
             };
             var command: () => void = commands[e.which];
             if (command) command();
             return true;
         });
+
+        $(document.documentElement).on(
+            "fullscreenchange webkitfullscreenchange mozfullscreenchange",
+            Utils.makeHandler(() => GameState.options.fullScreen(Utils.currentlyFullScreen())));
 
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");

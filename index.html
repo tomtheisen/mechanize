@@ -151,11 +151,16 @@
 							<div class="face face18"></div>
 						</div>
 						<div class="cube">
-							<div class="face face1">mechanize<br>by Tom Theisen</div>
+							<div class="face face1">
+								mechanize
+								<br>version <!-- ko text: modelVersion --><!-- /ko -->
+								<br>build <!-- ko text: build --><!-- /ko -->
+								<br>by Tom Theisen
+							</div>
 							<div class="face face2">written in typescript, less, and html</div>
 							<div class="face face3">using knockout, sugarjs, zepto, lessprefixer, dragdrop</div>
-							<div class="face face4">build <!-- ko text: build --><!-- /ko --></div>	
-							<div class="face face5">built with jsmin, dos batch, python, beautiful soup</div>
+							<div class="face face4">built with jsmin, dos batch, python, beautiful soup</div>	
+							<div class="face face5"></div>
 							<div class="face face6"></div>
 						</div>
 					</div>
@@ -169,6 +174,7 @@
 					<label><input type="checkbox" data-bind="checked: notifications.shown">log</label>
 					<label><input type="checkbox" data-bind="checked: options.autosave">autosave</label>
 					<label><input type="checkbox" data-bind="checked: options.visualEffects">visual effects</label>
+					<label><input type="checkbox" data-bind="checked: options.fullScreen">fullscreen</label>
 					<!-- ko if: notifications.shown -->
 						<ul id="notificationsLog" data-bind="foreach: notifications.log">
 							<li data-bind="text: $data"></li>
@@ -220,10 +226,7 @@
 				</button>
 				<h2 class="deviceHeader" data-bind="text: name"></h2>
 				<h3 data-bind="text: type"></h3>
-				<div class="controls" data-bind="
-					template: {
-						name: 'DeviceTemplate' + type, 
-						data: $data}">
+				<div class="controls" data-bind="template: { name: 'DeviceTemplate' + type, data: $data}">
 				</div>
 			</div>
 			<!-- /ko -->
