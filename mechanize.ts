@@ -2,7 +2,6 @@
 /// <reference path="typescript refs\knockout.d.ts" />
 /// <reference path="typescript refs\zepto.d.ts" />
 /// <reference path="utils.ts" />
-/// <reference path="interface.ts" />
 
 // dependencies
 //  knockout
@@ -12,19 +11,11 @@
 
 module Mechanize {
     export class ResourceModel {
-        type: string;
-
-        constructor(type: string) {
-            this.type = type;
-        }
+        constructor(public type: string) { }
     }
 
     export class PlayerModel {
-        name: string;
-
-        constructor(name: string) {
-            this.name = name;
-        }
+        constructor(public name: string) { }
     }
 
     export class OptionsModel {
@@ -57,14 +48,11 @@ module Mechanize {
 
     export class TimeTracker {
         elapsedms = ko.observable(0);
-        totalms: number;
         progress: KnockoutObservable<number>;
         running = ko.observable(false);
 
         private intervalId: number;
-        private updatems: number;
         private completeCallback: () => boolean;
-        private repeat: boolean;
 
         stop() {
             if (this.intervalId) clearInterval(this.intervalId);
@@ -107,12 +95,9 @@ module Mechanize {
             this.elapsedms(serialized.elapsedms);
         }
 
-        constructor(totalms: number, updatems: number, complete: () => boolean, repeat: boolean = false, autostart: boolean = true) {
-            this.updatems = updatems || 1000;
-            this.totalms = totalms;
+        constructor(public totalms: number, complete: () => boolean, private repeat: boolean = false, private updatems: number = 1000, autostart: boolean = true) {
             this.progress = ko.computed(() => this.elapsedms() / this.totalms);
             this.completeCallback = complete;
-            this.repeat = repeat;
 
             this.progress["marginRight"] = ko.computed(() => (100 - 100 * this.progress()) + "%");
             this.progress["remainingFormatted"] = ko.computed(() => {
@@ -143,15 +128,13 @@ module Mechanize {
 
     export class Device {
         params: any;    // used in device serialization to restore state
-        deviceCollection: DeviceCollectionModel;
         name: string;
         type: string;
         uistate = ko.observable("expanded");
         indestructible = false;
 
-        constructor(deviceCollection: DeviceCollectionModel, args) {
+        constructor(public deviceCollection: DeviceCollectionModel, args) {
             this.params = (<any> Object).clone(args); // sugar
-            this.deviceCollection = deviceCollection;
         }
 
         accept(resource: ResourceModel) {
@@ -291,7 +274,7 @@ module Mechanize {
             this.junk()[idx].resource(new ResourceModel(type));
         }
 
-        regenerator = ko.observable(new TimeTracker(15000, null, () => { this.regenerateJunk(); return true; }, true));
+        regenerator = ko.observable(new TimeTracker(15000, () => { this.regenerateJunk(); return true; }, true));
 
         collect = (wasteCell) => {
             if (!wasteCell.resource()) return;
@@ -347,7 +330,7 @@ module Mechanize {
             if (this.tracker()) return false;
 
             this.contents(resource);
-            this.tracker(new TimeTracker(20000, null, this.eject));
+            this.tracker(new TimeTracker(20000, this.eject));
 
             return true;
         }
@@ -384,9 +367,9 @@ module Mechanize {
         constructor(deviceCollection: DeviceCollectionModel, args) {
             super(deviceCollection, args);
 
-            this.tracker = new TimeTracker(10000, null, function () {
+            this.tracker = new TimeTracker(10000, function () {
                 return this.send(this.params.output, new ResourceModel("rock"));
-            }, true, this.params.running);
+            }, true, undefined, this.params.running);
         }
     }
 
@@ -411,7 +394,7 @@ module Mechanize {
         fabricate() {
             if (this.fabricator()) return; // already fabricating, can't start again
 
-            this.fabricator(new TimeTracker(60000, null, () => {
+            this.fabricator(new TimeTracker(60000, () => {
                 var materials = this.items().filter(slot => !!slot.resource())
                     .groupBy(slot => slot.resource().type);
 
@@ -491,7 +474,7 @@ module Mechanize {
         }
 
         destroyDevice(name: string) {
-            var device : Device = this.devices[this.prefix + name];
+            var device: Device = this.devices[this.prefix + name];
             if (!device) {
                 Interface.Notifications.show("Failed to destroy " + name + " because it does not exist.");
                 return false;
@@ -502,7 +485,7 @@ module Mechanize {
                 return false;
             }
 
-            if (typeof(device.shutDown) === "function") device.shutDown(); 
+            if (typeof(device.shutDown) === "function") device.shutDown();
 
             delete this.devices[this.prefix + name];
             this.invalidateObservable();
