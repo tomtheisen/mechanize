@@ -1,6 +1,5 @@
 /// <reference path="typescript refs\sugar.d.ts" />
 /// <reference path="typescript refs\knockout.d.ts" />
-/// <reference path="typescript refs\zepto.d.ts" />
 /// <reference path="utils.ts" />
 
 // dependencies
@@ -27,7 +26,7 @@ module Mechanize {
 
             var autosaveIntervalId: number;
             this.autosave.subscribe(function (autosave: boolean) {
-                Interface.Notifications.show("Autosave is " + (autosave ? "on" : "off") + ".");
+                Notifications.show("Autosave is " + (autosave ? "on" : "off") + ".");
 
                 if (autosaveIntervalId) clearInterval(autosaveIntervalId);
                 if (autosave) autosaveIntervalId = window.setInterval(Interface.saveModel, 120000);
@@ -35,13 +34,8 @@ module Mechanize {
 
             this.visualEffects = ko.observable(false);
             this.visualEffects.subscribe(function (vfx) {
-                Interface.Notifications.show("Visual effects are " + (vfx ? "on" : "off") + ".");
-
-                if (vfx) {
-                    $("body").addClass("vfx");
-                } else {
-                    $("body").removeClass("vfx");
-                }
+                Notifications.show("Visual effects are " + (vfx ? "on" : "off") + ".");
+                Interface.setVisualEffects(vfx);
             });
         }
     }
@@ -162,15 +156,12 @@ module Mechanize {
                 Interface.kill(this.name + " attempted to send, but it doesn't exist.");
             }
 
-            var success = receiver.accept && receiver.accept(item);
-            var $receiver = $("[data-device='" + receiverName + "']");
-            var $sender = $("[data-device='" + this.name + "']");
+            var success = receiver.accept(item);
             if (success) {
-                $receiver.addClass("bumped");
-                window.setTimeout(() => $receiver.removeClass("bumped"), 1000);
+                Interface.bumpDevice(this.name);
             } else {
-                $sender.addClass("error");
-                Interface.Notifications.show("Failed to send item from " + this.name + " to " + receiverName + ".");
+                Interface.errorDevice(this.name);
+                Notifications.show("Failed to send item from " + this.name + " to " + receiverName + ".");
             }
 
             return success;
@@ -409,9 +400,9 @@ module Mechanize {
                         var newResource = new ResourceModel(produced);
                         this.send(this.params.output, newResource);
                     });
-                    Interface.Notifications.show(this.name + " produced " + matched.result.join(", ") + ".");
+                    Notifications.show(this.name + " produced " + matched.result.join(", ") + ".");
                 } else {
-                    Interface.Notifications.show(this.name + " did not produce anything of value.");
+                    Notifications.show(this.name + " did not produce anything of value.");
                 }
 
                 this.items().forEach(slot => { slot.resource(null); });
@@ -449,8 +440,7 @@ module Mechanize {
     }
 
     export class DeviceCollectionModel {
-        prefix = "mechanize_";
-        devices = {};
+        private devices = Object.create(null);
 
         getDevices(): Device[] {
             return (<any> Object).values(this.devices); // sugar
@@ -469,25 +459,25 @@ module Mechanize {
         attached = ko.computed(() => this.all().filter(d => ["expanded", "collapsed"].any(d.uistate()))); // sugar
         detached = ko.computed(() => this.all().filter(d => d.uistate() === "detached")); // sugar
 
-        getDevice(name: string) {
-            return this.devices[this.prefix + name];
+        getDevice(name: string): Device {
+            return this.devices[name];
         }
 
         destroyDevice(name: string) {
-            var device: Device = this.devices[this.prefix + name];
+            var device = this.getDevice(name);
             if (!device) {
-                Interface.Notifications.show("Failed to destroy " + name + " because it does not exist.");
+                Notifications.show("Failed to destroy " + name + " because it does not exist.");
                 return false;
             }
 
             if (device.indestructible) {
-                Interface.Notifications.show("Failed to destroy " + name + " because it is indestructible.");
+                Notifications.show("Failed to destroy " + name + " because it is indestructible.");
                 return false;
             }
 
             if (typeof(device.shutDown) === "function") device.shutDown();
 
-            delete this.devices[this.prefix + name];
+            delete this.devices[name];
             this.invalidateObservable();
             return true;
         }
@@ -510,24 +500,20 @@ module Mechanize {
                 }
             };
             if (this.getDevice(name)) {
-                Interface.Notifications.show("Failed to create " + name + " because it already exists.");
+                Notifications.show("Failed to create " + name + " because it already exists.");
                 return;
             }
             var device = constructDevice(this, type, args);
             device.name = name;
             device.type = type;
 
-            this.devices[this.prefix + name] = device;
+            this.devices[name] = device;
             this.invalidateObservable();
             return device;
         }
-        removeDevice(name: string) {
-            delete this.devices[this.prefix + name];
-            this.invalidateObservable();
-        }
 
         removeAll() {
-            this.devices = {};
+            this.devices = Object.create(null);
             this.invalidateObservable();
         }
 
@@ -536,27 +522,31 @@ module Mechanize {
         }
     }
 
-    var created = false;
-    export class MechanizeViewModel {
-        player: PlayerModel;
-        devices = new DeviceCollectionModel();
-        options = new OptionsModel();
-        modelVersion = "0.1.0";
-        build = "{{@build}}";
-        notifications = Interface.Notifications; // has to be part of viewmodel so knockout events can be bound
+    export module Notifications {
+        export var log = ko.observableArray([]);
+        export var shown = ko.observable(false);
 
-        initializeGame() {
-            this.devices.createDevice("Cargo Hold", "Inventory", { size: 16, outputs: ["Airlock", "Fabrication Lab"] });
-            this.devices.createDevice("Airlock", "TrashEjector");
-            this.devices.createDevice("Fabrication Lab", "Constructor", { size: 8, output: "Cargo Hold" });
-            this.devices.createDevice("Resource Mining", "Wastes", { size: 32, output: "Cargo Hold", randomize: true }).detach();
+        export function toJSON() { return undefined; }
+        export function show(message: string) {
+            log.push(message);
+            if (ko.utils.unwrapObservable(log).length > 20) log.shift();
+            Interface.showNotification(message);
         }
+    }
 
-        constructor() {
-            if (created) Interface.kill("Must not call MechanizeViewModel more than once.");
-            created = true;
+    export module MechanizeViewModel {
+        export var player: PlayerModel = new PlayerModel("Bob");
+        export var devices = new DeviceCollectionModel();
+        export var options = new OptionsModel();
+        export var modelVersion = "0.1.0";
+        export var build = "{{@build}}";
+        export var notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 
-            this.player = new PlayerModel("Bob");
+        export function initializeGame() {
+            devices.createDevice("Cargo Hold", "Inventory", { size: 16, outputs: ["Airlock", "Fabrication Lab"] });
+            devices.createDevice("Airlock", "TrashEjector");
+            devices.createDevice("Fabrication Lab", "Constructor", { size: 8, output: "Cargo Hold" });
+            devices.createDevice("Resource Mining", "Wastes", { size: 32, output: "Cargo Hold", randomize: true }).detach();
         }
     }
 }

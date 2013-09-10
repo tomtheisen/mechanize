@@ -6,11 +6,12 @@
 
 declare var DragDrop;
 module Interface {
-    export var mechanize;
+    import GameState = Mechanize.MechanizeViewModel;
+    import Notifications = Mechanize.Notifications;
 
     export function saveModel() {
         try {
-            var serialized = ko.toJSON(mechanize, (key: string, value) => value == null ? undefined : value);
+            var serialized = ko.toJSON(GameState, (key: string, value) => value == null ? undefined : value);
             window.localStorage.setItem("mechanize", serialized);
             Notifications.show("Saved successfully.");
             return true;
@@ -20,24 +21,31 @@ module Interface {
         }
     };
 
-    export module Notifications {
-        export var log = ko.observableArray([]);
-        export var shown = ko.observable(false);
+    export function showNotification(message: string) {
+        var $notification = $("<div />").addClass("notification").text(message)
+            .appendTo("#notifications");
 
-        export function toJSON() { return undefined; }
-        export function show(message: string) {
-            log.push(message);
-            if (ko.utils.unwrapObservable(log).length > 20) {
-                log.shift();
-            }
+        var args = { "max-height": "0px", "max-width": "0px", opacity: 0 };
+        window.setTimeout(function () {
+            $notification.animate(args, 4000, "ease", () => { $notification.remove(); });
+        }, 10000);
+    }
 
-            var $notification = $("<div />").addClass("notification").text(message)
-                .appendTo("#notifications");
+    export function bumpDevice(name: string) {
+        var $receiver = $("[data-device='" + name + "']");
+        $receiver.addClass("bumped");
+        window.setTimeout(() => $receiver.removeClass("bumped"), 1000);
+    }
 
-            var args = { "max-height": "0px", "max-width": "0px", opacity: 0 };
-            window.setTimeout(function () {
-                $notification.animate(args, 4000, "ease", () => { $notification.remove(); });
-            }, 10000);
+    export function errorDevice(name: string) {
+        $("[data-device='" + this.name + "']").addClass("error");
+    }
+
+    export function setVisualEffects(on: boolean) {
+        if (on) {
+            $("body").addClass("vfx");
+        } else {
+            $("body").removeClass("vfx");
         }
     }
 
@@ -171,13 +179,12 @@ module Interface {
     window.addEventListener("load", function () {
         var serialized: string = window.localStorage.getItem('mechanize');
 
-        mechanize = new Mechanize.MechanizeViewModel();
         if (serialized) {
             try {
                 var saved = JSON.parse(serialized);
-                loadGame(mechanize, saved);
+                loadGame(GameState, saved);
 
-                ko.applyBindings(mechanize);
+                ko.applyBindings(GameState);
 
                 Notifications.show("Loaded successfully.");
             } catch (e) {
@@ -187,10 +194,10 @@ module Interface {
             }
         } else {
             try {
-                mechanize.initializeGame();
-                ko.applyBindings(mechanize);
+                GameState.initializeGame();
+                ko.applyBindings(GameState);
 
-                Notifications.show("Initialized mechanize version " + mechanize.modelVersion + ".  Welcome.");
+                Notifications.show("Initialized mechanize version " + GameState.modelVersion + ".  Welcome.");
             } catch (e) {
                 console.log(e.message);
                 console.log(e.stack);
