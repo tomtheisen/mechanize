@@ -1,5 +1,4 @@
 /// <reference path="typescript refs\sugar.d.ts" />
-/// <reference path="typescript refs\knockout.d.ts" />
 /// <reference path="typescript refs\zepto.d.ts" />
 /// <reference path="utils.ts" />
 /// <reference path="mechanize.ts" />
@@ -8,6 +7,7 @@ declare var DragDrop;
 module Interface {
     import GameState = Mechanize.MechanizeViewModel;
     import Notifications = Mechanize.Notifications;
+    var sugarObject = <ObjectStatic><any> Object; // for sugar methods on Object
 
     export function saveModel() {
         try {
@@ -38,7 +38,7 @@ module Interface {
     }
 
     export function errorDevice(name: string) {
-        $("[data-device='" + this.name + "']").addClass("error");
+        $("[data-device='" + name + "']").addClass("error");
     }
 
     export function setVisualEffects(on: boolean) {
@@ -116,8 +116,8 @@ module Interface {
     };
 
     function registerGameSurfaceDomObserver() {
-        var observer = new (<any> MutationObserver)(function (mutations) {
-            mutations.forEach(function (mutation) {
+        var observer: MutationObserver = new (<any> MutationObserver)(mutations => {
+            mutations.forEach(mutation => {
                 Array.prototype.forEach.call(mutation.addedNodes, makeDraggable);
                 Array.prototype.forEach.call(mutation.removedNodes, unmakeDraggable);
             });
@@ -149,60 +149,35 @@ module Interface {
         });
     }
 
-    function loadGame(model, saved, path?: string) {
-        var addDevice = function (deviceCollection, deviceInfo) {
-            var device = deviceCollection.createDevice(
-                deviceInfo.name, deviceInfo["type"], deviceInfo.params);
+    function toggleHeaderMax() {
+        $("header .max-toggle").toggleClass("active").parent().toggleClass("maxed");
+    }
 
-            if (deviceInfo.uistate) device.uistate(deviceInfo.uistate);
-            if (device.setDeviceInfo) device.setDeviceInfo(deviceInfo);
-        };
+    function collapseAllPanels() {
+        GameState.devices.all().forEach(device => device.collapse());
+    }
 
-        for (var key in saved) {
-            if (saved.hasOwnProperty(key)) {
-                var newPath = (path || "$") + "." + key;
-                var savedVal = saved[key];
+    function expandAllPanels() {
+        GameState.devices.all().forEach(device => device.expand());
+    }
 
-                if (["number", "string", "boolean"].any(typeof savedVal)) { // sugar
-                    if (ko.isObservable(model[key])) model[key](savedVal);
+    function detachAllPanels() {
+        GameState.devices.all().forEach(device => device.detach());
+    }
 
-                } else if (newPath === "$.devices") {
-                    savedVal.forEach(addDevice.bind(null, model[key]));
-
-                } else {
-                    loadGame(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
-                }
-            }
-        }
+    function clearAllErrors() {
+        $(".error").removeClass("error");
     }
 
     window.addEventListener("load", function () {
         var serialized: string = window.localStorage.getItem('mechanize');
 
-        if (serialized) {
-            try {
-                var saved = JSON.parse(serialized);
-                loadGame(GameState, saved);
-
-                ko.applyBindings(GameState);
-
-                Notifications.show("Loaded successfully.");
-            } catch (e) {
-                console.log(e.message);
-                console.log(e.stack);
-                return kill("Error occurred during load.");
-            }
-        } else {
-            try {
-                GameState.initializeGame();
-                ko.applyBindings(GameState);
-
-                Notifications.show("Initialized mechanize version " + GameState.modelVersion + ".  Welcome.");
-            } catch (e) {
-                console.log(e.message);
-                console.log(e.stack);
-                return kill("Failed to set up game.");
-            }
+        try {
+            GameState.loadOrInitialize();
+        } catch (e) {
+            console.log(e.message);
+            console.log(e.stack);
+            return kill("Failed to set up game.");
         }
 
         registerGameSurfaceDomObserver();
@@ -226,9 +201,21 @@ module Interface {
             $(this).remove();
         }));
 
-        $("header .max-toggle").on("click", Utils.makeHandler(function () {
-            $(this).toggleClass("active").parent().toggleClass("maxed");
-        }));
+        $("header .max-toggle").on("click", Utils.makeHandler(toggleHeaderMax));
+
+        $("body").on("keypress", (e: KeyboardEvent) => {
+            var commands = {
+                96: toggleHeaderMax,
+                97: arrangeAllPanels,
+                99: clearAllErrors,
+                100: detachAllPanels,
+                101: expandAllPanels,
+                109: collapseAllPanels,
+            };
+            var command: () => void = commands[e.which];
+            if (command) command();
+            return true;
+        });
 
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");

@@ -9,6 +9,8 @@
 //  DragDrop
 
 module Mechanize {
+    var sugarObject = <ObjectStatic><any> Object; // for sugar methods on Object
+
     export class ResourceModel {
         constructor(public type: string) { }
     }
@@ -77,7 +79,7 @@ module Mechanize {
         }
 
         toJSON() {
-            return (<any> Object).reject(ko.toJS(this), "progress", "intervalId"); // sugar
+            return sugarObject.reject(ko.toJS(this), "progress", "intervalId"); // sugar
         }
 
         setInfo(serialized) {
@@ -116,19 +118,26 @@ module Mechanize {
         }
 
         toJSON() {
-            return (<any> Object).reject(ko.toJS(this), "active"); // sugar
+            return sugarObject.reject(ko.toJS(this), "active"); // sugar
         }
+    }
+
+    enum DeviceUIState {
+        collapsed,
+        expanded,
+        detached,
     }
 
     export class Device {
         params: any;    // used in device serialization to restore state
         name: string;
         type: string;
-        uistate = ko.observable("expanded");
+        uistate = ko.observable(DeviceUIState[DeviceUIState.expanded]);
         indestructible = false;
 
         constructor(public deviceCollection: DeviceCollectionModel, args) {
-            this.params = (<any> Object).clone(args); // sugar
+            this.params = sugarObject.clone(args); // sugar
+            this.expand();
         }
 
         accept(resource: ResourceModel) {
@@ -139,13 +148,20 @@ module Mechanize {
             throw new Error("abstract setDeviceInfo not implemented.");
         }
 
-        collapse() { this.uistate("collapsed"); }
-        expand() { this.uistate("expanded"); }
-        detach() { this.uistate("detached"); }
+        private _uistate: DeviceUIState;
+        private set UIState(state: DeviceUIState) {
+            this.uistate(DeviceUIState[this._uistate = state]);
+        }
+        private get UIState() { return this._uistate; }
+
+        collapse() { this.UIState = DeviceUIState.collapsed; }
+        expand() { this.UIState = DeviceUIState.expanded; }
+        detach() { this.UIState = DeviceUIState.detached; }
 
         toggleCollapse() {
-            var state = { "collapsed": "expanded", "expanded": "collapsed" }[this.uistate()];
-            if (state) this.uistate(state);
+            var currentState = this.UIState;
+            if (currentState === DeviceUIState.collapsed) this.UIState = DeviceUIState.expanded;
+            else if (currentState === DeviceUIState.expanded) this.UIState = DeviceUIState.collapsed;
         }
 
         send(receiverName: string, item: ResourceModel) {
@@ -239,7 +255,7 @@ module Mechanize {
         }
 
         toJSON() {
-            return (<any> Object).merge(super.toJSON(), { items: this.items });
+            return sugarObject.merge(super.toJSON(), { items: this.items });
         }
 
         constructor(deviceCollection: DeviceCollectionModel, args) {
@@ -289,7 +305,7 @@ module Mechanize {
         }
 
         toJSON() {
-            return (<any> Object).merge(super.toJSON(), { junk: this.junk, regenerator: this.regenerator });
+            return sugarObject.merge(super.toJSON(), { junk: this.junk, regenerator: this.regenerator });
         }
 
         constructor(deviceCollection: DeviceCollectionModel, args) {
@@ -334,7 +350,7 @@ module Mechanize {
         }
 
         toJSON() {
-            return (<any> Object).merge(super.toJSON(), { contents: this.contents, tracker: this.tracker });
+            return sugarObject.merge(super.toJSON(), { contents: this.contents, tracker: this.tracker });
         }
     }
 
@@ -425,7 +441,7 @@ module Mechanize {
         }
 
         toJSON() {
-            return (<any> Object).merge(super.toJSON(), { items: this.items, fabricator: this.fabricator });
+            return sugarObject.merge(super.toJSON(), { items: this.items, fabricator: this.fabricator });
         }
 
         shutDown() {
@@ -443,7 +459,7 @@ module Mechanize {
         private devices = Object.create(null);
 
         getDevices(): Device[] {
-            return (<any> Object).values(this.devices); // sugar
+            return sugarObject.values(this.devices); // sugar
         }
 
         invalidationToken = ko.observable(0);
@@ -542,11 +558,59 @@ module Mechanize {
         export var build = "{{@build}}";
         export var notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
 
-        export function initializeGame() {
+        function initializeGame() {
             devices.createDevice("Cargo Hold", "Inventory", { size: 16, outputs: ["Airlock", "Fabrication Lab"] });
             devices.createDevice("Airlock", "TrashEjector");
             devices.createDevice("Fabrication Lab", "Constructor", { size: 8, output: "Cargo Hold" });
             devices.createDevice("Resource Mining", "Wastes", { size: 32, output: "Cargo Hold", randomize: true }).detach();
+        }
+
+        function loadGame(model, saved, path?: string) {
+            var addDevice = function (deviceCollection, deviceInfo) {
+                var device = deviceCollection.createDevice(
+                    deviceInfo.name, deviceInfo["type"], deviceInfo.params);
+
+                if (deviceInfo.uistate) device.uistate(deviceInfo.uistate);
+                if (device.setDeviceInfo) device.setDeviceInfo(deviceInfo);
+            };
+
+            for (var key in saved) {
+                if (saved.hasOwnProperty(key)) {
+                    var newPath = (path || "$") + "." + key;
+                    var savedVal = saved[key];
+
+                    if (["number", "string", "boolean"].any(typeof savedVal)) { // sugar
+                        if (ko.isObservable(model[key])) model[key](savedVal);
+
+                    } else if (newPath === "$.devices") {
+                        savedVal.forEach(addDevice.bind(null, model[key]));
+
+                    } else {
+                        loadGame(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
+                    }
+                }
+            }
+        }
+
+        var started = false;
+        export function loadOrInitialize() {
+            if (started) throw new Error("Attempted to start MechanieViewModel twice");
+            started = true;
+
+            var serialized = window.localStorage.getItem('mechanize');
+
+            if (serialized) {
+                var saved = JSON.parse(serialized);
+                loadGame(MechanizeViewModel, saved);
+                ko.applyBindings(MechanizeViewModel);
+
+                Notifications.show("Loaded successfully.");
+            } else {
+                initializeGame();
+                ko.applyBindings(MechanizeViewModel);
+
+                Notifications.show("Initialized mechanize version " + MechanizeViewModel.modelVersion + ".  Welcome.");
+            }
         }
     }
 }
