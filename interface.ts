@@ -204,7 +204,7 @@ module Interface {
         $("header .max-toggle").on("click", Utils.makeHandler(toggleHeaderMax));
 
         $(document).on("keydown", (e: KeyboardEvent) => {
-            var commands = {
+            var commands: { [which: number]: () => void } = {
                 27: toggleHeaderMax,
                 192: toggleHeaderMax,
                 65: arrangeAllPanels,
@@ -214,7 +214,7 @@ module Interface {
                 70: Utils.toggleFullScreen,
                 77: collapseAllPanels,
             };
-            var command: () => void = commands[e.which];
+            var command = commands[e.which];
             if (command) command();
             return true;
         });

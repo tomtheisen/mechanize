@@ -162,3 +162,4 @@ pip-log.txt
 .DS_Store
 
 output/
+*.jar
