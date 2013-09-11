@@ -8,7 +8,7 @@ REM ***********  html  **************
 	copy index.html output\
 
 REM ***********  javascript  **************
-	java -jar build\compiler.jar --js knockout-2.3.0.js seedrandom.js sugar-1.3.9-custom.min.js zepto.min.js drag-drop.js --compilation_level SIMPLE_OPTIMIZATIONS --warning_level QUIET --js_output_file output\libs.js
+	java -jar build\compiler.jar --js knockout-2.3.0.js seedrandom.js sugar-1.3.9-custom.min.js zepto.min.js drag-drop.js --warning_level QUIET --js_output_file output\libs.js
 
 	cmd /c "tsc -t ES5 --out output\mechanize.js kobindings.ts interface.ts"
 	build\buildnumber.py build.txt output\mechanize.js "{{@build}}"
@@ -30,8 +30,6 @@ REM ***********  mini  **************
 	del style.css
 
 	copy output\libs.js outputmin\
-	REM build\jsmin < output\mechanize.js > outputmin\mechanize.js
-
 	java -jar build\compiler.jar --js output\mechanize.js --js_output_file outputmin\mechanize.js
 	copy output\index.html outputmin\
 
