@@ -159,7 +159,7 @@
 							</div>
 							<div class="face face2">written in typescript, less, and html</div>
 							<div class="face face3">using knockout, sugarjs, zepto, lessprefixer, dragdrop</div>
-							<div class="face face4">built with jsmin, dos batch, python, beautiful soup</div>	
+							<div class="face face4">built with closure compiler, python, beautiful soup</div>	
 							<div class="face face5"></div>
 							<div class="face face6"></div>
 						</div>
@@ -168,13 +168,25 @@
 
 				<h1>mechanize</h1>
 				<div id="gameControls">
-					<button id="arrangePanelsButton">arrange all panels</button>
-					<button id="saveButton">save</button>
-					<button id="resetButton">reset</button>
-					<label><input type="checkbox" data-bind="checked: notifications.shown">log</label>
-					<label><input type="checkbox" data-bind="checked: options.autosave">autosave</label>
-					<label><input type="checkbox" data-bind="checked: options.visualEffects">visual effects</label>
-					<label><input type="checkbox" data-bind="checked: options.fullScreen">fullscreen</label>
+					<div class="controlGroup">
+						<h3>Game</h3>
+						<button id="arrangePanelsButton">arrange all panels</button>
+						<button id="saveButton">save</button>
+						<button id="resetButton">reset</button>
+						<label><input type="checkbox" data-bind="checked: notifications.shown">show log</label>
+					</div>
+					<div class="controlGroup">
+						<h3>Options</h3>
+						<label><input type="checkbox" data-bind="checked: options.autosave">autosave</label>
+						<label><input type="checkbox" data-bind="checked: options.visualEffects">visual effects</label>
+						<label><input type="checkbox" data-bind="checked: options.fullScreen">fullscreen</label>
+					</div>
+					<div class="controlGroup">
+						<h3>About</h3>
+						<button id="helpButton">help</button>
+						<button id="keyboardButton">keyboard</button>
+						<button id="creditsButton">credits</button>
+					</div>
 					<!-- ko if: notifications.shown -->
 						<ul id="notificationsLog" data-bind="foreach: notifications.log">
 							<li data-bind="text: $data"></li>

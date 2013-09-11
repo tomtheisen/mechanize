@@ -210,6 +210,30 @@ header {
             right: 2rem;
         }
     }
+
+    #gameControls {
+        .controlGroup {
+            border: solid @background 0.3rem;
+            background-color: fade(@background, 30%);
+            border-radius: 1rem;
+            display: inline-block;
+            position: relative;
+            margin: 1rem 1rem 1rem 0;
+            padding: 0.6rem;
+
+            h3 {
+                position: absolute;
+                top: -1rem;
+            }
+            button, label {
+                vertical-align: text-top;
+            }
+        }
+
+        #notificationsLog {
+            .allow-select();
+        }
+    }
 }
 
 h1, h2, h3, h4 {
@@ -307,10 +331,6 @@ a {
         cursor: pointer;
         text-align: right;
     }
-}
-
-#notificationsLog {
-    .allow-select();
 }
 
 .progress {

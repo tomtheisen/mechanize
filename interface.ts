@@ -223,6 +223,9 @@ module Interface {
             "fullscreenchange webkitfullscreenchange mozfullscreenchange",
             Utils.makeHandler(() => GameState.options.fullScreen(Utils.currentlyFullScreen())));
 
+        $("#helpButton, #keyboardButton, #creditsButton").on("click",
+            Utils.makeHandler(() => GameState.notifications.show("todo: something")));
+
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");
     });
