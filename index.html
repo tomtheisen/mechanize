@@ -168,30 +168,80 @@
 
 				<h1>mechanize</h1>
 				<div id="gameControls">
-					<div class="controlGroup">
-						<h3>Game</h3>
-						<button id="arrangePanelsButton">arrange all panels</button>
-						<button id="saveButton">save</button>
-						<button id="resetButton">reset</button>
-						<label><input type="checkbox" data-bind="checked: notifications.shown">show log</label>
-					</div>
-					<div class="controlGroup">
+					<div class="controlGroup content">
 						<h3>Options</h3>
 						<label><input type="checkbox" data-bind="checked: options.autosave">autosave</label>
 						<label><input type="checkbox" data-bind="checked: options.visualEffects">visual effects</label>
 						<label><input type="checkbox" data-bind="checked: options.fullScreen">fullscreen</label>
 					</div>
-					<div class="controlGroup">
-						<h3>About</h3>
+					<div class="controlGroup content">
+						<h3>Game</h3>
+						<button id="arrangePanelsButton">arrange panels</button>
+						<button id="saveButton">save</button>
+						<button id="resetButton">reset</button>
+					</div>
+					<div class="controlGroup content">
+						<h3>Info</h3>
+						<button id="notificationsButton">log</button>
 						<button id="helpButton">help</button>
 						<button id="keyboardButton">keyboard</button>
 						<button id="creditsButton">credits</button>
 					</div>
-					<!-- ko if: notifications.shown -->
-						<ul id="notificationsLog" data-bind="foreach: notifications.log">
-							<li data-bind="text: $data"></li>
-						</ul>
-					<!-- /ko -->
+					<div>
+						<div class="content" id="notificationsLog" style="display: none;">
+							<h3>Log</h3>
+							<ul id="notificationsLog" data-bind="foreach: notifications.log">
+								<li data-bind="text: $data"></li>
+							</ul>
+						</div>
+						<div class="content" id="helpContents" style="display: none;">
+							<h3>Help</h3>
+							<p>This is a story of space and a story of rocks.</p>
+						</div>
+						<div class="content" id="keyboardContents" style="display: none;">
+							<h3>Keyboard</h3>
+							<dl>
+								<dt>a</dt>
+								<dd>auto-arrange all panels</dd>
+								<dt>c</dt>
+								<dd>clear all errors</dd>
+								<dt>d</dt>
+								<dd>detach all facilities</dd>
+								<dt>e</dt>
+								<dd>attach and expand all facilities</dd>
+								<dt>m</dt>
+								<dd>attach and minimize all facilities</dd>
+								<dt>f</dt>
+								<dd>toggle fullscreen</dd>
+								<dt>~</dt>
+								<dt>esc</dt>
+								<dd>toggle menu</dd>
+							</dl>
+						</div>
+						<div class="content" id="creditsContents" style="display: none;">
+							<h3>Credits</h3>
+							<p> 
+								Mechanize version <span data-bind="text: modelVersion"></span>&nbsp;
+								build <span data-bind="text: build"></span>&nbsp;
+								by Tom Theisen.
+							</p>
+
+							<h4>Dependencies</h4>
+							<ul>
+								<li>closure compiler
+								<li>knockout
+								<li>seedrandom
+								<li>dotless
+								<li>prefixer
+								<li>sugar
+								<li>zepto
+								<li>drag-drop
+								<li>aldrich web font
+								<li>beautiful soup
+								<li>definitely typed
+							</ul>
+						</div>
+					</div>
 				</div>
 
 				<div class="max-toggle"></div>

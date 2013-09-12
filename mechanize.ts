@@ -546,7 +546,6 @@ module Mechanize {
 
     export module Notifications {
         export var log = ko.observableArray([]);
-        export var shown = ko.observable(false);
 
         export function toJSON() { return undefined; }
         export function show(message: string) {

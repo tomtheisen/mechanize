@@ -212,19 +212,23 @@ header {
     }
 
     #gameControls {
-        .controlGroup {
+        .content {
             border: solid @background 0.3rem;
             background-color: fade(@background, 30%);
             border-radius: 1rem;
-            display: inline-block;
+            padding: 0.6rem;
             position: relative;
             margin: 1rem 1rem 1rem 0;
-            padding: 0.6rem;
 
             h3 {
                 position: absolute;
                 top: -1rem;
             }
+        }
+
+        .controlGroup {
+            display: inline-block;
+
             button, label {
                 vertical-align: text-top;
             }

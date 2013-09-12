@@ -169,6 +169,12 @@ module Interface {
         $(".error").removeClass("error");
     }
 
+    function infoPaneShower(id: string) {
+        return Utils.makeHandler(() => {
+            $(id).show().siblings().hide();
+        });
+    }
+
     window.addEventListener("load", function () {
         var serialized: string = window.localStorage.getItem('mechanize');
 
@@ -193,9 +199,10 @@ module Interface {
             $(this).toggleClass("expanded").toggleClass("collapsed");
         }));
 
-        $("#notificationsButton").on("click", Utils.makeHandler(function() {
-            $("#notificationsLog").toggle();
-        }));
+        $("#notificationsButton").on("click", infoPaneShower("#notificationsLog"));
+        $("#helpButton").on("click", infoPaneShower("#helpContents"));
+        $("#keyboardButton").on("click", infoPaneShower("#keyboardContents"));
+        $("#creditsButton").on("click", infoPaneShower("#creditsContents"));
 
         $("#notifications").on("click", ".notification", Utils.makeHandler(function()  {
             $(this).remove();
@@ -223,10 +230,9 @@ module Interface {
             "fullscreenchange webkitfullscreenchange mozfullscreenchange",
             Utils.makeHandler(() => GameState.options.fullScreen(Utils.currentlyFullScreen())));
 
-        $("#helpButton, #keyboardButton, #creditsButton").on("click",
-            Utils.makeHandler(() => GameState.notifications.show("todo: something")));
-
         $("#systemMessage").hide();
         $("#gameSurface").css("visibility", "");
     });
+
+    window.addEventListener("unload", saveModel);
 }
