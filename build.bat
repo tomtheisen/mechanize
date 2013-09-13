@@ -4,11 +4,13 @@ echo Mechanize build
 if not exist output mkdir output
 del /s /q output\*.*
 
+IF "%1"=="fast" SET CLOSUREARGS=--compilation_level WHITESPACE_ONLY
+
 REM ***********  html  **************
 	copy index.html output\
 
 REM ***********  javascript  **************
-	java -jar build\compiler.jar --js knockout-2.3.0.js seedrandom.js sugar-1.3.9-custom.min.js zepto.min.js drag-drop.js --warning_level QUIET --js_output_file output\libs.js
+	java -jar build\compiler.jar %CLOSUREARGS% --js knockout-2.3.0.js seedrandom.js sugar-1.3.9-custom.min.js zepto.min.js drag-drop.js --warning_level QUIET --js_output_file output\libs.js
 
 	cmd /c "tsc -t ES5 --out output\mechanize.js kobindings.ts interface.ts"
 	build\buildnumber.py build.txt output\mechanize.js "{{@build}}"
@@ -30,7 +32,7 @@ REM ***********  mini  **************
 	del style.css
 
 	copy output\libs.js outputmin\
-	java -jar build\compiler.jar --js output\mechanize.js --js_output_file outputmin\mechanize.js
+	java -jar build\compiler.jar %CLOSUREARGS% --js output\mechanize.js --js_output_file outputmin\mechanize.js
 	copy output\index.html outputmin\
 
 	pushd .
@@ -41,6 +43,8 @@ REM ***********  mini  **************
 		del /q *.* 2>NUL
 		attrib -R mechanize.html
 	popd
+
+SET CLOSUREARGS=
 
 echo Mechanize build complete.
 type build.txt

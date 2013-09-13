@@ -1,6 +1,7 @@
 /// <reference path="typescript refs\sugar.d.ts" />
 /// <reference path="typescript refs\knockout.d.ts" />
 /// <reference path="utils.ts" />
+/// <reference path="interface.ts" />
 
 // dependencies
 //  knockout
@@ -254,7 +255,7 @@ module Mechanize {
 
         setDeviceInfo(deviceSerialized) {
             this.items().zip(deviceSerialized.items).forEach(function (tuple) {
-                var slot = tuple[0], newItem = tuple[1];
+                var slot: InventorySlotModel = tuple[0], newItem = tuple[1];
                 var resource = newItem.resource && new ResourceModel(newItem.resource.type) || null;
                 slot.resource(resource);
             });
@@ -273,28 +274,51 @@ module Mechanize {
         }
     }
 
+    class WastesSlotModel implements ResourceHolder {
+        resource: KnockoutObservable<ResourceModel> = ko.observable();
+        collectionDelay: number;
+    }
+
     class WastesModel extends Device {
-        junk: KnockoutObservableArray<ResourceHolder>;
-        regenerateJunk() {
-            var rnd = Math.random(), type;
+        slots: KnockoutObservableArray<WastesSlotModel>;
+
+        warp() {
+            var rnd = Math.random(), type: string, delay: number;
             if (rnd < 0.05) {
                 type = "iron";
+                delay = 10000;
             } else {
                 type = "rock";
+                delay = 5000;
             }
 
-            var idx = Math.floor(Math.random() * this.junk().length);
-            this.junk()[idx].resource(new ResourceModel(type));
+            var idx = Math.floor(Math.random() * this.slots().length);
+            this.slots()[idx].resource(new ResourceModel(type));
+            this.slots()[idx].collectionDelay = delay;
         }
 
-        regenerator = ko.observable(new TimeTracker(15000, () => { this.regenerateJunk(); return true; }, true));
+        regenerator = ko.observable(new TimeTracker(60000, () => { this.warp(); return true; }, true));
 
-        collect = (wasteCell) => {
+        collect = (wasteCell: WastesSlotModel) => {
             if (!wasteCell.resource()) return;
 
             var success = this.send(this.params.output, wasteCell.resource());
-            if (success) wasteCell.resource(null);
+            if (success) {
+                wasteCell.resource(null);
+                wasteCell.collectionDelay = null;
+            }
             return success;
+        }
+
+        private collecting = false;
+        startCollect = (wasteCell: WastesSlotModel, e?: Event) => {
+            if (this.collecting) return;
+            this.collecting = true;
+
+            var interfaceSlot = <HTMLElement> e.target;
+            var delay = wasteCell.collectionDelay;
+            Interface.runMiniProgress(interfaceSlot, delay, true);
+            setTimeout(() => { this.collect(wasteCell); this.collecting = false; }, delay);
         }
 
         shutDown() {
@@ -302,26 +326,27 @@ module Mechanize {
         }
 
         setDeviceInfo(deviceSerialized) {
-            this.junk().zip(deviceSerialized.junk).forEach(function (tuple) {
-                var holder: ResourceHolder = tuple[0], newItem = tuple[1];
+            this.slots().zip(deviceSerialized.slots).forEach(function (tuple) {
+                var slot: WastesSlotModel = tuple[0], newItem = tuple[1];
                 var resource: ResourceModel = newItem.resource && new ResourceModel(newItem.resource.type) || null;
-                holder.resource(resource);
+                slot.resource(resource);
+                slot.collectionDelay = newItem.collectionDelay;
             });
             this.regenerator().setInfo(deviceSerialized.regenerator);
         }
 
         toJSON() {
-            return sugarObject.merge(super.toJSON(), { junk: this.junk, regenerator: this.regenerator });
+            return sugarObject.merge(super.toJSON(), { slots: this.slots, regenerator: this.regenerator });
         }
 
         constructor(deviceCollection: DeviceCollectionModel, args) {
             super(deviceCollection, args);
 
-            this.junk = ko.observableArray(Utils.makeArray(args.size, () => { return { resource: ko.observable() }; }));
+            this.slots = ko.observableArray(Utils.makeArray(args.size, () => new WastesSlotModel()));
 
             if (args.randomize) {
-                for (var i = 0; i < this.junk().length / 2; i++) {
-                    this.regenerateJunk();
+                for (var i = 0; i < this.slots().length / 2; i++) {
+                    this.warp();
                 }
 
                 this.params.randomize = false;

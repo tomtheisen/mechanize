@@ -1,7 +1,9 @@
 declare var ko;
 
-ko.bindingHandlers.title = {
-    init: (element: HTMLElement, valueAccessor: () => string) => { element.title = valueAccessor(); },
-    update: (element: HTMLElement, valueAccessor: () => string) => { element.title = valueAccessor(); },
-};
+(function () {
+    function setTitle(element: HTMLElement, valueAccessor: () => string) {
+        element.title = valueAccessor();
+    }
 
+    ko.bindingHandlers.title = { init: setTitle, update: setTitle };
+})();

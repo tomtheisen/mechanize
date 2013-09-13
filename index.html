@@ -20,7 +20,7 @@
 		<script type="text/html" id="DeviceTemplateInventory">
 			<div class="inventory resource-container" data-bind="foreach: items">
 				<!-- ko if: resource -->
-					<div class="resource" data-bind="
+					<div class="resource actionable" data-bind="
 						css: resource().type + (active() ? ' active' : ''), 
 						title: resource().type,
 						click: $parent.select ">
@@ -76,11 +76,13 @@
 				data: { tracker: regenerator, text: 'Equilibrium field warp' } } -->
 			<!-- /ko -->
 
-			<div id="wastes" class="resource-container" data-bind="foreach: junk">
+			<div class="resource-container" data-bind="foreach: slots">
 				<!-- ko if: resource -->
-					<div class="resource" data-bind="css: resource().type, title: resource().type">
-						<div class="collect-progress"></div>
-						<div class="collector" data-bind="click: $parent.collect"></div>
+					<div class="resource actionable" data-bind="
+						css: resource().type, 
+						title: resource().type,
+						click: $parent.startCollect">
+						<div class="mini-progress"></div>
 					</div>
 				<!-- /ko -->
 				<!-- ko ifnot: resource -->

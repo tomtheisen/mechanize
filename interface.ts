@@ -31,6 +31,13 @@ module Interface {
         }, 10000);
     }
 
+    export function runMiniProgress(element: HTMLElement, time: number, reset?: boolean) {
+        var $progress = $(element).children(".mini-progress");
+        $progress.animate({ "width": "100%" }, time, "linear", () => {
+            if (reset) $progress.css("width", "0%");
+        });
+    }
+
     export function bumpDevice(name: string) {
         var $receiver = $("[data-device='" + name + "']");
         $receiver.addClass("bumped");
@@ -79,7 +86,7 @@ module Interface {
         });
     }
 
-    function bringToFront (element: HTMLElement) {
+    function bringToFront(element: HTMLElement) {
         var maxZ = $("#gameSurface .panel").get().map(function (panel) {
             return parseInt(panel.style.zIndex, 10) || 0;
         }).max();
@@ -87,7 +94,7 @@ module Interface {
     };
 
     var dragDropBindings = [];
-    function makeDraggable (node: HTMLElement) {
+    function makeDraggable(node: HTMLElement) {
         if (node.classList && node.classList.contains("panel")) {
             var $node = $(node);
             var handle = $node.find("h2")[0];
@@ -109,7 +116,7 @@ module Interface {
         }
     };
 
-    function unmakeDraggable (node: HTMLElement) {
+    function unmakeDraggable(node: HTMLElement) {
         var binding = dragDropBindings.find(b => b.element === node);
         if (!binding) return;
         DragDrop.unbind(binding);
@@ -144,6 +151,7 @@ module Interface {
 
         $yes.on("click", e => {
             window.localStorage.removeItem('mechanize');
+            window.removeEventListener("unload", saveModel);
             window.location.reload();
             return true;
         });
@@ -195,7 +203,7 @@ module Interface {
 
         $("body").on("click", "#arrangePanelsButton", Utils.makeHandler(arrangeAllPanels));
 
-        $("body").on("click", ".collapser.auto", Utils.makeHandler(function() {
+        $("body").on("click", ".collapser.auto", Utils.makeHandler(function () {
             $(this).toggleClass("expanded").toggleClass("collapsed");
         }));
 
@@ -204,7 +212,7 @@ module Interface {
         $("#keyboardButton").on("click", infoPaneShower("#keyboardContents"));
         $("#creditsButton").on("click", infoPaneShower("#creditsContents"));
 
-        $("#notifications").on("click", ".notification", Utils.makeHandler(function()  {
+        $("#notifications").on("click", ".notification", Utils.makeHandler(function () {
             $(this).remove();
         }));
 

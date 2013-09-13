@@ -3,7 +3,10 @@ module Utils {
         return function(e: Event) { fn.call(this); return true; };
     }
 
-    export function makeArray(length: number, element): Array {
+    export function makeArray<T>(length: number, element: () => T): Array<T>;
+    export function makeArray<T>(length: number, element: T): Array<T>;
+
+    export function makeArray<T>(length: number, element): Array<T> {
         var isFunction = typeof (element) === "function";
 
         var result = [];
