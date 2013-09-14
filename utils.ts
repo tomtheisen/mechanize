@@ -5,7 +5,6 @@ module Utils {
 
     export function makeArray<T>(length: number, element: () => T): Array<T>;
     export function makeArray<T>(length: number, element: T): Array<T>;
-
     export function makeArray<T>(length: number, element): Array<T> {
         var isFunction = typeof (element) === "function";
 
@@ -58,5 +57,18 @@ module Utils {
         var d: any = document;
         return !!(d.fullscreenElement ||    // alternative standard method
             d.mozFullScreenElement || d.webkitFullscreenElement);
+    }
+
+    export class PubSub<TEventArgs> {
+        private events: { [event: string]: Array<(args: TEventArgs) => void> } = Object.create(null);
+
+        subscribe(event: string, handler: (args: TEventArgs) => void) {
+            if (!this.events[event]) this.events[event] = [];
+            this.events[event].push(handler);
+        }
+
+        publish(event: string, args?: TEventArgs) {
+            (this.events[event] || []).forEach(handler => handler(args));
+        }
     }
 }

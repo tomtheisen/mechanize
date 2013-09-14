@@ -31,10 +31,10 @@ module Interface {
         }, 10000);
     }
 
-    export function runMiniProgress(element: HTMLElement, time: number, reset?: boolean) {
+    export function runMiniProgress(element: HTMLElement, options: { delay: number; reset?: boolean }) {
         var $progress = $(element).children(".mini-progress");
-        $progress.animate({ "width": "100%" }, time, "linear", () => {
-            if (reset) $progress.css("width", "0%");
+        $progress.animate({ "width": "100%" }, options.delay, "linear", () => {
+            if (options.reset) $progress.css("width", "0%");
         });
     }
 

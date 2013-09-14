@@ -104,7 +104,7 @@ module Mechanize {
 
             this.progress["marginRight"] = ko.computed(() => (100 - 100 * this.progress()) + "%");
             this.progress["remainingFormatted"] = ko.computed(() => {
-                var seconds = (totalms - this.elapsedms()) / 1000;
+                var seconds = (this.totalms - this.elapsedms()) / 1000;
                 return Utils.getFormattedTimespan(Math.round(seconds));
             });
 
@@ -181,7 +181,7 @@ module Mechanize {
 
             var success = receiver.accept(item);
             if (success) {
-                Interface.bumpDevice(this.name);
+                Interface.bumpDevice(receiverName);
             } else {
                 Interface.errorDevice(this.name);
                 Notifications.show("Failed to send item from " + this.name + " to " + receiverName + ".");
@@ -275,8 +275,9 @@ module Mechanize {
     }
 
     class WastesSlotModel implements ResourceHolder {
+        events = new Utils.PubSub<{ delay: number; reset: boolean; }>();
         resource: KnockoutObservable<ResourceModel> = ko.observable();
-        collectionDelay: number;
+        collectionDelay: KnockoutObservable<number> = ko.observable();
     }
 
     class WastesModel extends Device {
@@ -294,7 +295,7 @@ module Mechanize {
 
             var idx = Math.floor(Math.random() * this.slots().length);
             this.slots()[idx].resource(new ResourceModel(type));
-            this.slots()[idx].collectionDelay = delay;
+            this.slots()[idx].collectionDelay(delay);
         }
 
         regenerator = ko.observable(new TimeTracker(60000, () => { this.warp(); return true; }, true));
@@ -303,22 +304,22 @@ module Mechanize {
             if (!wasteCell.resource()) return;
 
             var success = this.send(this.params.output, wasteCell.resource());
+            this.collecting = false; 
             if (success) {
                 wasteCell.resource(null);
-                wasteCell.collectionDelay = null;
+                wasteCell.collectionDelay(null);
             }
             return success;
         }
 
         private collecting = false;
-        startCollect = (wasteCell: WastesSlotModel, e?: Event) => {
+        startCollect = (wasteCell: WastesSlotModel) => {
             if (this.collecting) return;
             this.collecting = true;
 
-            var interfaceSlot = <HTMLElement> e.target;
-            var delay = wasteCell.collectionDelay;
-            Interface.runMiniProgress(interfaceSlot, delay, true);
-            setTimeout(() => { this.collect(wasteCell); this.collecting = false; }, delay);
+            var delay : number = wasteCell.collectionDelay();
+            setTimeout(this.collect.bind(this, wasteCell), delay);
+            wasteCell.events.publish("startcollect", { delay: delay, reset: true });
         }
 
         shutDown() {
@@ -330,7 +331,7 @@ module Mechanize {
                 var slot: WastesSlotModel = tuple[0], newItem = tuple[1];
                 var resource: ResourceModel = newItem.resource && new ResourceModel(newItem.resource.type) || null;
                 slot.resource(resource);
-                slot.collectionDelay = newItem.collectionDelay;
+                slot.collectionDelay(newItem.collectionDelay);
             });
             this.regenerator().setInfo(deviceSerialized.regenerator);
         }
