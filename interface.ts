@@ -37,14 +37,6 @@ module Interface {
         $("[data-device='" + name + "']").addClass("error");
     }
 
-    export function setVisualEffects(on: boolean) {
-        if (on) {
-            $("body").addClass("vfx");
-        } else {
-            $("body").removeClass("vfx");
-        }
-    }
-
     export var killed = false;     // set when fatal error occurs and all execution should stop
     export function kill(message: string) {
         message = message || "Something bad happened. :(";
@@ -166,12 +158,6 @@ module Interface {
         $(".error").removeClass("error");
     }
 
-    function infoPaneShower(id: string) {
-        return Utils.makeHandler(() => {
-            $(id).show().siblings().hide();
-        });
-    }
-
     window.addEventListener("load", function () {
         var serialized: string = window.localStorage.getItem('mechanize');
 
@@ -193,11 +179,6 @@ module Interface {
         $("body").on("click", ".collapser.auto", Utils.makeHandler(function () {
             $(this).toggleClass("expanded").toggleClass("collapsed");
         }));
-
-        $("#notificationsButton").on("click", infoPaneShower("#notificationsLog"));
-        $("#helpButton").on("click", infoPaneShower("#helpContents"));
-        $("#keyboardButton").on("click", infoPaneShower("#keyboardContents"));
-        $("#creditsButton").on("click", infoPaneShower("#creditsContents"));
 
         $("#notifications").on("click", ".notification", Utils.makeHandler(function () {
             $(this).remove();

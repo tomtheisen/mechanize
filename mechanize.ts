@@ -24,6 +24,7 @@ module Mechanize {
         autosave = ko.observable(false);
         visualEffects = ko.observable(false);
         fullScreen = ko.observable(false);
+        infoPane = ko.observable("");
 
         constructor() {
             var autosaveIntervalId: number;
@@ -33,19 +34,24 @@ module Mechanize {
                 if (autosaveIntervalId) clearInterval(autosaveIntervalId);
                 if (autosave) autosaveIntervalId = window.setInterval(MechanizeViewModel.saveModel, 120000);
             });
+
             this.visualEffects.subscribe(function (vfx) {
                 Notifications.show("Visual effects are " + (vfx ? "on" : "off") + ".");
-                Interface.setVisualEffects(vfx);
             });
+
             this.fullScreen.subscribe(function (full) {
                 Notifications.show("Fullscreen is " + (full ? "on" : "off") + ".");
                 if (full) Utils.fullScreen();
                 else Utils.exitFullScreen();
             });
+
+            this.infoPane["assigner"] = (name: string) => {
+                return () => this.infoPane(name);
+            }
         }
 
         toJSON() {
-            return sugarObject.reject(ko.toJS(this), "fullScreen"); // sugar
+            return sugarObject.reject(ko.toJS(this), "fullScreen", "infoPane"); // sugar
         }
     }
 

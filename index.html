@@ -131,7 +131,7 @@
 			</section>
 		</script>
 	</head>
-	<body>
+	<body data-bind="css: options.visualEffects() ? 'vfx' : ''">
 		<div id="systemMessage">loading &hellip;</div>
 		<div id="gameSurface" style="visibility: hidden;">
 			<header>
@@ -187,25 +187,26 @@
 						<button id="saveButton" data-bind="click: saveModel">save</button>
 						<button id="resetButton">reset</button>
 					</div>
-					<div class="controlGroup content">
+					<div class="controlGroup content" data-bind="with: options">
 						<h3>Info</h3>
-						<button id="notificationsButton">log</button>
-						<button id="helpButton">help</button>
-						<button id="keyboardButton">keyboard</button>
-						<button id="creditsButton">credits</button>
+						<button data-bind="click: infoPane.assigner('notifications')">log</button>
+						<button data-bind="click: infoPane.assigner('stats')">stats</button>
+						<button data-bind="click: infoPane.assigner('help')">help</button>
+						<button data-bind="click: infoPane.assigner('keyboard')">keyboard</button>
+						<button data-bind="click: infoPane.assigner('credits')">credits</button>
 					</div>
-					<div>
-						<div class="content" id="notificationsLog" style="display: none;">
+					<div data-bind="switch: options.infoPane">
+						<div class="content" id="notificationsLog" data-case="notifications">
 							<h3>Log</h3>
-							<ul id="notificationsLog" data-bind="foreach: notifications.log">
+							<ul id="notificationsLog" data-bind="foreach: notifications.log" >
 								<li data-bind="text: $data"></li>
 							</ul>
 						</div>
-						<div class="content" id="helpContents" style="display: none;">
+						<div class="content" id="helpContents" data-case="help">
 							<h3>Help</h3>
 							<p>This is a story of space and a story of rocks.</p>
 						</div>
-						<div class="content" id="keyboardContents" style="display: none;">
+						<div class="content" id="keyboardContents" data-case="keyboard">
 							<h3>Keyboard</h3>
 							<dl>
 								<dt>a</dt>
@@ -225,7 +226,7 @@
 								<dd>toggle menu</dd>
 							</dl>
 						</div>
-						<div class="content" id="creditsContents" style="display: none;">
+						<div class="content" id="creditsContents" data-case="credits">
 							<h3>Credits</h3>
 							<p> 
 								Mechanize version <span data-bind="text: modelVersion"></span>&nbsp;
