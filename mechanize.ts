@@ -44,10 +44,6 @@ module Mechanize {
                 if (full) Utils.fullScreen();
                 else Utils.exitFullScreen();
             });
-
-            this.infoPane["assigner"] = (name: string) => {
-                return () => this.infoPane(name);
-            }
         }
 
         toJSON() {

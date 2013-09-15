@@ -189,11 +189,11 @@
 					</div>
 					<div class="controlGroup content" data-bind="with: options">
 						<h3>Info</h3>
-						<button data-bind="click: infoPane.assigner('notifications')">log</button>
-						<button data-bind="click: infoPane.assigner('stats')">stats</button>
-						<button data-bind="click: infoPane.assigner('help')">help</button>
-						<button data-bind="click: infoPane.assigner('keyboard')">keyboard</button>
-						<button data-bind="click: infoPane.assigner('credits')">credits</button>
+						<button data-bind="setonclick: {target: infoPane, value: 'notifications'}">log</button>
+						<button data-bind="setonclick: {target: infoPane, value: 'stats'}">stats</button>
+						<button data-bind="setonclick: {target: infoPane, value: 'help'}">help</button>
+						<button data-bind="setonclick: {target: infoPane, value: 'keyboard'}">keyboard</button>
+						<button data-bind="setonclick: {target: infoPane, value: 'credits'}">credits</button>
 					</div>
 					<div data-bind="switch: options.infoPane">
 						<div class="content" id="notificationsLog" data-case="notifications">

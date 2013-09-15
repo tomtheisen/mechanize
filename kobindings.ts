@@ -21,12 +21,16 @@
         },
     };
 
-    ko.bindingHandlers["switch"] = {
-        init: function (element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel, bindingContext) {
-            $(element).children().hide().filter("[data-case='" + valueAccessor()() + "']").show();
-        },
-        update: function (element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel, bindingContext) {
-            $(element).children().hide().filter("[data-case='" + valueAccessor()() + "']").show();
+    function switchHandler(element: HTMLElement, valueAccessor: () => any) {
+        $(element).children().hide().filter("[data-case='" + valueAccessor()() + "']").show();
+    }
+    ko.bindingHandlers["switch"] = { init: switchHandler, update: switchHandler };
+
+    ko.bindingHandlers["setonclick"] = {
+        init: function<T>(element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel, bindingContext) {
+            var value: { target: KnockoutObservable<T>; value: T; } = valueAccessor();
+            var setter = () => (() => value.target(ko.unwrap(value.value)));
+            ko.bindingHandlers.click.init(element, setter, allBindingsAccessor, viewModel, bindingContext);
         },
     };
 })();
