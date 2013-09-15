@@ -9,18 +9,6 @@ module Interface {
     import Notifications = Mechanize.Notifications;
     var sugarObject = <ObjectStatic><any> Object; // for sugar methods on Object
 
-    export function saveModel() {
-        try {
-            var serialized = ko.toJSON(GameState, (key: string, value) => value == null ? undefined : value);
-            window.localStorage.setItem("mechanize", serialized);
-            Notifications.show("Saved successfully.");
-            return true;
-        } catch (e) {
-            Notifications.show("Error occurred during save.");
-            return false;
-        }
-    };
-
     export function showNotification(message: string) {
         var $notification = $("<div />").addClass("notification").text(message)
             .appendTo("#notifications");
@@ -152,7 +140,7 @@ module Interface {
 
         $yes.on("click", e => {
             window.localStorage.removeItem('mechanize');
-            window.removeEventListener("unload", saveModel);
+            window.removeEventListener("unload", GameState.saveModel);
             window.location.reload();
             return true;
         });
@@ -198,8 +186,6 @@ module Interface {
         registerGameSurfaceDomObserver();
         arrangeAllPanels();
 
-        $("body").on("click", "#saveButton", saveModel);
-
         $("body").on("click", "#resetButton", Utils.makeHandler(resetGame));
 
         $("body").on("click", "#arrangePanelsButton", Utils.makeHandler(arrangeAllPanels));
@@ -243,5 +229,5 @@ module Interface {
         $("#gameSurface").css("visibility", "");
     });
 
-    window.addEventListener("unload", saveModel);
+    window.addEventListener("unload", GameState.saveModel);
 }

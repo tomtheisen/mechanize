@@ -12,7 +12,7 @@
             var value = valueAccessor();
 
             var event: string = value.event;
-            var publisher: KnockoutObservable<any> = value.subscriber;
+            var publisher: KnockoutObservable<any> = value.publisher;
             var handler: (args) => any = value.handler;
 
             var subscription = publisher.subscribe(handler, element, event);

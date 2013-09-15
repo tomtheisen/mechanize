@@ -31,7 +31,7 @@ module Mechanize {
                 Notifications.show("Autosave is " + (autosave ? "on" : "off") + ".");
 
                 if (autosaveIntervalId) clearInterval(autosaveIntervalId);
-                if (autosave) autosaveIntervalId = window.setInterval(Interface.saveModel, 120000);
+                if (autosave) autosaveIntervalId = window.setInterval(MechanizeViewModel.saveModel, 120000);
             });
             this.visualEffects.subscribe(function (vfx) {
                 Notifications.show("Visual effects are " + (vfx ? "on" : "off") + ".");
@@ -275,7 +275,7 @@ module Mechanize {
     }
 
     class WastesSlotModel implements ResourceHolder {
-        events = ko.observable();
+        events = ko.observable< { delay: number; reset: boolean; }>();
         resource: KnockoutObservable<ResourceModel> = ko.observable();
         collectionDelay: KnockoutObservable<number> = ko.observable();
     }
@@ -285,16 +285,19 @@ module Mechanize {
 
         warp() {
             var rnd = Math.random(), type: string, delay: number;
-            if (rnd < 0.05) {
+            if (rnd < 0.03) {
                 type = "iron";
                 delay = 10000;
-            } else {
+            } else if (rnd < 0.5) {
                 type = "rock";
                 delay = 5000;
+            } else {
+                type = null;
+                delay = null;
             }
 
             var idx = Math.floor(Math.random() * this.slots().length);
-            this.slots()[idx].resource(new ResourceModel(type));
+            this.slots()[idx].resource(type && new ResourceModel(type));
             this.slots()[idx].collectionDelay(delay);
         }
 
@@ -641,6 +644,18 @@ module Mechanize {
                 ko.applyBindings(MechanizeViewModel);
 
                 Notifications.show("Initialized mechanize version " + MechanizeViewModel.modelVersion + ".  Welcome.");
+            }
+        }
+
+        export function saveModel() {
+            try {
+                var serialized = ko.toJSON(MechanizeViewModel, (key: string, value) => value == null ? undefined : value);
+                window.localStorage.setItem("mechanize", serialized);
+                Notifications.show("Saved successfully.");
+                return true;
+            } catch (e) {
+                Notifications.show("Error occurred during save.");
+                return false;
             }
         }
     }
