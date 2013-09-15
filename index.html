@@ -196,17 +196,17 @@
 						<button data-bind="setonclick: {target: infoPane, value: 'credits'}">credits</button>
 					</div>
 					<div data-bind="switch: options.infoPane">
-						<div class="content" id="notificationsLog" data-case="notifications">
+						<div class="content" data-case="notifications">
 							<h3>Log</h3>
-							<ul id="notificationsLog" data-bind="foreach: notifications.log" >
+							<ul data-bind="foreach: notifications.log" >
 								<li data-bind="text: $data"></li>
 							</ul>
 						</div>
-						<div class="content" id="helpContents" data-case="help">
+						<div class="content" data-case="help">
 							<h3>Help</h3>
 							<p>This is a story of space and a story of rocks.</p>
 						</div>
-						<div class="content" id="keyboardContents" data-case="keyboard">
+						<div class="content" data-case="keyboard">
 							<h3>Keyboard</h3>
 							<dl>
 								<dt>a</dt>
@@ -226,7 +226,7 @@
 								<dd>toggle menu</dd>
 							</dl>
 						</div>
-						<div class="content" id="creditsContents" data-case="credits">
+						<div class="content" data-case="credits">
 							<h3>Credits</h3>
 							<p> 
 								Mechanize version <span data-bind="text: modelVersion"></span>&nbsp;
@@ -248,6 +248,13 @@
 								<li>beautiful soup
 								<li>definitely typed
 							</ul>
+						</div>
+						<div class="content" data-case="stats">
+							<h3>Statistics</h3>
+							<dl>
+								<dt>Total send attempts</dt>
+								<dd data-bind="text: statistics.totalSendAttempts"></dd>
+							</dl>
 						</div>
 					</div>
 				</div>

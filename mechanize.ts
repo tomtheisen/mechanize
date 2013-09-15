@@ -174,6 +174,9 @@ module Mechanize {
         }
 
         send(receiverName: string, item: ResourceModel) {
+            var sends = MechanizeViewModel.statistics.totalSendAttempts;
+            sends(sends() + 1);
+
             var receiver = this.deviceCollection.getDevice(receiverName);
             if (!receiver) return false;
 
@@ -575,6 +578,10 @@ module Mechanize {
         }
     }
 
+    export class StatisticsModel {
+        totalSendAttempts = ko.observable(0);
+    }
+
     export module Notifications {
         export var log = ko.observableArray([]);
 
@@ -590,6 +597,7 @@ module Mechanize {
         export var player: PlayerModel = new PlayerModel("Bob");
         export var devices = new DeviceCollectionModel();
         export var options = new OptionsModel();
+        export var statistics = new StatisticsModel();
         export var modelVersion = "0.1.0";
         export var build = "{{@build}}";
         export var notifications = Notifications; // has to be part of viewmodel so knockout events can be bound
