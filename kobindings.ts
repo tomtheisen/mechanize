@@ -1,28 +1,22 @@
-/// <reference path="utils.ts" />
-
-declare var ko;
+/// <reference path="typescript refs\knockout.d.ts" />
 
 (function () {
     function setTitle(element: HTMLElement, valueAccessor: () => string) {
         element.title = valueAccessor();
     }
 
-    ko.bindingHandlers.title = { init: setTitle, update: setTitle };
+    ko.bindingHandlers["title"] = { init: setTitle, update: setTitle };
 
-    var args: Array;
-    ko.bindingHandlers.modelevent = {
+    ko.bindingHandlers["modelevent"] = {
         init: function (element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel, bindingContext) {
             var value = valueAccessor();
 
             var event: string = value.event;
-            var subscriber: Utils.PubSub<any> = value.subscriber;
-            var handler: (...args) => any = value.handler;
-            args = <Array> value.args;
+            var publisher: KnockoutObservable<any> = value.subscriber;
+            var handler: (args) => any = value.handler;
 
-            subscriber.subscribe(event, handler.bind(null, element));
+            var subscription = publisher.subscribe(handler, element, event);
+            ko.utils.domNodeDisposal.addDisposeCallback(element, () => subscription.dispose());
         },
-        update: function (element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel, bindingContext) {
-            args = valueAccessor().args;
-        }
     };
 })();

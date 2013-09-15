@@ -83,8 +83,8 @@
 						title: resource().type,
 						click: $parent.startCollect,
 						modelevent: { 
+							publisher: events,
 							event: 'startcollect', 
-							subscriber: events,
 							handler: Interface.runMiniProgress
 						}">
 						<div class="mini-progress"></div>

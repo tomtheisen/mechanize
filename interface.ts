@@ -31,7 +31,8 @@ module Interface {
         }, 10000);
     }
 
-    export function runMiniProgress(element: HTMLElement, options: { delay: number; reset?: boolean }) {
+    export function runMiniProgress(options: { delay: number; reset?: boolean }) {
+        var element = <HTMLElement> this;
         var $progress = $(element).children(".mini-progress");
         $progress.animate({ "width": "100%" }, options.delay, "linear", () => {
             if (options.reset) $progress.css("width", "0%");

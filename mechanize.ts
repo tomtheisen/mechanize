@@ -275,7 +275,7 @@ module Mechanize {
     }
 
     class WastesSlotModel implements ResourceHolder {
-        events = new Utils.PubSub<{ delay: number; reset: boolean; }>();
+        events = ko.observable();
         resource: KnockoutObservable<ResourceModel> = ko.observable();
         collectionDelay: KnockoutObservable<number> = ko.observable();
     }
@@ -319,7 +319,7 @@ module Mechanize {
 
             var delay : number = wasteCell.collectionDelay();
             setTimeout(this.collect.bind(this, wasteCell), delay);
-            wasteCell.events.publish("startcollect", { delay: delay, reset: true });
+            wasteCell.events.notifySubscribers({ delay: delay, reset: true }, "startcollect");
         }
 
         shutDown() {
