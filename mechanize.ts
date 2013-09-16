@@ -495,6 +495,16 @@ module Mechanize {
         }
     }
 
+    class PowerGeneratorModel extends Device {
+        fuelBurner: TimeTracker;
+
+        constructor(deviceCollection: DeviceCollectionModel, args) {
+            super(deviceCollection, args);
+
+            this.fuelBurner = new TimeTracker(25000, () => true, false);
+        }
+    }
+
     export class DeviceCollectionModel {
         private devices = Object.create(null);
 
@@ -605,7 +615,7 @@ module Mechanize {
 
         function initializeGame() {
             devices.createDevice("Cargo Hold", "Inventory", { size: 16, outputs: ["Airlock", "Fabrication Lab"] });
-            devices.createDevice("Airlock", "TrashEjector");
+            // devices.createDevice("Airlock", "TrashEjector");
             devices.createDevice("Fabrication Lab", "Constructor", { size: 8, output: "Cargo Hold" });
             devices.createDevice("Resource Mining", "Wastes", { size: 32, output: "Cargo Hold", randomize: true }).detach();
         }
