@@ -27,8 +27,14 @@
     ko.bindingHandlers["switch"] = { init: switchHandler, update: switchHandler };
 
     ko.bindingHandlers["setonclick"] = {
-        init: function<T>(element: HTMLElement, valueAccessor: () => any, allBindingsAccessor: () => any, viewModel, bindingContext) {
-            var value: { target: KnockoutObservable<T>; value: T; } = valueAccessor();
+        init: function <T>(
+            element: HTMLElement,
+            valueAccessor: () => { target: KnockoutObservable<T>; value: T; },
+            allBindingsAccessor: () => any,
+            viewModel,
+            bindingContext
+        ) {
+            var value = valueAccessor();
             var setter = () => (() => value.target(ko.unwrap(value.value)));
             ko.bindingHandlers.click.init(element, setter, allBindingsAccessor, viewModel, bindingContext);
         },

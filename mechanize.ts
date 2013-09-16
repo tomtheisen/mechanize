@@ -21,7 +21,7 @@ module Mechanize {
     }
 
     export class OptionsModel {
-        autosave = ko.observable(false);
+        autosave = ko.observable(true);
         visualEffects = ko.observable(false);
         fullScreen = ko.observable(false);
         infoPane = ko.observable("");
@@ -519,9 +519,9 @@ module Mechanize {
             return this.devices[name];
         }
 
-        destroyDevice(name: string) {
-            var device = this.getDevice(name);
-            if (!device) {
+        destroyDevice(device: Device) {
+            var name = device && device.name || "";
+            if (!device || this.devices[name] !== device) {
                 Notifications.show("Failed to destroy " + name + " because it does not exist.");
                 return false;
             }
@@ -531,7 +531,7 @@ module Mechanize {
                 return false;
             }
 
-            if (typeof(device.shutDown) === "function") device.shutDown();
+            if (typeof (device.shutDown) === "function") device.shutDown();
 
             delete this.devices[name];
             this.invalidateObservable();
@@ -580,12 +580,13 @@ module Mechanize {
 
     export class StatisticsModel {
         totalSendAttempts = ko.observable(0);
+        totalSaves = ko.observable(0);
     }
 
     export module Notifications {
         export var log = ko.observableArray([]);
 
-        export function toJSON() { return undefined; }
+        // export function toJSON() { return undefined; }
         export function show(message: string) {
             log.push(message);
             if (ko.utils.unwrapObservable(log).length > 20) log.shift();
@@ -623,11 +624,11 @@ module Mechanize {
                     var newPath = (path || "$") + "." + key;
                     var savedVal = saved[key];
 
-                    if (["number", "string", "boolean"].any(typeof savedVal)) { // sugar
-                        if (ko.isObservable(model[key])) model[key](savedVal);
-
-                    } else if (newPath === "$.devices") {
+                    if (newPath === "$.devices") {
                         savedVal.forEach(addDevice.bind(null, model[key]));
+
+                    } else if (["number", "string", "boolean"].any(typeof savedVal) || sugarObject.isArray(savedVal)) { // sugar
+                        if (ko.isObservable(model[key])) model[key](savedVal);
 
                     } else {
                         loadGame(ko.utils.unwrapObservable(model[key]), savedVal, newPath);
@@ -661,6 +662,8 @@ module Mechanize {
             try {
                 var serialized = ko.toJSON(MechanizeViewModel, (key: string, value) => value == null ? undefined : value);
                 window.localStorage.setItem("mechanize", serialized);
+                var saves = MechanizeViewModel.statistics.totalSaves;
+                saves(saves() + 1);
                 Notifications.show("Saved successfully.");
                 return true;
             } catch (e) {

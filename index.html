@@ -254,6 +254,8 @@
 							<dl>
 								<dt>Total send attempts</dt>
 								<dd data-bind="text: statistics.totalSendAttempts"></dd>
+								<dt>Total saves</dt>
+								<dd data-bind="text: statistics.totalSaves"></dd>
 							</dl>
 						</div>
 					</div>
@@ -303,7 +305,7 @@
 				</button>
 				<h2 class="deviceHeader" data-bind="text: name"></h2>
 				<h3 data-bind="text: type"></h3>
-				<div class="controls" data-bind="template: { name: 'DeviceTemplate' + type, data: $data}">
+				<div class="controls" data-bind="template: { name: 'DeviceTemplate' + type, data: $data }">
 				</div>
 			</div>
 			<!-- /ko -->
