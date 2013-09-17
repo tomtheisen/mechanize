@@ -497,11 +497,26 @@ module Mechanize {
 
     class PowerGeneratorModel extends Device {
         fuelBurner: TimeTracker;
+        fuelResource: ResourceModel;
+        fuelRemaining = ko.observable(0);
+
+        accept(resource: ResourceModel) {
+            if (resource.type !== this.fuelResource.type) return false;
+            this.fuelRemaining(this.fuelRemaining() + 1);
+        }
+
+        consumeFuel() {
+            var remain = this.fuelRemaining();
+            if (remain > 0) this.fuelRemaining(remain - 1);
+            return remain > 0;
+        }
 
         constructor(deviceCollection: DeviceCollectionModel, args) {
             super(deviceCollection, args);
 
-            this.fuelBurner = new TimeTracker(25000, () => true, false);
+            this.fuelBurner = new TimeTracker(25000, this.consumeFuel.bind(this), true);
+            this.fuelResource = args.fuelResource;
+            this.fuelRemaining(args.fuelRemaining || 0);
         }
     }
 
@@ -561,6 +576,8 @@ module Mechanize {
                         return new WastesModel(collection, args);
                     case "Constructor":
                         return new ConstructorModel(collection, args);
+                    case "PowerGenerator":
+                        return new PowerGeneratorModel(collection, args);
                     default:
                         throw new RangeError("Cannot create a device of type " + type);
                 }
@@ -618,6 +635,7 @@ module Mechanize {
             // devices.createDevice("Airlock", "TrashEjector");
             devices.createDevice("Fabrication Lab", "Constructor", { size: 8, output: "Cargo Hold" });
             devices.createDevice("Resource Mining", "Wastes", { size: 32, output: "Cargo Hold", randomize: true }).detach();
+            devices.createDevice("Power Generator", "PowerGenerator", { fuelResource: new ResourceModel("hydrogen"), fuelRemaining: 3 });
         }
 
         function loadGame(model, saved, path?: string) {
@@ -669,6 +687,7 @@ module Mechanize {
         }
 
         export function saveModel() {
+            if (Interface.killed) return;
             try {
                 var serialized = ko.toJSON(MechanizeViewModel, (key: string, value) => value == null ? undefined : value);
                 window.localStorage.setItem("mechanize", serialized);

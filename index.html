@@ -8,10 +8,10 @@
 			<!-- ko if: tracker -->
 			<div class="progress">
 				<div class="value" data-bind="
-					style: { marginRight: tracker().progress.marginRight }">
+					style: { marginRight: ko.unwrap(tracker).progress.marginRight }">
 					<span data-bind="text: text"></span>
 					&hellip;
-					<span data-bind="text: tracker().progress.remainingFormatted"></span>
+					<span data-bind="text: ko.unwrap(tracker).progress.remainingFormatted"></span>
 				</div>
 			</div>
 			<!-- /ko -->
@@ -130,6 +130,22 @@
 				</ul>
 			</section>
 		</script>
+
+		<script type="text/html" id="DeviceTemplatePowerGenerator">
+			<div>
+				Fuel type:
+				<!-- ko text: fuelResource.type --><!-- /ko -->
+			</div>
+			<div>
+				Remaining: 
+				<!-- ko text: fuelRemaining --><!-- /ko -->
+			</div>
+			<!-- ko template: { 
+				name: 'TemplateProgress', 
+				data: { tracker: fuelBurner, text: 'Burning fuel' } } -->
+			<!-- /ko -->
+		</script>
+
 	</head>
 	<body data-bind="css: options.visualEffects() ? 'vfx' : ''">
 		<div id="systemMessage">loading &hellip;</div>
